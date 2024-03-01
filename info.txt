@@ -1,0 +1,4 @@
+#buat symlink
+sudo ln -s "$(pwd -P)" /var/www/html/storage
+ln -s /PDAM_Ngenep/storage/app/public /public_html/storage
+ln -s "$(pwd -P)" ../../../../public_html/storage (pastikan jangan buat folder storage d public)
