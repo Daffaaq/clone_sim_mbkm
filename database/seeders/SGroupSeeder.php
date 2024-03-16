@@ -19,6 +19,7 @@ class SGroupSeeder extends Seeder
             ['group_id' => 2, 'group_code' => 'KOM', 'group_name' => 'Koordinator MBKM'],
             ['group_id' => 3, 'group_code' => 'DSN', 'group_name' => 'Dosen'],
             ['group_id' => 4, 'group_code' => 'MHS', 'group_name' => 'Mahasiswa'],
+            ['group_id' => 5, 'group_code' => 'INT', 'group_name' => 'Instruktur'],
         ]);
     }
 }
