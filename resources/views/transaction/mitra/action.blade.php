@@ -156,9 +156,27 @@ $is_edit = isset($data);
                     </div>
                 </div>
                 <div class="form-group required row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Batas Pendaftaran</label>
+                    <div class="col-sm-9">
+                        <input type="date" class="form-control form-control-sm" id="mitra_batas_pendaftaran"
+                            name="mitra_batas_pendaftaran"
+                            value="{{ isset($data->mitra_batas_pendaftaran) ? $data->mitra_batas_pendaftaran : '' }}" />
+                    </div>
+                </div>
+                <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Deskripsi</label>
                     <div class="col-sm-9">
                         <textarea type="text" class="form-control form-control-sm" id="mitra_deskripsi" name="mitra_deskripsi">{{ isset($data->mitra_deskripsi) ? $data->mitra_deskripsi : '' }}</textarea>
+                    </div>
+                </div>
+                <div class="form-control-sm row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Flyer</label>
+                    <div class="col-sm-9">
+                        <input type="file" class="form-control-sm custom-file-input" data-target="0"
+                            id="berita_doc_0" name="flyer" data-rule-filesize="1"
+                            data-rule-accept="image/*,application/pdf" accept="image/*,application/pdf" />
+                        <label class="form-control-sm custom-file-label file_label_0" for="berita_doc_0">Choose
+                            file</label>
                     </div>
                 </div>
                 {{-- <div class="form-group required row mb-2">
@@ -184,8 +202,40 @@ $is_edit = isset($data);
 </form>
 
 <script>
+    var loadFile = function(event) {
+        $('input.custom-file-input').on('change', function() {
+            // Get the file name
+            var fileName = $(this).val().split('\\').pop();
+
+            // Set the label text to the file name
+            $(this).next('.custom-file-label').html(fileName);
+        });
+
+    };
+
     $(document).ready(function() {
         unblockUI();
+        loadFile();
+
+        $('#mitra_deskripsi').summernote({
+            tabsize: 2,
+            height: 200,
+            dialogsInBody: true,
+            codeviewFilter: true,
+            codeviewIframeFilter: true,
+            popover: {
+                air: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']],
+                ]
+            }
+        });
 
         $('#tambah_skema').click(function() {
             let form = $('#skema_form')

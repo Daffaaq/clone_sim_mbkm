@@ -3,17 +3,21 @@
 namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
+use App\Models\DokumenMagangModel;
 use App\Models\KabupatenModel;
 use App\Models\Master\KegiatanModel;
 use App\Models\Master\MahasiswaModel;
 use App\Models\Master\PeriodeModel;
 use App\Models\Master\ProdiModel;
+use App\Models\Master\ProgramModel;
 use App\Models\MitraKuotaModel;
 use App\Models\MitraModel;
 use App\Models\ProvinsiModel;
 use App\Models\Transaction\Magang;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use stdClass;
 use Yajra\DataTables\Facades\DataTables;
@@ -49,10 +53,13 @@ class DaftarMagangController extends Controller
             'title' => $this->menuTitle
         ];
 
+        $programs = ProgramModel::all();
+
         return view($this->viewPath . 'index')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
             ->with('page', (object) $page)
+            ->with('programs', $programs)
             ->with('allowAccess', $this->authAccessKey());
     }
 
@@ -61,9 +68,20 @@ class DaftarMagangController extends Controller
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
+        $prodi_id = MahasiswaModel::where('user_id', Auth::user()->user_id)->first()->prodi_id;
+
         $data  = MitraModel::with('kegiatan')
+            ->with('kegiatan.program')
             ->with('periode')
             ->where('status', 1);
+
+        $programId = $request->program;
+        if ($programId) {
+            $data = $data->whereHas('kegiatan.program', function ($query) use ($programId) {
+                $query->where('program_id', $programId);
+            });
+        }
+
         // ->get();
         if (auth()->user()->group_id != 1) {
             //data in mitra with column mitra_prodi is [1,2,3,etc]
@@ -79,12 +97,20 @@ class DaftarMagangController extends Controller
 
         $data = $data->get();
 
-        $data = $data->map(function ($item) {
+        $data = $data->map(function ($item) use ($prodi_id) {
             //TODO: get jumlah pendaftar
             $item['mitra_jumlah_pendaftar'] = Magang::where('mitra_id', $item->mitra_id)
                 ->where('periode_id', PeriodeModel::where('is_current', 1)->first()->periode_id)
-                ->where('status', 1)
+                ->whereIn('status', [1, 3])
                 ->count();
+            $item['mitra_kuota'] = MitraKuotaModel::where('mitra_id', $item->mitra_id)
+                ->where('prodi_id', $prodi_id)
+                ->first();
+
+            $item['mitra_kuota'] = ($item['mitra_kuota']) ? $item['mitra_kuota']->kuota : 0;
+
+            $item['encrypt_mitra_id'] = Crypt::encrypt($item->mitra_id);
+
             return $item;
         });
 
@@ -98,11 +124,29 @@ class DaftarMagangController extends Controller
         $this->authAction('read', 'modal');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
+        $id = Crypt::decrypt($id);
+
         $data = MitraModel::find($id);
         $data['skema'] = explode(',', $data->mitra_skema);
 
+        $dateString = $data->mitra_batas_pendaftaran;
+        $currentDate = date('Y-m-d');
+        $disabled = strtotime($dateString) < strtotime($currentDate);
+
+        $breadcrumb = [
+            'title' => $this->menuTitle,
+            'list'  => ['Transaksi', 'Daftar Magang']
+        ];
+
+        $activeMenu = [
+            'l1' => 'transaction',
+            'l2' => 'transaksi-daftar-magang',
+            'l3' => null
+        ];
+
         $page = [
-            'title' => 'Detail ' . $this->menuTitle
+            'url' => $this->menuUrl,
+            'title' => $this->menuTitle
         ];
 
         $mitra = MitraModel::where('mitra_id', $id)
@@ -122,32 +166,36 @@ class DaftarMagangController extends Controller
             [
                 "title" => "Nama Kegiatan",
                 "value" => $mitra->kegiatan->kegiatan_nama,
-                "bold" => false
+                "textarea" => false
             ],
             [
                 "title" => "Nama Mitra",
                 "value" => $mitra->mitra_nama,
-                "bold" => true
+                "textarea" => false
             ],
             [
                 "title" => "Periode",
                 "value" => $mitra->periode->periode_nama,
-                "bold" => false
+                "textarea" => false
             ],
             [
                 "title" => "Deskripsi",
                 "value" => $mitra->mitra_deskripsi,
-                "bold" => false
+                "textarea" => true
             ],
             [
                 "title" => "Durasi",
                 "value" => $mitra->mitra_durasi . ' bulan',
-                "bold" => true
+                "textarea" => false
             ], [
                 "title" => "Kuota",
                 "value" => $kuota,
-                "bold" => false
-            ],
+                "textarea" => false
+            ], [
+                "title" => "Batas Pendaftaran",
+                "value" => Carbon::parse($mitra->mitra_batas_pendaftaran)->format('d M Y'),
+                "textarea" => false
+            ]
         ];
 
         if ($mitra->kegiatan->is_kuota == 0) {
@@ -160,17 +208,21 @@ class DaftarMagangController extends Controller
             $obj = new stdClass;
             $obj->title = $item['title'];
             $obj->value = $item['value'];
-            $obj->bold = $item['bold'];
+            $obj->textarea = $item['textarea'];
             $obj->color = $item['color'] ?? null;
             return $obj;
         }, $datas);
 
         $mahasiswa_id = MahasiswaModel::where('user_id', Auth::user()->user_id)->first()->mahasiswa_id;
+        $saya = MahasiswaModel::where('mahasiswa_id', $mahasiswa_id)->first();
         $mahasiswas = MahasiswaModel::where('prodi_id', $prodi_id)
+            ->whereNotIn('mahasiswa_id', function ($query) {
+                $query->select('mahasiswa_id')
+                    ->from('t_magang');
+            })
             ->get();
 
-        return (!$data) ? $this->showModalError() :
-            view($this->viewPath . 'detail')
+        return view($this->viewPath . 'daftar')
             ->with('page', (object) $page)
             ->with('id', $id)
             ->with('data', $data)
@@ -179,11 +231,18 @@ class DaftarMagangController extends Controller
             ->with('url', $this->menuUrl . '/' . $id . '/daftar')
             ->with('mahasiswa_id', $mahasiswa_id)
             ->with('mahasiswas', $mahasiswas)
+            ->with('saya', $saya)
+            ->with('disabled', $disabled)
+            ->with('breadcrumb', (object) $breadcrumb)
+            ->with('activeMenu', (object) $activeMenu)
+            ->with('page', (object) $page)
             ->with('action', 'POST');
     }
 
     public function daftar(Request $request, $id_mitra)
     {
+        // dd($request->all());
+        // dd($file);
         $id_periode = PeriodeModel::where('is_current', 1)->first()->periode_id;
         $tipe_pendaftar = $request->tipe_pendaftar;
         $mahasiswa = $request->mahasiswa;
@@ -233,6 +292,25 @@ class DaftarMagangController extends Controller
                 }
             }
 
+            if (!$request->magang_skema) {
+                return response()->json([
+                    'stat' => false,
+                    'mc' => false, // close modal
+                    'msg' => 'Pilih skema terlebih dahulu'
+                ]);
+            }
+
+            // if ($kegiatan->kegiatan->is_submit_proposal == 1) {
+            //     $file = $request->file('proposal');
+            //     if (!$file) {
+            //         return response()->json([
+            //             'stat' => false,
+            //             'mc' => false, // close modal
+            //             'msg' => 'Proposal belum diisi'
+            //         ]);
+            //     }
+            // }
+
             $count = Magang::selectRaw('magang_kode, count(*) as count')
                 ->groupBy('magang_kode')
                 ->get();
@@ -251,7 +329,27 @@ class DaftarMagangController extends Controller
             unset($request['mahasiswa']);
             unset($request['tipe_pendaftar']);
             // dd($request->all());
-            $res = Magang::insertData($request);
+            $res = Magang::insertData($request, ['proposal', 'files']);
+
+            //cek if $kegiatan is_proposal 1 then
+            // if ($kegiatan->kegiatan->is_submit_proposal == 1) {
+            //     $file = $request->file('proposal');
+            //     if ($file) {
+            //         $fileName = 'proposal_' . time() . '.' . $file->getClientOriginalExtension();
+            //         //move to public/assets/
+            //         $file->move(public_path('assets/proposal'), $fileName);
+            //         // $request['dokumen_magang_file'] = $fileName;
+
+            //         $magang_id = Magang::where('magang_kode', $kode)->first()->magang_id;
+
+            //         DokumenMagangModel::create([
+            //             'mahasiswa_id' => $id_mahasiswa,
+            //             'magang_id' => $magang_id,
+            //             'dokumen_magang_nama' => 'PROPOSAL',
+            //             'dokumen_magang_file' => $fileName
+            //         ]);
+            //     }
+            // }
         } else {
             $cek = Magang::whereIn('mahasiswa_id', $mahasiswa)
                 ->where('periode_id', $id_periode)
@@ -265,6 +363,29 @@ class DaftarMagangController extends Controller
                     'msg' => 'Salah satu mahasiswa sudah mendaftar magang'
                 ]);
             }
+
+            if (!$request->magang_skema) {
+                return response()->json([
+                    'stat' => false,
+                    'mc' => false, // close modal
+                    'msg' => 'Pilih skema terlebih dahulu'
+                ]);
+            }
+
+            $kegiatan = MitraModel::with('kegiatan')
+                ->where('mitra_id', $id_mitra)
+                ->first();
+
+            // if ($kegiatan->kegiatan->is_submit_proposal == 1) {
+            //     $file = $request->file('proposal');
+            //     if (!$file) {
+            //         return response()->json([
+            //             'stat' => false,
+            //             'mc' => false, // close modal
+            //             'msg' => 'Proposal belum diisi'
+            //         ]);
+            //     }
+            // }
 
             $count = Magang::selectRaw('magang_kode, count(*) as count')
                 ->groupBy('magang_kode')
@@ -297,8 +418,28 @@ class DaftarMagangController extends Controller
                 unset($request['mahasiswa']);
                 unset($request['tipe_pendaftar']);
                 // dd($request->all());
-                $res = Magang::insertData($request);
+                $res = Magang::insertData($request, ['proposal', 'files']);
             }
+
+            //cek if $kegiatan is_proposal 1 then
+            // if ($kegiatan->kegiatan->is_submit_proposal == 1) {
+            //     $file = $request->file('proposal');
+            //     if ($file) {
+            //         $fileName = 'proposal_' . time() . '.' . $file->getClientOriginalExtension();
+            //         //move to public/assets/
+            //         $file->move(public_path('assets/proposal'), $fileName);
+            //         // $request['dokumen_magang_file'] = $fileName;
+
+            //         $magang_id = Magang::where('magang_kode', $kode)->first()->magang_id;
+
+            //         DokumenMagangModel::create([
+            //             'mahasiswa_id' => $id_mahasiswa,
+            //             'magang_id' => $magang_id,
+            //             'dokumen_magang_nama' => 'PROPOSAL',
+            //             'dokumen_magang_file' => $fileName
+            //         ]);
+            //     }
+            // }
         }
 
         return response()->json([
@@ -342,7 +483,6 @@ class DaftarMagangController extends Controller
             $rules = [
                 'kegiatan_id' => 'required',
                 'mitra_nama' => 'required|string',
-                'mitra_website' => 'required',
                 'mitra_deskripsi' => 'required',
             ];
 
@@ -366,7 +506,23 @@ class DaftarMagangController extends Controller
             $request['mitra_alamat'] = $kota->nama_kab_kota;
             $request['status'] = 0;
 
-            $res = MitraModel::insertData($request);
+            $request['mitra_skema'] = implode(',', $request->skema_arr);
+
+            unset($request['skema_arr']);
+
+            $file = $request->file('flyer');
+            if (!$file) {
+                $request['mitra_flyer'] = NULL;
+            } else {
+                $fileName = 'flyer_' . time() . '.' . $file->getClientOriginalExtension();
+                //move to public/assets/
+                $file->move(public_path('assets/flyer'), $fileName);
+                $request['mitra_flyer'] = $fileName;
+            }
+
+            // dd($request);
+
+            $res = MitraModel::insertData($request, ['flyer']);
 
 
 

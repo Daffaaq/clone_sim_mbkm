@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Master\PerusahaanModel;
 use App\Models\Master\ProdiModel;
+use App\Models\MitraModel;
 use App\Models\Setting\UserModel;
 use App\Models\Transaction\BeritaModel;
+use App\Models\Transaction\Magang;
 use App\Models\View\BeritaView;
 use App\Models\View\DosenProposalView;
 use App\Models\View\DosenQuotaProdiView;
@@ -60,8 +64,11 @@ class DashboardController extends Controller
         };*/
 
         switch (Auth::user()->getRole()) {
-            case 'KOM':
+            case 'ADM':
                 return $this->index_admin($breadcrumb, $activeMenu, $page);
+                break;
+            case 'KOM':
+                return $this->index_koordinator($breadcrumb, $activeMenu, $page);
                 break;
             case 'MHS':
                 return $this->index_mahasiswa($breadcrumb, $activeMenu, $page);
@@ -85,7 +92,28 @@ class DashboardController extends Controller
 
     private function index_admin($breadcrumb, $activeMenu, $page)
     {
-        return $this->index_default($breadcrumb, $activeMenu, $page);
+        $active_periode = PeriodeModel::where('is_current', 1)->first();
+
+        $count_pendaftar  = Magang::where('periode_id', $active_periode->periode_id)
+            ->count();
+
+        $count_mahasiswa = MahasiswaModel::count();
+
+        $count_mitra  = MitraModel::with('kegiatan')->with('periode');
+        $count_mitra = $count_mitra->count();
+
+        $count_diterima = Magang::where('periode_id', $active_periode->periode_id)
+            ->where('status', 1)
+            ->count();
+
+        return view($this->viewPath . 'koordinator')
+            ->with('breadcrumb', (object) $breadcrumb)
+            ->with('activeMenu', (object) $activeMenu)
+            ->with('count_pendaftar', $count_pendaftar)
+            ->with('count_mahasiswa', $count_mahasiswa)
+            ->with('count_mitra', $count_mitra)
+            ->with('count_diterima', $count_diterima)
+            ->with('page', (object) $page);
     }
 
     private function index_mahasiswa($breadcrumb, $activeMenu, $page)
@@ -93,6 +121,38 @@ class DashboardController extends Controller
         return view($this->viewPath . 'mahasiswa')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
+            ->with('page', (object) $page);
+    }
+
+    private function index_koordinator($breadcrumb, $activeMenu, $page)
+    {
+        $active_periode = PeriodeModel::where('is_current', 1)->first();
+        $prodi_id = auth()->user()->getProdiId();
+
+        $count_pendaftar  = Magang::where('periode_id', $active_periode->periode_id)
+            ->where('prodi_id', $prodi_id)
+            ->count();
+
+        $count_mahasiswa = MahasiswaModel::where('prodi_id', $prodi_id)->count();
+
+        $count_mitra  = MitraModel::with('kegiatan')->with('periode');
+        if (auth()->user()->group_id != 1) {
+            $count_mitra->whereRaw('find_in_set(?, mitra_prodi)', $prodi_id);
+        }
+        $count_mitra = $count_mitra->count();
+
+        $count_diterima = Magang::where('periode_id', $active_periode->periode_id)
+            ->where('prodi_id', $prodi_id)
+            ->where('status', 1)
+            ->count();
+
+        return view($this->viewPath . 'koordinator')
+            ->with('breadcrumb', (object) $breadcrumb)
+            ->with('activeMenu', (object) $activeMenu)
+            ->with('count_pendaftar', $count_pendaftar)
+            ->with('count_mahasiswa', $count_mahasiswa)
+            ->with('count_mitra', $count_mitra)
+            ->with('count_diterima', $count_diterima)
             ->with('page', (object) $page);
     }
 

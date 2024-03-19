@@ -38,10 +38,11 @@ class SGroupMenuSeeder extends Seeder
         $menu_mahasiswa[] = ['group_id'  => 4, 'menu_id'   => 1, 'c'   => 1, 'r'    => 1, 'u'   => 1, 'd' => 1];
         $menu_mahasiswa[] = ['group_id'  => 4, 'menu_id'   => 3, 'c'   => 1, 'r'    => 1, 'u'   => 1, 'd' => 1];
         // $menu_mahasiswa[] = ['group_id'  => 4, 'menu_id'   => 11, 'c'   => 1, 'r'    => 1, 'u'   => 1, 'd' => 1];
-        for ($i = 14; $i <= 16; $i++) {
+        for ($i = 14; $i <= 15; $i++) {
             $menu_mahasiswa[] = ['group_id'  => 4, 'menu_id'   => $i, 'c'   => 1, 'r'    => 1, 'u'   => 1, 'd' => 1];
         }
         $menu_mahasiswa[] = ['group_id'  => 4, 'menu_id'   => 19, 'c'   => 1, 'r'    => 1, 'u'   => 1, 'd' => 1];
+        $menu_mahasiswa[] = ['group_id'  => 4, 'menu_id'   => 22, 'c'   => 1, 'r'    => 1, 'u'   => 1, 'd' => 1];
 
         DB::table('s_group_menu')->insert($menu_admin);
         DB::table('s_group_menu')->insert($menu_koordinator);

@@ -30,7 +30,7 @@ $is_edit = isset($data);
                         </select>
                     </div>
                 </div>
-               
+
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Nama Mitra</label>
                     <div class="col-sm-9">
@@ -38,7 +38,24 @@ $is_edit = isset($data);
                             value="{{ isset($data->mitra_nama) ? $data->mitra_nama : '' }}" />
                     </div>
                 </div>
-
+                <div class="form-group required row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Skema</label>
+                    <div class="col-sm-9 d-flex flex-column text-left pr-0 justify-content-center">
+                        <div id="skema_form">
+                            @if (isset($data->skema))
+                                @foreach ($data->skema as $key => $skema)
+                                    <div class="d-flex flex-row align-items-center">
+                                        <input name="skema_arr[]" value="{{ $skema }}" type="text"
+                                            class="form-control form-control-sm mb-1" id="skema_{{ $key }}" />
+                                        <a class="ml-2 mr-5 cursor-pointer" id="remove-btn"
+                                            data-key="{{ $key }}"><i class="text-danger fa fa-trash"></i></a>
+                                    </div>
+                                @endforeach
+                            @endif
+                        </div>
+                        <small id="tambah_skema" class="text-success cursor-pointer">+ Tambah Skema</small>
+                    </div>
+                </div>
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Durasi</label>
                     <div class="col-sm-9">
@@ -89,7 +106,7 @@ $is_edit = isset($data);
                         </select>
                     </div>
                 </div>
-                <div class="form-group required row mb-2">
+                <div class="form-group row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Website</label>
                     <div class="col-sm-9">
                         <input type="text" class="form-control form-control-sm" id="mitra_website"
@@ -101,6 +118,16 @@ $is_edit = isset($data);
                     <label class="col-sm-3 control-label col-form-label">Deskripsi</label>
                     <div class="col-sm-9">
                         <textarea type="text" class="form-control form-control-sm" id="mitra_deskripsi" name="mitra_deskripsi">{{ isset($data->mitra_deskripsi) ? $data->mitra_deskripsi : '' }}</textarea>
+                    </div>
+                </div>
+                <div class="form-control-sm row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Flyer</label>
+                    <div class="col-sm-9">
+                        <input type="file" class="form-control-sm custom-file-input" data-target="0"
+                            id="berita_doc_0" name="flyer" data-rule-filesize="1"
+                            data-rule-accept="image/*,application/pdf" accept="image/*,application/pdf" />
+                        <label class="form-control-sm custom-file-label file_label_0" for="berita_doc_0">Choose
+                            file</label>
                     </div>
                 </div>
                 {{-- <div class="form-group required row mb-2">
@@ -119,15 +146,64 @@ $is_edit = isset($data);
             </div>
             <div class="modal-footer">
                 <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+                <button type="submit" class="btn btn-primary">Ajukan</button>
             </div>
         </div>
     </div>
 </form>
 
 <script>
+    var loadFile = function(event) {
+        $('input.custom-file-input').on('change', function() {
+            // Get the file name
+            var fileName = $(this).val().split('\\').pop();
+
+            // Set the label text to the file name
+            $(this).next('.custom-file-label').html(fileName);
+        });
+
+    };
+
     $(document).ready(function() {
         unblockUI();
+        loadFile();
+
+        $('#mitra_deskripsi').summernote({
+            tabsize: 2,
+            height: 200,
+            dialogsInBody: true,
+            codeviewFilter: true,
+            codeviewIframeFilter: true,
+            popover: {
+                air: [
+                    ['style', ['style']],
+                    ['font', ['bold', 'underline', 'clear']],
+                    ['fontname', ['fontname']],
+                    ['color', ['color']],
+                    ['para', ['ul', 'ol', 'paragraph']],
+                    ['table', ['table']],
+                    ['insert', ['link', 'picture', 'video']],
+                    ['view', ['fullscreen', 'codeview', 'help']],
+                ]
+            }
+        });
+
+        $('#tambah_skema').click(function() {
+            let form = $('#skema_form')
+            let count = $('input[name="skema_arr[]"]').length + 1
+            form.append('<div class="d-flex flex-row align-items-center">' +
+                '<input name="skema_arr[]" value="" type="text" class="form-control form-control-sm mb-1" id="skema_' +
+                count + '" />' +
+                '<a class="ml-2 mr-5 cursor-pointer" id="remove-btn" data-key="' + count +
+                '"><i class="text-danger fa fa-trash"></i></a>' +
+                '</div>')
+        })
+
+        $(document).on('click', '#remove-btn', function() {
+            var key = $(this).data('key');
+            console.log(key)
+            $('#skema_' + key).parent().remove();
+        });
 
         $('#provinsi_id').change(function() {
             var provinsi_id = $(this).val();

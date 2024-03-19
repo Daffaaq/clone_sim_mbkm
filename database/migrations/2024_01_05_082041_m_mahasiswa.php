@@ -20,9 +20,9 @@ class MMahasiswa extends Migration
             $table->unsignedBigInteger('user_id')->index();
             $table->string('nim', 15)->unique();
             $table->string('nama_mahasiswa');
-            $table->string('email_mahasiswa')->unique();
-            $table->string('no_hp', 15);
-            $table->integer('jenis_kelamin')->comment('0: Perempuan, 1: Laki-laki');
+            $table->string('email_mahasiswa')->unique()->nullable();
+            $table->string('no_hp', 15)->nullable();
+            $table->integer('jenis_kelamin')->comment('0: Perempuan, 1: Laki-laki')->nullable();
             $table->string('kelas');
             $table->string('nama_ortu')->nullable();
             $table->string('hp_ortu', 15)->nullable();

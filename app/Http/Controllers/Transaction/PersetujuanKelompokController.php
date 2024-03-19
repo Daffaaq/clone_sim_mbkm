@@ -95,7 +95,8 @@ class PersetujuanKelompokController extends Controller
         $ketua = Magang::with('mahasiswa')->where('magang_kode', $data->magang_kode)->where('magang_tipe', 0)->first();
 
         return (!$data) ? $this->showModalError() :
-            $this->showModalConfirm($this->menuUrl . '/' . $id . '/approve', [
+            $this->showModalConfirmCustom($this->viewPath . 'action',
+            $this->menuUrl . '/' . $id . '/approve', [
                 'Nama Ketua' => $ketua->mahasiswa->nama_mahasiswa,
                 'Mitra' => $data->mitra->mitra_nama,
                 'Kegiatan' => $data->mitra->kegiatan->kegiatan_nama,

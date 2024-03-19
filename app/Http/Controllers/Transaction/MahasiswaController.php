@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\MahasiswaModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Setting\UserModel;
+use App\Models\Transaction\Magang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -285,5 +286,37 @@ class MahasiswaController extends Controller
         }
 
         return redirect('/');
+    }
+
+    public function cari($nim)
+    {
+
+        $data = MahasiswaModel::where('nim', $nim)->first();
+
+        if (!$data) {
+            return response()->json([
+                'stat' => false,
+                'mc' => false, // close modal
+                'msg' => 'Mahasiswa tidak ditemukan',
+            ]);
+        }
+
+        $check = Magang::where('mahasiswa_id', $data->mahasiswa_id)->count();
+
+        if ($check > 0) {
+            return response()->json([
+                'stat' => false,
+                'mc' => false, // close modal
+                'msg' => 'Mahasiswa sudah mendaftar',
+            ]);
+        }
+
+
+        return response()->json([
+            'stat' => true,
+            'mc' => false, // close modal
+            'msg' => 'Data ditemukan',
+            'data' => $data,
+        ]);
     }
 }

@@ -23,6 +23,7 @@ class BeritaModel extends AppModel
         'prodi_id',
         'berita_judul',
         'berita_isi',
+        'berita_status',
         'created_at',
         'created_by',
         'updated_at',

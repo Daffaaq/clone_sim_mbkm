@@ -19,6 +19,26 @@
                         </div>
                     </div>
                     <div class="card-body p-0">
+                        <!-- untuk Filter data -->
+                        <div id="filter" class="form-horizontal filter-date p-2 border-bottom">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group form-group-sm row text-sm mb-0">
+                                        <label class="col-md-1 col-form-label">Filter</label>
+                                        <div class="col-md-4">
+                                            <select
+                                                class="form-control form-control-sm w-100 filter_combobox filter_program">
+                                                <option value="">- Semua -</option>
+                                                @foreach ($programs as $d)
+                                                    <option value="{{ $d->program_id }}">{{ $d->program_nama }}</option>
+                                                @endforeach
+                                            </select>
+                                            <small class="form-text text-muted">Program Kegiatan</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-striped table-hover table-full-width" id="table_master">
                                 <thead>
@@ -30,7 +50,7 @@
                                         <th>Alamat</th>
                                         <th>Website</th>
                                         <th>Durasi</th>
-                                        <th>Jumlah Pendaftar</th>
+                                        <th>Kuota</th>
                                         <th>#</th>
                                     </tr>
                                 </thead>
@@ -55,7 +75,10 @@
                 "ajax": {
                     "url": "{{ $page->url }}/list",
                     "dataType": "json",
-                    "type": "POST"
+                    "type": "POST",
+                    "data": function(d) {
+                        d.program = $('.filter_program').val();
+                    },
                 },
                 "aoColumns": [{
                         "mData": "no",
@@ -69,7 +92,7 @@
                         "sClass": "",
                         "sWidth": "10%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
                     },
                     {
                         "mData": "periode.periode_nama",
@@ -129,14 +152,22 @@
                         }
                     },
                     {
-                        "mData": "mitra_jumlah_pendaftar",
+                        "mData": "mitra_kuota",
                         "sClass": "",
                         "sWidth": "15%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
+                        "mRender": function(data, type, row, meta) {
+                            const jumlah = row.mitra_jumlah_pendaftar + '/' + data;
+                            if (data == 0 || data == row.mitra_jumlah_pendaftar) {
+                                return '<span class="badge badge-danger">' + jumlah + '</span>'
+                            } else {
+                                return jumlah
+                            }
+                        }
                     },
                     {
-                        "mData": "mitra_id",
+                        "mData": "encrypt_mitra_id",
                         "sClass": "pr-2",
                         "sWidth": "8%",
                         "bSortable": false,
@@ -146,7 +177,7 @@
                             @if ($allowAccess->update)
                                 // if (row.kegiatan.is_kuota == 1) {
                                 buttons +=
-                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}" class="ajax_modal btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat detail" ><i class="fa fa-th"></i> Detail</a> `
+                                    `<a href="{{ $page->url }}/${data}/show" class=" btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat detail" >Daftar</a> `
                                 // }
                             @endif
                             return buttons;
@@ -160,8 +191,14 @@
 
             $('.dataTables_filter input').unbind().bind('keyup', function(e) {
                 if (e.keyCode == 13) {
-                    dataMaster.search($(this).val()).draw();
+                    dataMaster.search($(this).val(), {
+                        caseInsensitive: true
+                    }).draw();
                 }
+            });
+
+            $('.filter_program').change(function() {
+                dataMaster.draw();
             });
         });
     </script>

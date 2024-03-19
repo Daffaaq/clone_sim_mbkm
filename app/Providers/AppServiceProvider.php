@@ -23,12 +23,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        View::share('breadcrumb', (object) ['title' => 'Default Title Breadcrumb', 'list' => ['App','Home']]);
+        View::share('breadcrumb', (object) ['title' => 'Default Title Breadcrumb', 'list' => ['App', 'Home']]);
         View::share('activeMenu', (object) ['l1' => 'dashboard', 'l2' => null, 'l3' => null]);
 
         view()->composer('*', function ($view) {
             $theme = new \StdClass();
-            if(session()->get('theme') == 'light'){
+            if (session()->get('theme') == 'light') {
                 $theme->mode = 'light-mode';
                 $theme->sidebar = 'sidebar-light-success';
                 $theme->sidebar_navbar = 'navbar-success';
@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
                 $theme->card_outline = 'success';
                 $theme->button = 'success';
                 $theme->color = 'success';
-            }else{
+            } else {
                 $theme->mode = 'dark-mode';
                 $theme->sidebar = 'sidebar-dark-primary';
                 $theme->sidebar_navbar = 'navbar-dark';

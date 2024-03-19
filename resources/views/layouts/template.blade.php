@@ -61,6 +61,7 @@ $avatar = $avatar ? asset($avatar) : asset('assets/dist/user/user.png');
             href="{{ asset('assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/plugins/summernote/summernote-bs4.min.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/dist/css/adminlte.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('assets/dist/css/bs-stepper.min.css') }}">
     @endif
     <link rel="stylesheet" href="{{ asset('assets/dist/css/custom.min.css') }}">
 
@@ -172,6 +173,7 @@ $avatar = $avatar ? asset($avatar) : asset('assets/dist/user/user.png');
         <script src="{{ asset('assets/plugins/summernote/summernote-bs4.min.js') }}"></script>
         <script src="{{ asset('assets/plugins/bootstrap-switch/js/bootstrap-switch.min.js') }}"></script>
         <script src="{{ asset('assets/dist/js/adminlte.min.js') }}"></script>
+        <script src="{{ asset('assets/dist/js/bs-stepper.min.js') }}"></script>
     @endif
     <script src="{{ asset('assets/plugins/jquery-jclock/jquery.jclock.min.js') }}"></script>
 

@@ -1,4 +1,5 @@
-<form method="post" action="{{ $url }}" role="form" class="form-horizontal" id="form-kuota">
+<form method="post" action="{{ $url }}" role="form" class="form-horizontal" id="form-kuota"
+    enctype="multipart/form-data">
     @csrf
     {!! method_field($action) !!}
     <div id="modal-kuota" class="modal-dialog modal-lg" role="document">
@@ -42,19 +43,6 @@
                                 id="tipe_pendaftar" name="tipe_pendaftar">
                                 <option value="2">Individu</option>
                                 <option value="0">Kelompok</option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th class="w-25 text-right">Skema</th>
-                        <th class="w-1">:</th>
-                        <td class="w-74">
-                            <select data-testid="partner-category" class="form-control form-control-sm"
-                                id="magang_skema" name="magang_skema">
-                                <option value="" disabled selected>Pilih Skema</option>
-                                @foreach ($mitra->skema as $s)
-                                    <option value="{{ $s }}">{{ $s }}</option>
-                                @endforeach
                             </select>
                         </td>
                     </tr>
@@ -110,9 +98,42 @@
                         </td>
                     </tr>
                 </table>
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <th class="w-25 text-right">Skema</th>
+                        <th class="w-1">:</th>
+                        <td class="w-74">
+                            <select data-testid="partner-category" class="form-control form-control-sm"
+                                id="magang_skema" name="magang_skema">
+                                <option value="" disabled selected>Pilih Skema</option>
+                                @foreach ($mitra->skema as $s)
+                                    <option value="{{ $s }}">{{ $s }}</option>
+                                @endforeach
+                            </select>
+                        </td>
+                    </tr>
+                    @if ($mitra->kegiatan->is_submit_proposal == 1)
+                        <tr>
+                            <th class="w-25 text-right">Proposal</th>
+                            <th class="w-1">:</th>
+                            <td class="w-74">
+                                <div class="form-control-sm custom-file">
+                                    <input type="file" class="form-control-sm custom-file-input" data-target="0"
+                                        id="berita_doc_0" name="proposal" data-rule-filesize="1"
+                                        data-rule-accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                                        accept="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+                                    <label class="form-control-sm custom-file-label file_label_0"
+                                        for="berita_doc_0">Choose
+                                        file</label>
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
+                </table>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Daftar</button>
+                <button type="submit" class="btn btn-primary"
+                    @if ($disabled) disabled @endif>Daftar</button>
                 <button type="button" data-dismiss="modal" class="btn btn-warning">Keluar</button>
             </div>
         </div>
@@ -120,8 +141,22 @@
 </form>
 
 <script>
+    var loadFile = function(event) {
+        $('input.custom-file-input').on('change', function() {
+            // Get the file name
+            var fileName = $(this).val().split('\\').pop();
+
+            // Set the label text to the file name
+            $(this).next('.custom-file-label').html(fileName);
+        });
+
+    };
+
     $(document).ready(function() {
         // unblockUI();
+        // bsCustomFileInput.init();
+
+        loadFile()
 
         $('.select2_combobox').select2();
 

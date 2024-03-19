@@ -91,9 +91,9 @@ class Controller extends BaseController
         return view('layouts.modal_reject')->with('url', url($url))->with('title', $title)->with('desc', $desc)->with('info', $info)->with('btnAction', $btnAction)->with('action', $action);
     }
 
-    protected function showModalConfirmCustom($layout, $url, $info = ['keterangan' => '~ tidak ada ~'], $title = 'Konfirmasi Hapus Data', $desc = 'Apakah anda yakin menghapus data berikut:', $btnAction = 'Ya, Hapus', $action = 'DELETE')
+    protected function showModalConfirmCustom($layout, $url, $info = ['keterangan' => '~ tidak ada ~'], $title = 'Konfirmasi Hapus Data', $desc = 'Apakah anda yakin menghapus data berikut:', $btnAction = 'Ya, Hapus', $action = 'DELETE', $otherData = [])
     {
-        return view($layout)->with('url', url($url))->with('title', $title)->with('desc', $desc)->with('info', $info)->with('btnAction', $btnAction)->with('action', $action);
+        return view($layout)->with('url', url($url))->with('title', $title)->with('desc', $desc)->with('info', $info)->with('btnAction', $btnAction)->with('action', $action)->with('otherData', $otherData);
     }
 
     protected function showPageNotFound($subject = 'Kesalahan', $title = 'Terjadi Kesalahan!!!', $message = 'Data yang dicari tidak ditermukan.', $breadcrumb = [], $active_menu = [])

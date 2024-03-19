@@ -14,8 +14,8 @@ Route::group(['prefix' => 'mahasiswa', 'middleware' => ['auth']], function () {
     Route::put('profile', [MahasiswaProfileController::class, 'update']);
 });
 
-Route::resource('m/kegiatan', PerusahaanController::class)->parameter('kegiatan', 'id');
-Route::post('m/kegiatan/list', [PerusahaanController::class, 'list']);
+// Route::resource('m/kegiatan', PerusahaanController::class)->parameter('kegiatan', 'id');
+// Route::post('m/kegiatan/list', [PerusahaanController::class, 'list']);
 
 //daftar
 Route::get('m/kegiatan/daftar/{id}', [KegiatanController::class, 'daftar']);

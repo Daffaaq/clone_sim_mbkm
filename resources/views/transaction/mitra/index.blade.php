@@ -27,13 +27,13 @@
                                         <th>Nama Kegiatan</th>
                                         <th>Periode</th>
                                         <th>Nama Mitra</th>
-                                        <th>Alamat</th>
-                                        <th>Website</th>
+                                        {{-- <th>Alamat</th>
+                                        <th>Website</th> --}}
                                         <th>Skema</th>
                                         <th>Durasi</th>
                                         <th>Jumlah Pendaftar</th>
                                         <th>Status</th>
-                                        <th>Alasan</th>
+                                        {{-- <th>Alasan</th> --}}
                                         <th>Menu</th>
                                         <th>#</th>
                                     </tr>
@@ -89,39 +89,39 @@
                         "bSortable": true,
                         "bSearchable": true
                     },
-                    {
-                        "mData": "mitra_alamat",
-                        "sClass": "",
-                        "sWidth": "10%",
-                        "bSortable": true,
-                        "bSearchable": true
-                    },
-                    {
-                        "mData": "mitra_website",
-                        "sClass": "",
-                        "sWidth": "5%",
-                        "bSortable": true,
-                        "bSearchable": false,
-                        "mRender": function(data, type, row, meta) {
-                            return '<a href="' + data + '" target="_blank">Link</a>';
-                        }
-                        // "mRender": function(data, type, row, meta) {
-                        //     switch (data) {
-                        //         case 2:
-                        //             return '<span class="badge badge-danger">Ditolak</span>';
-                        //             break;
-                        //         case 1:
-                        //             return '<span class="badge badge-success">Diterima</span>';
-                        //             break;
-                        //         case 0:
-                        //             return '<span class="badge badge-info">Menunggu</span>';
-                        //             break;
-                        //         default:
-                        //             return '<span class="badge badge-danger">-</span>';
-                        //             break;
-                        //     }
-                        // }
-                    },
+                    // {
+                    //     "mData": "mitra_alamat",
+                    //     "sClass": "",
+                    //     "sWidth": "10%",
+                    //     "bSortable": true,
+                    //     "bSearchable": true
+                    // },
+                    // {
+                    //     "mData": "mitra_website",
+                    //     "sClass": "",
+                    //     "sWidth": "5%",
+                    //     "bSortable": true,
+                    //     "bSearchable": false,
+                    //     "mRender": function(data, type, row, meta) {
+                    //         return '<a href="' + data + '" target="_blank">Link</a>';
+                    //     }
+                    //     // "mRender": function(data, type, row, meta) {
+                    //     //     switch (data) {
+                    //     //         case 2:
+                    //     //             return '<span class="badge badge-danger">Ditolak</span>';
+                    //     //             break;
+                    //     //         case 1:
+                    //     //             return '<span class="badge badge-success">Diterima</span>';
+                    //     //             break;
+                    //     //         case 0:
+                    //     //             return '<span class="badge badge-info">Menunggu</span>';
+                    //     //             break;
+                    //     //         default:
+                    //     //             return '<span class="badge badge-danger">-</span>';
+                    //     //             break;
+                    //     //     }
+                    //     // }
+                    // },
                     {
                         "mData": "mitra_skema",
                         "sClass": "",
@@ -183,41 +183,41 @@
                             }
                         }
                     },
+                    // {
+                    //     "mData": "mitra_id",
+                    //     "sClass": "pr-2",
+                    //     "sWidth": "8%",
+                    //     "bSortable": false,
+                    //     "bSearchable": false,
+                    //     "mRender": function(data, type, row, meta) {
+                    //         @if ($allowAccess->update)
+                    //             if (row.status == 2) {
+                    //                 var buttons = '';
+                    //                 buttons +=
+                    //                     `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/alasan" class="ajax_modal btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat" >Lihat</a> `
+                    //                 return buttons;
+                    //             } else {
+                    //                 return '-';
+                    //             }
+                    //         @endif
+                    //     }
+                    // },
                     {
-                        "mData": "mitra_id",
+                        "mData": "encrypt_mitra_id",
                         "sClass": "pr-2",
                         "sWidth": "8%",
                         "bSortable": false,
                         "bSearchable": false,
                         "mRender": function(data, type, row, meta) {
                             @if ($allowAccess->update)
-                                if (row.status == 2) {
-                                    var buttons = '';
-                                    buttons +=
-                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/alasan" class="ajax_modal btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat" >Lihat</a> `
-                                    return buttons;
-                                } else {
-                                    return '-';
-                                }
-                            @endif
-                        }
-                    },
-                    {
-                        "mData": "mitra_id",
-                        "sClass": "pr-2",
-                        "sWidth": "8%",
-                        "bSortable": false,
-                        "bSearchable": false,
-                        "mRender": function(data, type, row, meta) {
-                            @if ($allowAccess->update)
-                                if (row.kegiatan.is_kuota == 1) {
-                                    var buttons = '';
-                                    buttons +=
-                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}" class="ajax_modal btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat kuota" ><i class="fa fa-th"></i> kuota</a> `
-                                    return buttons;
-                                } else {
-                                    return 'Tidak berkuota';
-                                }
+                                // if (row.kegiatan.is_kuota == 1) {
+                                var buttons = '';
+                                buttons +=
+                                    `<a href="{{ $page->url }}/${data}/show" class="btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat Detail" ><i class="fa fa-th"></i> Detail</a> `
+                                return buttons;
+                                // } else {
+                                //     return 'Tidak berkuota';
+                                // }
                             @endif
                         }
                     },
@@ -231,11 +231,11 @@
                             console.log(row);
                             var buttons = '';
                             @if ($allowAccess->update)
-                                if (row.status == 0) {
-                                    buttons +=
-                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
-                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_reject" class="ajax_modal btn btn-xs btn-danger tooltips text-white" data-placement="left" data-original-title="Reject" ><i class="fa fa-times"></i></a> `;
-                                }
+                                // if (row.status == 0) {
+                                //     buttons +=
+                                //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
+                                //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_reject" class="ajax_modal btn btn-xs btn-danger tooltips text-white" data-placement="left" data-original-title="Reject" ><i class="fa fa-times"></i></a> `;
+                                // }
                                 buttons +=
                                     `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Edit Data" ><i class="fa fa-edit"></i></a> `;
                             @endif

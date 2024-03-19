@@ -31,10 +31,12 @@
                                         @endif
                                         <th>Nama Mitra</th>
                                         <th>Jenis Kegiatan</th>
+                                        <th>Skema</th>
                                         <th>Durasi</th>
                                         <th>Tipe Pendaftar</th>
                                         @if (auth()->user()->group_id != 4)
-                                            <th>Persetujuan Anggota </th>
+                                            <th>Validasi Proposal</th>
+                                            <th>Validasi Surat Balasan </th>
                                         @endif
                                         <th>Status</th>
                                         @if (auth()->user()->group_id != 4)
@@ -109,6 +111,13 @@
                         "bSearchable": true
                     },
                     {
+                        "mData": "magang_skema",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": true,
+                        "bSearchable": true,
+                    },
+                    {
                         "mData": "mitra.mitra_durasi",
                         "sClass": "",
                         "sWidth": "10%",
@@ -128,35 +137,40 @@
                             if (data == 2) {
                                 return 'Individu';
                             } else {
-                                return data == 0 ? 'Kelompok (Ketua)' : 'Kelompok (Anggota)'
+                                return 'Kelompok';
                             }
                         }
                     },
                     @if (auth()->user()->group_id != 4)
                         {
-                            "mData": "is_accept",
+                            "mData": "magang_id",
+                            "sClass": "pr-2",
+                            "sWidth": "8%",
+                            "bSortable": false,
+                            "bSearchable": false,
+                            "mRender": function(data, type, row, meta) {
+                                if (!row.mitra.kegiatan.is_submit_proposal) {
+                                    return '';
+                                } else {
+                                    if (row.proposal == null) {
+                                        return ''
+                                    } else {
+
+                                        return `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/validasi_proposal" class="ajax_modal btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat Proposal" ><i class="fa fa-th"></i> Detail</a> `
+                                    }
+                                }
+                            }
+                        }, {
+                            "mData": "magang_id",
                             "sClass": "",
                             "sWidth": "10%",
                             "bSortable": true,
                             "bSearchable": true,
                             "mRender": function(data, type, row, meta) {
-                                if (row.magang_tipe == "2") {
+                                if (row.surat_balasan == null) {
                                     return '';
                                 } else {
-                                    switch (data) {
-                                        case 0:
-                                            return '<span class="badge badge-warning">Menunggu</span>';
-                                            break;
-                                        case 1:
-                                            return '<span class="badge badge-success">Menerima</span>';
-                                            break;
-                                        case 2:
-                                            return '<span class="badge badge-danger">Menolak</span>';
-                                            break;
-                                        default:
-                                            return '';
-                                            break;
-                                    }
+                                    return `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/validasi_surat_balasan" class="ajax_modal btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat Surat Balasan" ><i class="fa fa-th"></i> Detail</a> `
                                 }
                             }
                         },
@@ -171,6 +185,9 @@
                                 return '<span class="badge badge-danger">Menolak Undangan</span>';
                             } else {
                                 switch (data) {
+                                    case 3:
+                                        return '<span class="badge badge-primary">Terdaftar</span>';
+                                        break;
                                     case 2:
                                         return '<span class="badge badge-danger">Ditolak</span>';
                                         break;
@@ -192,21 +209,39 @@
                             "bSortable": false,
                             "bSearchable": false,
                             "mRender": function(data, type, row, meta) {
-                                var buttons = '';
+                                return ''
                                 @if ($allowAccess->update)
-                                    if (row.status == 0) {
-                                        if (row.magang_tipe == 0 || row.magang_tipe == 1 && row
-                                            .is_accept == 1 || row.magang_tipe == 2) {
-                                            buttons +=
-                                                // `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
-                                                // `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
-                                                `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm" class="ajax_modal btn btn-xs btn-primary tooltips text-white" data-placement="left" data-original-title="Acc/Reject" ><i class="fa fa-vote-yea"></i></a> `;
-                                        }
-                                    }
+                                    +
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Edit Data" ><i class="fa fa-edit"></i></a> `
                                 @endif
-                                return buttons;
+                                @if ($allowAccess->delete)
+                                    +
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/delete" class="ajax_modal btn btn-xs btn-danger tooltips text-light" data-placement="left" data-original-title="Hapus Data" ><i class="fa fa-trash"></i></a> `
+                                @endif ;
                             }
                         },
+                        // {
+                        //     "mData": "magang_id",
+                        //     "sClass": "pr-2",
+                        //     "sWidth": "8%",
+                        //     "bSortable": false,
+                        //     "bSearchable": false,
+                        //     "mRender": function(data, type, row, meta) {
+                        //         var buttons = '';
+                        //         @if ($allowAccess->update)
+                        //             if (row.status == 0) {
+                        //                 if (row.magang_tipe == 0 || row.magang_tipe == 1 && row
+                        //                     .is_accept == 1 || row.magang_tipe == 2) {
+                        //                     buttons +=
+                        //                         // `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
+                        //                         // `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
+                        //                         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm" class="ajax_modal btn btn-xs btn-primary tooltips text-white" data-placement="left" data-original-title="Acc/Reject" ><i class="fa fa-vote-yea"></i></a> `;
+                        //                 }
+                        //             }
+                        //         @endif
+                        //         return buttons;
+                        //     }
+                        // },
                     @endif
                 ],
                 "fnDrawCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {

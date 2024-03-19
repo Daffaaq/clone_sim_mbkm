@@ -1,24 +1,27 @@
 <?php
 
-namespace App\Http\Controllers\Master;
+namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\InstrukturModel;
+use App\Models\Master\ProdiModel;
 use App\Models\Setting\UserModel;
-use Yajra\DataTables\Facades\DataTables;
+use App\Models\Transaction\Magang;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Yajra\DataTables\Facades\DataTables;
 
 class InstrukturController extends Controller
 {
     public function __construct()
     {
-        $this->menuCode  = 'MASTER.INSTRUKTUR';
-        $this->menuUrl   = url('master/instruktur');     // set URL untuk menu ini
+        $this->menuCode  = 'TRANSACTION.INSTRUKTUR';
+        $this->menuUrl   = url('transaksi/instruktur');     // set URL untuk menu ini
         $this->menuTitle = 'Instruktur';                       // set nama menu
-        $this->viewPath  = 'master.instruktur.';         // untuk menunjukkan direktori view. Diakhiri dengan tanda titik
+        $this->viewPath  = 'transaction.instruktur.';         // untuk menunjukkan direktori view. Diakhiri dengan tanda titik
     }
 
     public function index()
@@ -28,12 +31,12 @@ class InstrukturController extends Controller
 
         $breadcrumb = [
             'title' => $this->menuTitle,
-            'list'  => ['Data Master', 'Instruktur']
+            'list'  => ['Transaksi', 'Instruktur']
         ];
 
         $activeMenu = [
-            'l1' => 'master',
-            'l2' => 'master-instruktur',
+            'l1' => 'transaction',
+            'l2' => 'transaksi-instruktur',
             'l3' => null
         ];
 
@@ -41,11 +44,14 @@ class InstrukturController extends Controller
             'url' => $this->menuUrl,
             'title' => 'Daftar ' . $this->menuTitle
         ];
-        // dd($instruktur);
+
+        $prodis = ProdiModel::select('prodi_id', 'prodi_name', 'prodi_code')->get();
+
         return view($this->viewPath . 'index')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
             ->with('page', (object) $page)
+            ->with('prodis', $prodis)
             ->with('allowAccess', $this->authAccessKey());
     }
 
@@ -55,6 +61,9 @@ class InstrukturController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         $data  = InstrukturModel::selectRaw("instruktur_id, nama_instruktur, instruktur_email, instruktur_phone");
+        //append provinsi and kota to $data with value "dummy"
+
+        // dd($data);
 
         return DataTables::of($data)
             ->addIndexColumn()
@@ -75,7 +84,7 @@ class InstrukturController extends Controller
         $instruktur = InstrukturModel::selectRaw("instruktur_id, nama_instruktur, instruktur_email")->get();
 
         return view($this->viewPath . 'action')
-            ->with('instruktur', $instruktur)
+        ->with('instruktur', $instruktur)
             ->with('page', (object) $page);
     }
 
