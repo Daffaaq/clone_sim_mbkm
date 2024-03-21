@@ -19,8 +19,8 @@ $is_edit = isset($data);
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Mahasiswa</label>
                     <div class="col-sm-9">
-                        <select id="mahasiswa_id" name="mahasiswa_id"
-                            class="form-control form-control-sm select2_combobox">
+                        <select id="mahasiswa_id" name="mahasiswa_id[]"
+                            class="form-control form-control-sm select2_combobox" multiple>
                             <option value="">- Pilih -</option>
                             @if (count($mahasiswa) > 0)
                                 @foreach ($mahasiswa as $mahasiswa_id => $r)
@@ -34,6 +34,7 @@ $is_edit = isset($data);
                         </select>
                     </div>
                 </div>
+
                 <div class="modal-body">
                     <div class="form-message text-center"></div>
                     <div class="form-group required row mb-2">
@@ -49,21 +50,6 @@ $is_edit = isset($data);
                         </div>
                     </div>
                 </div>
-                <div class="modal-body">
-                    <div class="form-message text-center"></div>
-                    <div class="form-group required row mb-2">
-                        <label class="col-sm-3 control-label col-form-label">Instruktur</label>
-                        <div class="col-sm-9">
-                            <select id="instruktur_id" name="instruktur_id"
-                                class="form-control form-control-sm select2_combobox">
-                                <option value="">- Pilih -</option>
-                                @foreach ($dosen as $r)
-                                    <option value="{{ $r->instruktur_id }}">{{ $r->nama_instruktur }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div>
                 <div class="modal-footer">
                     <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
                     <button type="submit" class="btn btn-primary">Simpan</button>
@@ -71,7 +57,16 @@ $is_edit = isset($data);
             </div>
         </div>
 </form>
+{{-- <script src="/assets/js/select2.min.js"></script> --}}
+<script>
+    $(document).ready(function() {
 
+        $('#mahasiswa_id').select2({
+            placeholder: "Pilih satu atau lebih Mahasiswa",
+            allowClear: true
+        });
+    });
+</script>
 <script>
     $(document).ready(function() {
         unblockUI();

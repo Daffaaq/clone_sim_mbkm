@@ -112,7 +112,7 @@ class PembimbingDosenController extends Controller
             ->with('page', (object) $page)
             ->with('mahasiswa', $mahasiswa)
             ->with('dosen', $dosen);
-            // ->with('instruktur', $instuktur);
+        // ->with('instruktur', $instuktur);
     }
 
     public function store(Request $request)
@@ -123,12 +123,12 @@ class PembimbingDosenController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'mahasiswa_id' => 'required|exists:m_mahasiswa,mahasiswa_id',
+                'mahasiswa_id' => 'required',
                 'dosen_id' => 'required|exists:m_dosen,dosen_id',
-                'instruktur_id' => 'required|exists:m_instruktur,instruktur_id',
                 // Add other rules for DosenModel fields
             ];
             $validator = Validator::make($request->all(), $rules);
+            // dd($validator);
             if ($validator->fails()) {
                 return response()->json([
                     'stat' => false,
@@ -137,39 +137,44 @@ class PembimbingDosenController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
-
-            $magang_id = Magang::where('mahasiswa_id', $request->input('mahasiswa_id'))
-                ->where('status', 1)
-                ->value('magang_id');
-
-            // Simpan data pembimbing dosen dengan magang_id, mahasiswa_id, dan dosen_id yang sesuai
-            $pembimbingDosen = PembimbingDosenModel::create([
-                'magang_id' => $magang_id,
-                'mahasiswa_id' => $request->input('mahasiswa_id'),
-                'dosen_id' => $request->input('dosen_id'),
-                // fill other fields as needed
-            ]);
+            $mahasiswa_ids = $request->input('mahasiswa_id');
+            // dd($mahasiswa_ids);
+            $pembimbingDosen = null;
+            $magang_ids = [];
+            if (!empty($mahasiswa_ids)) {
+                // Loop untuk setiap mahasiswa yang dipilih
+                foreach ($mahasiswa_ids as $mahasiswa_id) {
+                    // Pastikan mahasiswa_id tidak null sebelum menyimpan data
+                    if ($mahasiswa_id) {
+                        $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)->value('magang_id');
+                        $magang_ids[] = $magang_id;
+                        // Simpan data ke dalam InstrukturLapanganModel
+                        $pembimbingDosen = PembimbingDosenModel::create([
+                            'magang_id' => $magang_id,
+                            'mahasiswa_id' => $mahasiswa_id,
+                            'dosen_id' => $request->input('dosen_id') // Gunakan id instruktur yang baru saja dibuat
+                            // Isi kolom-kolom lainnya sesuai kebutuhan
+                        ]);
+                    }
+                }
+                // dd($magang_ids);
+            } else {
+                // Jika tidak ada mahasiswa yang dipilih, berikan pesan kesalahan
+                return response()->json([
+                    'msg' => 'Tidak ada mahasiswa yang dipilih.'
+                ]);
+            }
             return response()->json([
                 'stat' => $pembimbingDosen,
                 'mc' => $pembimbingDosen,
-                'msg' => ($pembimbingDosen) ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
+                'msg' => $pembimbingDosen ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
             ]);
-            $instruktur = InstrukturLapanganModel::create([
-                'magang_id' => $magang_id,
-                'mahasiswa_id' => $request->input('mahasiswa_id'),
-                'instruktur_id' => $request->input('instruktur_id'),
-                // fill other fields as needed
-            ]);
-            return response()->json([
-                'stat' => $instruktur,
-                'mc' => $instruktur,
-                'msg' => ($instruktur) ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
-            ]);
-            
         }
 
         return redirect('/');
     }
+
+
 
     public function edit($id)
     {
