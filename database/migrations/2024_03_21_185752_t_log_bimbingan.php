@@ -13,16 +13,6 @@ class TLogBimbingan extends Migration
      */
     public function up()
     {
-        //
-    }
-
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
         Schema::create('t_log_bimbingan', function (Blueprint $table) {
             $table->id('log_bimbingan_id');
             $table->unsignedBigInteger('pembimbing_dosen_id')->index();
@@ -34,10 +24,12 @@ class TLogBimbingan extends Migration
             $table->date('tanggal');
             $table->longText('topik_bimbingan');
             $table->string('foto');
-            $table->decimal('nilai_pembimbing_dosen');
-            $table->decimal('nilai_instruktur_lapangan');
-            $table->date('tanggal_status_dosen');
-            $table->date('tanggal_status_instruktur');
+            $table->time('jam_mulai');
+            $table->time('jam_selesai');
+            $table->decimal('nilai_pembimbing_dosen')->nullable();
+            $table->decimal('nilai_instruktur_lapangan')->nullable();;
+            $table->date('tanggal_status_dosen')->nullable();;
+            $table->date('tanggal_status_instruktur')->nullable();;
             $table->dateTime('created_at')->nullable()->useCurrent();
             $table->integer('created_by')->nullable()->index();
             $table->dateTime('updated_at')->nullable();
@@ -45,5 +37,15 @@ class TLogBimbingan extends Migration
             $table->dateTime('deleted_at')->nullable()->index();
             $table->integer('deleted_by')->nullable()->index();
         });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        //
     }
 }

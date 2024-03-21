@@ -4,13 +4,18 @@ namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\InstrukturModel;
+use App\Models\Master\MahasiswaModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Setting\UserModel;
+use App\Models\SuratPengantarModel;
 use App\Models\Transaction\Magang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Crypt;
+use App\Models\DokumenMagangModel;
+use App\Models\Transaction\InstrukturLapanganModel;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -60,15 +65,288 @@ class InstrukturController extends Controller
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data  = InstrukturModel::selectRaw("instruktur_id, nama_instruktur, instruktur_email, instruktur_phone");
-        //append provinsi and kota to $data with value "dummy"
+        $data  = Magang::with('mahasiswa')
+            ->with('mitra')
+            ->with('periode')
+            ->with('prodi')
+            ->with('mitra.kegiatan');
 
-        // dd($data);
+        //where is_accept == NULL or is_accept == 1
+        // $data = $data->where('is_accept', 0);
+
+        if (auth()->user()->group_id == 1) {
+            $data = $data->get();
+        } else if (auth()->user()->group_id == 4) {
+            $data = $data->where('mahasiswa_id', auth()->user()->getUserMahasiswa->mahasiswa_id)->get();
+        } else {
+            $prodi_id = auth()->user()->getProdiId();
+            $data = $data->where('prodi_id', $prodi_id)->get();
+        }
+
+        $data = $data->map(function ($item) {
+            $item['encrypt_magang_id'] = Crypt::encrypt($item->magang_id);
+            $magang_id = Crypt::decrypt($item['encrypt_magang_id']);
+
+            // dd($magang_id);
+            // Fetch the InstrukturLapanganModel for the specified magang_id
+            $instrukturLapangan = InstrukturLapanganModel::where('magang_id', $magang_id)->first();
+            // dd($instrukturLapangan);
+            if ($instrukturLapangan) {
+                // If InstrukturLapanganModel exists, fetch the associated InstrukturModel
+                $instruktur = $instrukturLapangan->instruktur;
+                if ($instruktur) {
+                    // If InstrukturModel exists, get the nama_instruktur
+                    $item['nama_instruktur'] = $instruktur->nama_instruktur;
+                } else {
+                    // If InstrukturModel doesn't exist, set nama_instruktur to null
+                    $item['nama_instruktur'] = 'Belum ada instruktur tersedia';
+                }
+            } else {
+                // If InstrukturLapanganModel doesn't exist, set nama_instruktur to null
+                $item['nama_instruktur'] = null;
+                // Set a message indicating that instruktur is not available
+                $item['instruktur_message'] = 'Belum ada instruktur tersedia';
+            }
+            return $item;
+        });
+
+
 
         return DataTables::of($data)
             ->addIndexColumn()
             ->make(true);
     }
+
+    public function show($id)
+    {
+        $this->authAction('read', 'modal');
+        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+
+        $page = [
+            'title' => 'Detail ' . $this->menuTitle
+        ];
+
+        $data = Magang::find($id);
+
+        $mitra = MitraModel::where('mitra_id', $data->mitra_id)
+            ->with('kegiatan')
+            ->with('periode')
+            ->first();
+
+        if ($data->magang_tipe == 2) {
+            $dokumen = DokumenMagangModel::where('magang_id', $id);
+            $proposal = DokumenMagangModel::where('magang_id', $id);
+            $surat_balasan = DokumenMagangModel::where('magang_id', $id);
+            $anggota = NULL;
+        } else {
+            $magang = Magang::where('magang_kode', $data->magang_kode)->get();
+            $id = $magang->pluck('magang_id');
+            $dokumen = DokumenMagangModel::whereIn('magang_id', $id);
+            $surat_balasan = DokumenMagangModel::whereIn('magang_id', $id);
+            $anggota = ($data->magang_tipe == 0) ? Magang::whereIn('magang_id', $id)->with('mahasiswa')->where('magang_tipe', '=', 1)->get() : NULL;
+        }
+
+        $datas = [
+            [
+                "title" => "Proposal",
+                "nama" => "PROPOSAL"
+            ],
+            [
+                "title" => "Surat Balasan",
+                "nama" => "SURAT_BALASAN"
+            ]
+        ];
+
+        foreach ($datas as &$data) {
+            $dokumenItem = $dokumen->where('dokumen_magang_nama', $data['nama'])->first();
+            $data['value'] = $dokumenItem ? $dokumenItem->dokumen_magang_file : "Belum Ada File";
+            $data['bold'] = false;
+            $data['link'] = $dokumenItem ? true : false;
+            unset($data['nama']);
+        }
+
+        if ($mitra->kegiatan->is_submit_proposal == 0) {
+            unset($datas[0]);
+        }
+
+        // Convert to stdClass objects
+        $datas = array_map(function ($item) {
+            return (object) $item;
+        }, $datas);
+
+
+        return (!$data) ? $this->showModalError() :
+            view($this->viewPath . 'detail')
+            ->with('page', (object) $page)
+            ->with('id', $id)
+            ->with('data', $data)
+            ->with('datas', $datas)
+            ->with('anggota', $anggota)
+            ->with('mitra', $data);
+    }
+
+    public function lengkapi($id)
+    {
+        $this->authAction('read', 'modal');
+        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+
+        $id = Crypt::decrypt($id);
+
+        $data = Magang::find($id);
+        $magang_id = $data->magang_id;
+        $kode_magang = $data->magang_kode;
+
+        // $anggotas = Magang::where('magang_kode', $kode_magang)
+        //     ->whereHas('mahasiswa') // Filter hanya Magang yang memiliki relasi dengan MahasiswaModel
+        //     ->with('mahasiswa') // Sertakan relasi mahasiswa dalam hasil
+        //     ->get();
+        $anggotas = Magang::where('magang_kode', $kode_magang)
+            ->whereDoesntHave('instrukturLapangan') // Pastikan setiap Magang memiliki InstrukturLapanganModel
+            ->with('mahasiswa') // Sertakan relasi mahasiswa dalam hasil
+            ->get();
+        // dd($anggotas);
+        $dateString = $data->mitra_batas_pendaftaran;
+        $currentDate = date('Y-m-d');
+        $disabled = strtotime($dateString) < strtotime($currentDate);
+
+        $breadcrumb = [
+            'title' => $this->menuTitle,
+            'list'  => ['Transaksi', 'Instruktur']
+        ];
+
+        $activeMenu = [
+            'l1' => 'transaction',
+            'l2' => 'transaksi-instruktur',
+            'l3' => null
+        ];
+
+        $page = [
+            'url' => $this->menuUrl,
+            'title' => $this->menuTitle
+        ];
+
+        $id_mahasiswa = MahasiswaModel::where('user_id', auth()->user()->user_id)->first()->mahasiswa_id;
+
+        $magang = Magang::where('magang_id', $id)
+            ->with('mitra')
+            ->with('mitra.kegiatan')
+            ->with('periode')
+            ->first();
+        $mag = Magang::where('magang_kode', $data->magang_kode)->where('magang_tipe', 1)->where('is_accept', 0)->count();
+        $me = Magang::where('magang_kode', $data->magang_kode)->where('mahasiswa_id', $id_mahasiswa)->first();
+        if ($me->magang_tipe == 0 || $me->magang_tipe == 2) {
+            $magang->ketua = TRUE;
+        } else {
+            $magang->ketua = FALSE;
+        }
+        $check = Magang::where('magang_kode', $kode_magang)->get();
+        $id_joined = $check->pluck('magang_id');
+        $user = auth()->user();
+        // $user = auth()->user()->id;
+        $user_id = $user->user_id;
+        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
+        $mahasiswa_id = $mahasiswa->mahasiswa_id;
+        // $anggotas = Magang::where('magang_kode', $kode_magang)
+        //     ->whereHas('mahasiswa', function ($query) use ($mahasiswa_id) {
+        //         $query->where('mahasiswa_id', $mahasiswa_id);
+        //     })
+        //     ->with('mahasiswa')
+        //     ->get();
+        $instruktur = InstrukturLapanganModel::whereIn('magang_id', $id_joined)
+            ->where('mahasiswa_id', $mahasiswa_id) // Menambahkan kriteria pencarian berdasarkan mahasiswa_id
+            ->with('instruktur')
+            ->first();
+        // dd($instruktur);
+        // $instruktur = InstrukturLapanganModel::where('magang_id', $id_joined)->first();
+
+        return view($this->viewPath . 'update')
+            ->with('page', (object) $page)
+            ->with('id', $id)
+            ->with('data', $data)
+            ->with('magang', $magang)
+            ->with('instruktur', $instruktur)
+            ->with('disabled', $disabled)
+            ->with('breadcrumb', (object) $breadcrumb)
+            ->with('activeMenu', (object) $activeMenu)
+            ->with('anggotas', $anggotas)
+            ->with('page', (object) $page)
+            ->with('action', 'POST');
+    }
+
+    public function create_instruktur(Request $request)
+    {
+        $nama_instruktur = $request->input('nama_instruktur');
+        $instruktur_email = $request->input('instruktur_email');
+        $instruktur_phone = $request->input('instruktur_phone');
+        $password = Hash::make($request->input('password'));
+
+        // Create user
+        $user = [
+            'username' => $instruktur_email,
+            'name' => $nama_instruktur,
+            'password' => $password,
+            'group_id' => 5,
+            'is_active' => 1,
+            'email' => $instruktur_email,
+        ];
+        $insert = UserModel::create($user);
+        $user_id = $insert->user_id;
+
+        // Simpan data ke dalam InstrukturModel
+        $insertInstruktur = InstrukturModel::create([
+            'user_id' => $user_id,
+            'nama_instruktur' => $nama_instruktur,
+            'instruktur_email' => $instruktur_email,
+            'instruktur_phone' => $instruktur_phone,
+            'password' => $password
+        ]);
+        $instruktur_id = $insertInstruktur->instruktur_id;
+        // Ambil magang_id dari input form
+        // dd($request->all()); // Tampilkan semua data yang dikirimkan melalui form
+
+        // Ambil data mahasiswa yang dipilih
+        $mahasiswa_ids = $request->input('mahasiswa_id');
+        // dd($mahasiswa_ids);
+
+        // Inisialisasi variabel $insertInstrukturLapangan di luar blok foreach
+        $insertInstrukturLapangan = null;
+        $magang_ids = [];
+        // Periksa apakah ada mahasiswa yang dipilih
+        if (!empty($mahasiswa_ids)) {
+            // Loop untuk setiap mahasiswa yang dipilih
+            foreach ($mahasiswa_ids as $mahasiswa_id) {
+                // Pastikan mahasiswa_id tidak null sebelum menyimpan data
+                if ($mahasiswa_id) {
+                    $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)->value('magang_id');
+                    $magang_ids[] = $magang_id;
+                    // Simpan data ke dalam InstrukturLapanganModel
+                    $insertInstrukturLapangan = InstrukturLapanganModel::create([
+                        'magang_id' => $magang_id,
+                        'mahasiswa_id' => $mahasiswa_id,
+                        'instruktur_id' => $instruktur_id // Gunakan id instruktur yang baru saja dibuat
+                        // Isi kolom-kolom lainnya sesuai kebutuhan
+                    ]);
+                }
+            }
+            // dd($magang_ids);
+        } else {
+            // Jika tidak ada mahasiswa yang dipilih, berikan pesan kesalahan
+            return response()->json([
+                'insert_instruktur' => $insertInstruktur,
+                'insert_instruktur_lapangan' => null,
+                'msg' => 'Tidak ada mahasiswa yang dipilih.'
+            ]);
+        }
+
+        // Response JSON
+        return response()->json([
+            'insert_instruktur' => $insertInstruktur,
+            'insert_instruktur_lapangan' => $insertInstrukturLapangan,
+            'msg' => ($insertInstruktur && $insertInstrukturLapangan) ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
+        ]);
+    }
+
+
 
 
     public function create()
@@ -76,6 +354,24 @@ class InstrukturController extends Controller
         $this->authAction('create', 'modal');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
+        $user = auth()->user();
+        // $user = auth()->user()->id;
+        $user_id = $user->user_id;
+        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
+        $mahasiswa_id = $mahasiswa->mahasiswa_id;
+
+        // Gunakan mahasiswa_id untuk mencari data magang
+        $magang_data = Magang::where('mahasiswa_id', $mahasiswa_id)->get();
+
+        $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
+            ->where('status', 1) // Status 1 menunjukkan 'Diterima'
+            ->exists();
+
+        // dd($magang_status);
+        // Jika mahasiswa belum memiliki status magang 'Diterima', kembalikan pesan
+        if (!$magang_status) {
+            return $this->showModalError('Kesalahan', 'Terjadi Kesalahan!!!', 'anda belum keterima Magang.');
+        }
         $page = [
             'url' => $this->menuUrl,
             'title' => 'Tambah ' . $this->menuTitle
@@ -84,7 +380,7 @@ class InstrukturController extends Controller
         $instruktur = InstrukturModel::selectRaw("instruktur_id, nama_instruktur, instruktur_email")->get();
 
         return view($this->viewPath . 'action')
-        ->with('instruktur', $instruktur)
+            ->with('instruktur', $instruktur)
             ->with('page', (object) $page);
     }
 
@@ -97,7 +393,7 @@ class InstrukturController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
 
             $rules = [
-                'instruktur_email' => ['required', 'email:rfc,dns,filter', 'max:20',],
+                'instruktur_email' => ['required', 'email:rfc,dns,filter', 'max:50',],
                 'nama_instruktur' => 'required|string|max:100',
                 'instruktur_phone' => 'required|string|max:15',
                 'password' => 'required|string|min:8',
@@ -129,7 +425,6 @@ class InstrukturController extends Controller
                 'instruktur_email' => $request->input('instruktur_email'),
                 'nama_instruktur' => $request->input('nama_instruktur'),
                 'instruktur_phone' => $request->input('instruktur_phone'),
-                'username' => $request->input('instruktur_email'),
                 'password' => Hash::make($request->input('password')),
                 'user_id' => $insert->user_id,
             ]);
@@ -221,22 +516,22 @@ class InstrukturController extends Controller
         return redirect('/');
     }
 
-    public function show($id)
-    {
-        $this->authAction('read', 'modal');
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+    // public function show($id)
+    // {
+    //     $this->authAction('read', 'modal');
+    //     if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data = InstrukturModel::find($id);
-        $page = [
-            'title' => 'Detail ' . $this->menuTitle
-        ];
+    //     $data = InstrukturModel::find($id);
+    //     $page = [
+    //         'title' => 'Detail ' . $this->menuTitle
+    //     ];
 
-        return (!$data) ? $this->showModalError() :
-            view($this->viewPath . 'detail')
-            ->with('page', (object) $page)
-            ->with('id', $id)
-            ->with('data', $data);
-    }
+    //     return (!$data) ? $this->showModalError() :
+    //         view($this->viewPath . 'detail')
+    //         ->with('page', (object) $page)
+    //         ->with('id', $id)
+    //         ->with('data', $data);
+    // }
 
 
     public function confirm($id)

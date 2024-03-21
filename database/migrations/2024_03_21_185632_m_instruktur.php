@@ -29,6 +29,7 @@ class MInstruktur extends Migration
 
             $table->foreign('user_id')->references('user_id')->on('s_user');
         });
+
     }
 
     /**

@@ -17,7 +17,7 @@ class SUser extends Migration
             $table->id('user_id');
             $table->unsignedBigInteger('group_id')->index()->nullable();
             $table->unsignedBigInteger('prodi_id')->index()->nullable();
-            $table->string('username', 20)->unique();
+            $table->string('username', 100)->unique();
             $table->string('email', 100)->nullable()->unique();
             $table->string('name', 100)->nullable();
             $table->string('password');

@@ -10,13 +10,13 @@
                             <i class="fas fa-angle-double-right text-md text-{{ $theme->card_outline }} mr-1"></i>
                             {!! $page->title !!}
                         </h3>
-                        <div class="card-tools">
+                        {{-- <div class="card-tools">
                             @if ($allowAccess->create)
                                 <button type="button" data-block="body"
                                     class="btn btn-sm btn-{{ $theme->button }} mt-1 ajax_modal"
                                     data-url="{{ $page->url }}/create"><i class="fas fa-plus"></i> Tambah</button>
                             @endif
-                        </div>
+                        </div> --}}
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -24,7 +24,25 @@
                                 <thead>
                                     <tr>
                                         <th>No</th>
-                                        <th>Email Instruktur</th>
+                                        <th>Kode Magang</th>
+                                        <th>Nama Mahasiswa</th>
+                                        @if (auth()->user()->group_id == 1)
+                                            <th>Prodi</th>
+                                        @endif
+                                        <th>Nama Mitra</th>
+                                        <th>Jenis Kegiatan</th>
+                                        <th>Skema</th>
+                                        <th>Durasi</th>
+                                        <th>Tipe Pendaftar</th>
+                                        {{-- <th>Detail</th>
+                                        <th>Update</th> --}}
+                                        {{-- @if (auth()->user()->group_id != 4)
+                                            <th>Persetujuan Anggota </th>
+                                        @endif --}}
+                                        <th>Status</th>
+                                        @if (auth()->user()->group_id != 4)
+                                            <th>#</th>
+                                        @endif
                                         <th>Nama Instruktur</th>
                                         <th>#</th>
                                     </tr>
@@ -48,9 +66,7 @@
                 "bServerSide": true,
                 "bAutoWidth": false,
                 "ajax": {
-                    // "url": "{{ $page->url }}/list",
-                    // "url": "http://127.0.0.1:8000/transaksi/daftar-magang/list",
-                    "url": "http://127.0.0.1:8000/transaksi/instruktur/list",
+                    "url": "{{ $page->url }}/list",
                     "dataType": "json",
                     "type": "POST"
                 },
@@ -62,37 +78,175 @@
                         "bSearchable": false
                     },
                     {
-                        "mData": "instruktur_email",
+                        "mData": "magang_kode",
                         "sClass": "",
-                        "sWidth": "20%",
+                        "sWidth": "10%",
                         "bSortable": true,
                         "bSearchable": true
+                    },
+                    {
+                        "mData": "mahasiswa.nama_mahasiswa",
+                        "sClass": "",
+                        "sWidth": "5%",
+                        "bSortable": true,
+                        "bSearchable": true,
+                    },
+                    @if (auth()->user()->group_id == 1)
+                        {
+                            "mData": "prodi.prodi_name",
+                            "sClass": "",
+                            "sWidth": "10%",
+                            "bSortable": true,
+                            "bSearchable": true
+                        },
+                    @endif {
+                        "mData": "mitra.mitra_nama",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": true,
+                        "bSearchable": true
+                    },
+                    {
+                        "mData": "mitra.kegiatan.kegiatan_nama",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": true,
+                        "bSearchable": true
+                    },
+                    {
+                        "mData": "magang_skema",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": true,
+                        "bSearchable": true,
+                    },
+                    {
+                        "mData": "mitra.mitra_durasi",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": true,
+                        "bSearchable": true,
+                        "mRender": function(data, type, row, meta) {
+                            return data + ' Bulan';
+                        }
+                    },
+                    {
+                        "mData": "magang_tipe",
+                        "sClass": "",
+                        "sWidth": "15%",
+                        "bSortable": true,
+                        "bSearchable": true,
+                        "mRender": function(data, type, row, meta) {
+                            if (data == 2) {
+                                return 'Individu';
+                            } else {
+                                return data == 0 ? 'Kelompok (Ketua)' : 'Kelompok (Anggota)'
+                            }
+                        }
+                    },
+                    @if (auth()->user()->group_id != 4)
+                        {
+                            "mData": "is_accept",
+                            "sClass": "",
+                            "sWidth": "10%",
+                            "bSortable": true,
+                            "bSearchable": true,
+                            "mRender": function(data, type, row, meta) {
+                                if (row.magang_tipe == "2") {
+                                    return '';
+                                } else {
+                                    switch (data) {
+                                        case 0:
+                                            return '<span class="badge badge-warning">Menunggu</span>';
+                                            break;
+                                        case 1:
+                                            return '<span class="badge badge-success">Menerima</span>';
+                                            break;
+                                        case 2:
+                                            return '<span class="badge badge-danger">Menolak</span>';
+                                            break;
+                                        default:
+                                            return '';
+                                            break;
+                                    }
+                                }
+                            }
+                        },
+                    @endif {
+                        "mData": "status",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": true,
+                        "bSearchable": true,
+                        "mRender": function(data, type, row, meta) {
+                            if (row.magang_tipe == 1 && row.is_accept == 2) {
+                                return '<span class="badge badge-danger">Menolak Undangan</span>';
+                            } else {
+                                switch (data) {
+                                    case 3:
+                                        return '<span class="badge badge-primary">Terdaftar</span>';
+                                        break;
+                                    case 2:
+                                        return '<span class="badge badge-danger">Ditolak</span>';
+                                        break;
+                                    case 1:
+                                        return '<span class="badge badge-success">Diterima</span>';
+                                        break;
+                                    case 0:
+                                        return '<span class="badge badge-warning">Menunggu</span>';
+                                        break;
+                                }
+                            }
+                        }
                     },
                     {
                         "mData": "nama_instruktur",
                         "sClass": "",
-                        "sWidth": "65%",
+                        "sWidth": "15%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
+                        "mRender": function(data, type, row, meta) {
+                            if (data) {
+                                return data;
+                            } else {
+                                return '<span class="badge badge-danger">Tidak Ada Instruktur Lapangan</span>';
+                            }
+                        }
                     },
+
                     {
-                        "mData": "instruktur_id",
-                        "sClass": "text-center pr-2",
-                        "sWidth": "10%",
+                        "mData": "encrypt_magang_id",
+                        "sClass": "pr-2",
+                        "sWidth": "8%",
                         "bSortable": false,
                         "bSearchable": false,
                         "mRender": function(data, type, row, meta) {
-                            return ''
-                            @if ($allowAccess->update)
-                                +
-                                `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Edit Data" ><i class="fa fa-edit"></i></a> `
-                            @endif
-                            @if ($allowAccess->delete)
-                                +
-                                `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/delete" class="ajax_modal btn btn-xs btn-danger tooltips text-light" data-placement="left" data-original-title="Hapus Data" ><i class="fa fa-trash"></i></a> `
-                            @endif ;
+                            return `<a href="{{ $page->url }}/${data}" class=" btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Detail" ><i class="fa fa-th"></i> Detail</a> `
                         }
-                    }
+                    },
+                    @if (auth()->user()->group_id != 4)
+                        {
+                            "mData": "magang_id",
+                            "sClass": "pr-2",
+                            "sWidth": "8%",
+                            "bSortable": false,
+                            "bSearchable": false,
+                            "mRender": function(data, type, row, meta) {
+                                var buttons = '';
+                                @if ($allowAccess->update)
+                                    if (row.status == 0) {
+                                        if (row.magang_tipe == 0 || row.magang_tipe == 1 && row
+                                            .is_accept == 1 || row.magang_tipe == 2) {
+                                            buttons +=
+                                                `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
+                                                `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_reject" class="ajax_modal btn btn-xs btn-danger tooltips text-white" data-placement="left" data-original-title="Reject" ><i class="fa fa-times"></i></a> `;
+                                        }
+                                    }
+                                @endif
+                                return buttons;
+                            }
+                        },
+                    @endif
                 ],
                 "fnDrawCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     $('a', this.fnGetNodes()).tooltip();

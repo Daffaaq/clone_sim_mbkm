@@ -3,7 +3,7 @@
 use App\Http\Controllers\DokumenController;
 use App\Http\Controllers\Master\BeritaController;
 use App\Http\Controllers\Master\DosenCircleController;
-use App\Http\Controllers\Master\DosenController;
+use App\Http\Controllers\Transaction\DosenController;
 use App\Http\Controllers\Transaction\InstrukturController;
 use App\Http\Controllers\Master\KegiatanController;
 use App\Http\Controllers\Master\JurusanController;
@@ -51,9 +51,7 @@ Route::group(['prefix' => 'master', 'middleware' => ['auth']], function () {
     Route::post('prodi/list', [ProdiController::class, 'list']);
     Route::get('prodi/{id}/delete', [ProdiController::class, 'confirm']);
 
-    Route::resource('dosen', DosenController::class)->parameter('dosen', 'id');
-    Route::post('dosen/list', [DosenController::class, 'list']);
-    Route::get('dosen/{id}/delete', [DosenController::class, 'confirm']);
+
     // Tipe Kegiatan
     Route::resource('program', ProgramController::class)->parameter('program', 'id');
     Route::post('program/list', [ProgramController::class, 'list']);
@@ -114,6 +112,11 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::post('mahasiswa/list', [MahasiswaController::class, 'list']);
     Route::get('mahasiswa/{id}/delete', [MahasiswaController::class, 'confirm']);
 
+    //dosen
+    Route::resource('dosen', DosenController::class)->parameter('dosen', 'id');
+    Route::post('dosen/list', [DosenController::class, 'list']);
+    Route::get('dosen/{id}/delete', [DosenController::class, 'confirm']);
+
     //daftar magang
     Route::resource('daftar-magang', DaftarMagangController::class)->parameter('daftar-magang', 'id');
     Route::post('daftar-magang/list', [DaftarMagangController::class, 'list']);
@@ -125,9 +128,11 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
 
     Route::resource('instruktur', InstrukturController::class)->parameter('instruktur', 'id');
     Route::post('instruktur/list', [InstrukturController::class, 'list'])->name('instruktur.list');
+    Route::get('instruktur/{encrpyt}', [InstrukturController::class, 'lengkapi']);
+    Route::post('instruktur/create_instruktur', [InstrukturController::class, 'create_instruktur'])->name('create_instruktur');
 
     //pendaftaran (role koordinator)
-    // Route::resource('pendaftaran', PendaftaranController::class)->parameter('pendaftaran', 'id');
+    Route::resource('pendaftaran', PendaftaranController::class)->parameter('pendaftaran', 'id');
     Route::post('pendaftaran/list', [PendaftaranController::class, 'list']);
     Route::get('pendaftaran/{id}/delete', [PendaftaranController::class, 'confirm_delete']);
     Route::get('pendaftaran/{id}/anggota', [PendaftaranController::class, 'anggota']);

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Master;
+namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
@@ -17,10 +17,10 @@ class DosenController extends Controller
 {
     public function __construct()
     {
-        $this->menuCode  = 'MASTER.DOSEN';
-        $this->menuUrl   = url('master/dosen');
+        $this->menuCode  = 'TRANSACTION.DOSEN';
+        $this->menuUrl   = url('transaksi/dosen');
         $this->menuTitle = 'Dosen';
-        $this->viewPath  = 'master.dosen.';
+        $this->viewPath  = 'transaction.dosen.';
     }
 
     public function index()
@@ -30,12 +30,12 @@ class DosenController extends Controller
 
         $breadcrumb = [
             'title' => $this->menuTitle,
-            'list'  => ['Data Master', 'Dosen']
+            'list'  => ['Transaksi', 'Dosen']
         ];
 
         $activeMenu = [
-            'l1' => 'master',
-            'l2' => 'master-dosen',
+            'l1' => 'transaction',
+            'l2' => 'transaksi-dosen',
             'l3' => null
         ];
 
@@ -93,6 +93,8 @@ class DosenController extends Controller
                 'dosen_phone' => ['required', 'numeric', 'digits_between:8,15', 'unique:m_dosen,dosen_phone'],
                 'dosen_gender' => 'required|in:L,P',
                 'dosen_tahun' => 'required|integer',
+                'dosen_nip' =>'nullable',
+                'dosen_nidn' =>'nullable',
                 // Add other rules for DosenModel fields
             ];
             $validator = Validator::make($request->all(), $rules);
@@ -127,6 +129,8 @@ class DosenController extends Controller
                 'dosen_phone' => $request->input('dosen_phone'),
                 'dosen_gender' => $request->input('dosen_gender'),
                 'dosen_tahun' => $request->input('dosen_tahun'),
+                'dosen_nidn' => $request->input('dosen_nidn'),
+                'dosen_nip' => $request->input('dosen_nip'),
                 'user_id' => $insert->user_id,
                 // fill other fields as needed
             ]);

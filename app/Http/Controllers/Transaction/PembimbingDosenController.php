@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
+use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\Magang;
 use App\Models\Transaction\PembimbingDosenModel;
 use Illuminate\Http\Request;
@@ -103,12 +105,14 @@ class PembimbingDosenController extends Controller
         }
 
         $dosen = DosenModel::selectRaw("dosen_id, dosen_name")->get();
+        // $instuktur = InstrukturModel::selectRaw("instruktur_id, nama_instruktur")->get();
         // $prodi = ProdiModel::selectRaw("prodi_id, prodi_name, prodi_code")->get();
 
         return view($this->viewPath . 'action')
             ->with('page', (object) $page)
             ->with('mahasiswa', $mahasiswa)
             ->with('dosen', $dosen);
+            // ->with('instruktur', $instuktur);
     }
 
     public function store(Request $request)
@@ -121,6 +125,7 @@ class PembimbingDosenController extends Controller
             $rules = [
                 'mahasiswa_id' => 'required|exists:m_mahasiswa,mahasiswa_id',
                 'dosen_id' => 'required|exists:m_dosen,dosen_id',
+                'instruktur_id' => 'required|exists:m_instruktur,instruktur_id',
                 // Add other rules for DosenModel fields
             ];
             $validator = Validator::make($request->all(), $rules);
@@ -144,12 +149,23 @@ class PembimbingDosenController extends Controller
                 'dosen_id' => $request->input('dosen_id'),
                 // fill other fields as needed
             ]);
-
             return response()->json([
                 'stat' => $pembimbingDosen,
                 'mc' => $pembimbingDosen,
                 'msg' => ($pembimbingDosen) ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
             ]);
+            $instruktur = InstrukturLapanganModel::create([
+                'magang_id' => $magang_id,
+                'mahasiswa_id' => $request->input('mahasiswa_id'),
+                'instruktur_id' => $request->input('instruktur_id'),
+                // fill other fields as needed
+            ]);
+            return response()->json([
+                'stat' => $instruktur,
+                'mc' => $instruktur,
+                'msg' => ($instruktur) ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
+            ]);
+            
         }
 
         return redirect('/');

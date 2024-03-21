@@ -60,4 +60,9 @@ class Magang extends AppModel
     {
         return $this->belongsTo('App\Models\Master\ProdiModel', 'prodi_id', 'prodi_id');
     }
+
+    public function instrukturLapangan()
+    {
+        return $this->hasMany(InstrukturLapanganModel::class, 'magang_id', 'magang_id');
+    }
 }

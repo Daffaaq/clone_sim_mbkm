@@ -49,6 +49,21 @@ $is_edit = isset($data);
                         </div>
                     </div>
                 </div>
+                <div class="modal-body">
+                    <div class="form-message text-center"></div>
+                    <div class="form-group required row mb-2">
+                        <label class="col-sm-3 control-label col-form-label">Instruktur</label>
+                        <div class="col-sm-9">
+                            <select id="instruktur_id" name="instruktur_id"
+                                class="form-control form-control-sm select2_combobox">
+                                <option value="">- Pilih -</option>
+                                @foreach ($dosen as $r)
+                                    <option value="{{ $r->instruktur_id }}">{{ $r->nama_instruktur }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
                 <div class="modal-footer">
                     <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
                     <button type="submit" class="btn btn-primary">Simpan</button>
