@@ -223,7 +223,7 @@ class PembimbingDosenController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
 
             $rules = [
-                'mahasiswa_id' => 'required|exists:m_mahasiswa,mahasiswa_id',
+                'mahasiswa_id' => 'required',
                 'dosen_id' => 'required|exists:m_dosen,dosen_id',
             ];
 
@@ -238,12 +238,36 @@ class PembimbingDosenController extends Controller
                 ]);
             }
 
-            $res = PembimbingDosenModel::updateData($id, $request);
+            $mahasiswa_ids = $request->input('mahasiswa_id');
+            $pembimbingDosen = null;
+            $magang_ids = [];
+            if (!empty($mahasiswa_ids)) {
+                // Ambil nilai pertama dari array, karena saat update hanya memungkinkan satu nilai mahasiswa_id
+                $mahasiswa_id = !empty($mahasiswa_ids) ? intval($mahasiswa_ids[0]) : null;
+                // dd($mahasiswa_id);
+
+                // Pastikan mahasiswa_id tidak null sebelum menyimpan data
+                if (!is_null($mahasiswa_id)) {
+                    // Cari nilai magang_id
+                    $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)->value('magang_id');
+                    // dd($magang_id);
+                    $magang_ids[] = $magang_id;
+                    // Temukan model PembimbingDosen berdasarkan ID
+                    $pembimbingDosen = PembimbingDosenModel::find($id);
+                    if ($pembimbingDosen) {
+                        // Perbarui atribut model dan simpan perubahan
+                        $pembimbingDosen->magang_id = $magang_id;
+                        $pembimbingDosen->mahasiswa_id = $mahasiswa_id;
+                        $pembimbingDosen->dosen_id = $request->input('dosen_id');
+                        $pembimbingDosen->save();
+                    }
+                }
+            }
 
             return response()->json([
-                'stat' => $res,
-                'mc' => $res, // close modal
-                'msg' => ($res) ? $this->getMessage('update.success') : $this->getMessage('update.failed')
+                'stat' => $pembimbingDosen,
+                'mc' => $pembimbingDosen, // close modal
+                'msg' => ($pembimbingDosen) ? $this->getMessage('update.success') : $this->getMessage('update.failed')
             ]);
         }
 
