@@ -122,8 +122,8 @@ class LoginController extends Controller
             }
 
             if ($db->group_id == 5) {         // jika yg login Mahasiswa
-                $mhs = $db->getUserPerusahaan;
-                session()->put('perusahaan', $mhs);
+                $mhs = $db->getUserInstruktur;
+                session()->put('instruktur', $mhs);
             }
 
             session()->put('periode_active', $periode);

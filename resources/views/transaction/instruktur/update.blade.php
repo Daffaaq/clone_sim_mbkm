@@ -81,7 +81,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach ($anggotas as $key => $a)
+                                                @foreach ($anggota as $key => $a)
                                                     <tr>
                                                         <td>{{ $key + 1 }}</td>
                                                         <td>{{ $a->mahasiswa->nim }}</td>
@@ -170,3 +170,24 @@
         </div>
     </div>
 @endsection
+@push('content-js')
+    <script>
+        $(document).ready(function() {
+            // Submit form
+            $('#form-sb').submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                // Send AJAX request to submit form
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: $(this).attr('method'),
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        // Reload the page after successful form submission
+                        window.location.reload();
+                    }
+                });
+            });
+        });
+    </script>
+@endpush

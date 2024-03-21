@@ -200,6 +200,9 @@ class InstrukturController extends Controller
         //     ->whereHas('mahasiswa') // Filter hanya Magang yang memiliki relasi dengan MahasiswaModel
         //     ->with('mahasiswa') // Sertakan relasi mahasiswa dalam hasil
         //     ->get();
+        $anggota = Magang::where('magang_kode', $kode_magang)
+        ->with('mahasiswa')
+        ->get();
         $anggotas = Magang::where('magang_kode', $kode_magang)
             ->whereDoesntHave('instrukturLapangan') // Pastikan setiap Magang memiliki InstrukturLapanganModel
             ->with('mahasiswa') // Sertakan relasi mahasiswa dalam hasil
@@ -226,7 +229,7 @@ class InstrukturController extends Controller
         ];
 
         $id_mahasiswa = MahasiswaModel::where('user_id', auth()->user()->user_id)->first()->mahasiswa_id;
-
+        
         $magang = Magang::where('magang_id', $id)
             ->with('mitra')
             ->with('mitra.kegiatan')
@@ -269,6 +272,7 @@ class InstrukturController extends Controller
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
             ->with('anggotas', $anggotas)
+            ->with('anggota', $anggota)
             ->with('page', (object) $page)
             ->with('action', 'POST');
     }
