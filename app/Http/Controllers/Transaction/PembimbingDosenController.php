@@ -138,23 +138,27 @@ class PembimbingDosenController extends Controller
                 ]);
             }
             $mahasiswa_ids = $request->input('mahasiswa_id');
+
+            $magang_ids = Magang::whereIn('mahasiswa_id', $mahasiswa_ids)
+                ->where('status', 1)
+                ->pluck('magang_id')
+                ->toArray();
             // dd($mahasiswa_ids);
             $pembimbingDosen = null;
-            $magang_ids = [];
             if (!empty($mahasiswa_ids)) {
-                // Loop untuk setiap mahasiswa yang dipilih
-                foreach ($mahasiswa_ids as $mahasiswa_id) {
-                    // Pastikan mahasiswa_id tidak null sebelum menyimpan data
-                    if ($mahasiswa_id) {
-                        $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)->value('magang_id');
-                        $magang_ids[] = $magang_id;
-                        // Simpan data ke dalam InstrukturLapanganModel
-                        $pembimbingDosen = PembimbingDosenModel::create([
-                            'magang_id' => $magang_id,
-                            'mahasiswa_id' => $mahasiswa_id,
-                            'dosen_id' => $request->input('dosen_id') // Gunakan id instruktur yang baru saja dibuat
-                            // Isi kolom-kolom lainnya sesuai kebutuhan
-                        ]);
+                foreach ($magang_ids as $magang_id) {
+                    // Loop untuk setiap mahasiswa yang dipilih
+                    foreach ($mahasiswa_ids as $mahasiswa_id) {
+                        // Pastikan mahasiswa_id tidak null sebelum menyimpan data
+                        if ($mahasiswa_id) {
+                            // Simpan data ke dalam InstrukturLapanganModel
+                            $pembimbingDosen = PembimbingDosenModel::create([
+                                'magang_id' => $magang_id,
+                                'mahasiswa_id' => $mahasiswa_id,
+                                'dosen_id' => $request->input('dosen_id') // Gunakan id instruktur yang baru saja dibuat
+                                // Isi kolom-kolom lainnya sesuai kebutuhan
+                            ]);
+                        }
                     }
                 }
                 // dd($magang_ids);

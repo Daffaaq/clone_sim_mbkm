@@ -69,7 +69,9 @@ class InstrukturController extends Controller
             ->with('mitra')
             ->with('periode')
             ->with('prodi')
-            ->with('mitra.kegiatan');
+            ->with('mitra.kegiatan')
+            ->where('status', 1);
+        // dd($data);
 
         //where is_accept == NULL or is_accept == 1
         // $data = $data->where('is_accept', 0);
@@ -82,14 +84,16 @@ class InstrukturController extends Controller
             $prodi_id = auth()->user()->getProdiId();
             $data = $data->where('prodi_id', $prodi_id)->get();
         }
-
+        // $intruktur = InstrukturLapanganModel::all();
+        // dd($intruktur);
         $data = $data->map(function ($item) {
             $item['encrypt_magang_id'] = Crypt::encrypt($item->magang_id);
             $magang_id = Crypt::decrypt($item['encrypt_magang_id']);
-
+            // dd($magang_id);
             // dd($magang_id);
             // Fetch the InstrukturLapanganModel for the specified magang_id
             $instrukturLapangan = InstrukturLapanganModel::where('magang_id', $magang_id)->first();
+            // dd($instrukturLapangan);
             // dd($instrukturLapangan);
             if ($instrukturLapangan) {
                 // If InstrukturLapanganModel exists, fetch the associated InstrukturModel
@@ -201,8 +205,8 @@ class InstrukturController extends Controller
         //     ->with('mahasiswa') // Sertakan relasi mahasiswa dalam hasil
         //     ->get();
         $anggota = Magang::where('magang_kode', $kode_magang)
-        ->with('mahasiswa')
-        ->get();
+            ->with('mahasiswa')
+            ->get();
         $anggotas = Magang::where('magang_kode', $kode_magang)
             ->whereDoesntHave('instrukturLapangan') // Pastikan setiap Magang memiliki InstrukturLapanganModel
             ->with('mahasiswa') // Sertakan relasi mahasiswa dalam hasil
@@ -229,7 +233,7 @@ class InstrukturController extends Controller
         ];
 
         $id_mahasiswa = MahasiswaModel::where('user_id', auth()->user()->user_id)->first()->mahasiswa_id;
-        
+
         $magang = Magang::where('magang_id', $id)
             ->with('mitra')
             ->with('mitra.kegiatan')
@@ -311,25 +315,28 @@ class InstrukturController extends Controller
         // Ambil data mahasiswa yang dipilih
         $mahasiswa_ids = $request->input('mahasiswa_id');
         // dd($mahasiswa_ids);
-
+        $magang_ids = Magang::whereIn('mahasiswa_id', $mahasiswa_ids)
+            ->where('status', 1)
+            ->pluck('magang_id')
+            ->toArray();
         // Inisialisasi variabel $insertInstrukturLapangan di luar blok foreach
         $insertInstrukturLapangan = null;
-        $magang_ids = [];
         // Periksa apakah ada mahasiswa yang dipilih
         if (!empty($mahasiswa_ids)) {
             // Loop untuk setiap mahasiswa yang dipilih
-            foreach ($mahasiswa_ids as $mahasiswa_id) {
-                // Pastikan mahasiswa_id tidak null sebelum menyimpan data
-                if ($mahasiswa_id) {
-                    $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)->value('magang_id');
-                    $magang_ids[] = $magang_id;
-                    // Simpan data ke dalam InstrukturLapanganModel
-                    $insertInstrukturLapangan = InstrukturLapanganModel::create([
-                        'magang_id' => $magang_id,
-                        'mahasiswa_id' => $mahasiswa_id,
-                        'instruktur_id' => $instruktur_id // Gunakan id instruktur yang baru saja dibuat
-                        // Isi kolom-kolom lainnya sesuai kebutuhan
-                    ]);
+            foreach ($magang_ids as $magang_id) {
+                // Loop untuk setiap mahasiswa yang dipilih
+                foreach ($mahasiswa_ids as $mahasiswa_id) {
+                    // Pastikan mahasiswa_id tidak null sebelum menyimpan data
+                    if ($mahasiswa_id) {
+                        // Simpan data ke dalam InstrukturLapanganModel
+                        $insertInstrukturLapangan = InstrukturLapanganModel::create([
+                            'magang_id' => $magang_id,
+                            'mahasiswa_id' => $mahasiswa_id,
+                            'instruktur_id' => $instruktur_id // Gunakan id instruktur yang baru saja dibuat
+                            // Isi kolom-kolom lainnya sesuai kebutuhan
+                        ]);
+                    }
                 }
             }
             // dd($magang_ids);
