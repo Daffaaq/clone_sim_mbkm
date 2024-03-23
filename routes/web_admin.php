@@ -34,6 +34,7 @@ use App\Http\Controllers\Transaction\BeritaController as TransactionBeritaContro
 use App\Http\Controllers\Transaction\DaftarMagangController;
 use App\Http\Controllers\Transaction\LihatStatusPendaftaranController;
 use App\Http\Controllers\Transaction\LihatStatusPengajuanController;
+use App\Http\Controllers\Transaction\LogBimbinganController;
 use App\Http\Controllers\Transaction\PembimbingDosenController;
 use App\Http\Controllers\Transaction\PersetujuanKelompokController;
 use App\Http\Controllers\Transaction\QuotaDosenController;
@@ -116,6 +117,10 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::resource('dosen', DosenController::class)->parameter('dosen', 'id');
     Route::post('dosen/list', [DosenController::class, 'list']);
     Route::get('dosen/{id}/delete', [DosenController::class, 'confirm']);
+    //log bimbingan
+    Route::resource('log-bimbingan', LogBimbinganController::class)->parameter('log-bimbingan', 'id');
+    Route::post('log-bimbingan/list', [LogBimbinganController::class, 'list']);
+    Route::get('log-bimbingan/{id}/delete', [LogBimbinganController::class, 'confirm']);
 
     //daftar magang
     Route::resource('daftar-magang', DaftarMagangController::class)->parameter('daftar-magang', 'id');
