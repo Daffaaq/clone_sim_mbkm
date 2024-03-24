@@ -23,27 +23,15 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group form-group-sm row text-sm mb-0">
-                                        <label for="filter_date" class="col-md-1 col-form-label">Filter</label>
                                         <div class="col-md-3">
-                                            <select name="filter_level"
-                                                class="form-control form-control-sm w-100 filter_combobox filter_level">
-                                                <option value="">- Semua -</option>
-                                                <option value="1">1</option>
-                                                <option value="2">2</option>
-                                                <option value="3">3</option>
-                                            </select>
-                                            <small class="form-text text-muted">Level Menu</small>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <select name="filter_parent"
-                                                class="form-control form-control-sm w-100 filter_combobox filter_parent">
-                                                <option value="">- All Parent -</option>
-                                                @foreach ($parent as $p)
-                                                    <option value="{{ $p->id }}">{{ $p->code . ' - ' . $p->name }}
-                                                    </option>
+                                            <select name="filter_mahasiswa"
+                                                class="form-control form-control-sm w-100 filter_combobox filter_mahasiswa">
+                                                <option value="">- Semua Mahasiswa -</option>
+                                                @foreach ($mahasiswaDropdown as $userId => $namaMahasiswa)
+                                                    <option value="{{ $userId }}">{{ $namaMahasiswa }}</option>
                                                 @endforeach
                                             </select>
-                                            <small class="form-text text-muted">Parent Menu</small>
+                                            <small class="form-text text-muted">Filter Mahasiswa</small>
                                         </div>
                                     </div>
                                 </div>
@@ -73,7 +61,14 @@
     <script>
         $(document).ready(function() {
 
-            $('.filter_combobox').select2();
+            $('.filter_combobox').on('change', function() {
+                // Simpan nilai filter mahasiswa yang dipilih
+                var selectedMahasiswa = $(this).val();
+
+                // Kemudian buat permintaan AJAX untuk memperbarui tabel dengan filter yang dipilih
+                dataMaster.ajax.reload(null, false);
+            });
+
 
             dataMaster = $('#table_menu').DataTable({
                 "bServerSide": true,
@@ -83,8 +78,7 @@
                     "dataType": "json",
                     "type": "POST",
                     "data": function(d) {
-                        d.level = $('.filter_level').val();
-                        d.parent = $('.filter_parent').val();
+                        d.filter_mahasiswa = $('.filter_mahasiswa').val();
                     },
                 },
                 "aoColumns": [{

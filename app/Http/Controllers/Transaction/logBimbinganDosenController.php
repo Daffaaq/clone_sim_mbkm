@@ -51,10 +51,43 @@ class LogBimbinganDosenController extends Controller
             'title' => 'Daftar ' . $this->menuTitle
         ];
 
+        $user = auth()->user();
+        $user_id = $user->user_id;
+        $instruktur = DosenModel::where('user_id', $user_id)->first();
+        $instruktur_id = $instruktur->dosen_id;
+        // dd($instruktur_id);
+        $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)->first();
+        $pembimbing_dosen_id = $pembimbing_dosen->pembimbing_dosen_id;
+        // dd($instruktur_lapangan_id);
+        // $all = LogBimbinganModel::all();
+        // dd($all);
+        // Dapatkan semua log bimbingan yang terkait dengan instruktur lapangan tersebut
+        $logBimbingans = LogBimbinganModel::where('pembimbing_dosen_id', $pembimbing_dosen_id)->get();
+
+        // Dapatkan semua user ID mahasiswa yang membuat log bimbingan
+        $userIdMahasiswa = $logBimbingans->pluck('created_by')->toArray();
+        // dd($userIdMahasiswa);
+
+        // Dapatkan data mahasiswa berdasarkan user ID yang diperoleh
+        $mahasiswas = MahasiswaModel::whereIn('user_id', $userIdMahasiswa)->get();
+        // dd($mahasiswas);
+
+        // Inisialisasi dropdown filter mahasiswa jika ada mahasiswa yang relevan
+        $mahasiswaDropdown = [];
+        if ($mahasiswas->isNotEmpty()) {
+            $mahasiswaDropdown = $mahasiswas->pluck('nama_mahasiswa', 'user_id');
+            // dd($mahasiswaDropdown);
+        } else {
+            // Handle jika tidak ada mahasiswa yang relevan
+            $mahasiswaDropdown = ['' => '- Tidak Ada Mahasiswa -'];
+        }
+
         return view($this->viewPath . 'index')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
             ->with('page', (object) $page)
+            ->with('mahasiswas', $mahasiswas)
+            ->with('mahasiswaDropdown', $mahasiswaDropdown)
             ->with('allowAccess', $this->authAccessKey());
     }
 
@@ -63,13 +96,24 @@ class LogBimbinganDosenController extends Controller
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $userId = Auth::id();
+        $user = auth()->user();
+        $user_id = $user->user_id;
+        $instruktur = DosenModel::where('user_id', $user_id)->first();
+        $instruktur_id = $instruktur->dosen_id;
 
-        // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
-        //     ->where('created_by', $userId);
-        $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
-            ->where('created_by', $userId)
-            ->get();
+        $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)->first();
+        $pembimbing_dosen_id = $pembimbing_dosen->pembimbing_dosen_id;
+
+        // Gunakan instruktur_lapangan_id untuk mengambil data LogBimbinganModel
+        $data = LogBimbinganModel::where('pembimbing_dosen_id', $pembimbing_dosen_id);
+
+        // Filter data log bimbingan berdasarkan mahasiswa jika filter mahasiswa dipilih
+        if ($request->filled('filter_mahasiswa')) {
+            $data->where('created_by', $request->filter_mahasiswa);
+        }
+
+        // Ambil data yang difilter
+        $filteredData = $data->get();
 
 
         return DataTables::of($data)
