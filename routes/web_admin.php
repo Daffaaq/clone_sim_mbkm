@@ -130,6 +130,8 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::post('log-bimbingan-dosen/list', [LogBimbinganDosenController::class, 'list']);
     Route::get('log-bimbingan-dosen/{id}/delete', [LogBimbinganDosenController::class, 'confirm']);
 
+    Route::post('log-bimbingan-dosen/updatedosen', [LogBimbinganDosenController::class, 'updateStatusDosen'])->name('update.logbimbingan.dosen');
+
     //log bimbingan instrukur
     Route::resource('log-bimbingan-instruktur', LogBimbinganInstrukturController::class)->parameter('log-bimbingan', 'id');
     Route::post('log-bimbingan-instruktur/list', [LogBimbinganInstrukturController::class, 'list']);
