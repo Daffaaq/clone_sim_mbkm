@@ -121,6 +121,46 @@ class LogBimbinganInstrukturController extends Controller
             ->make(true);
     }
 
+    public function updateStatusInstruktur(Request $request)
+    {
+        // Ambil data yang dikirimkan melalui permintaan AJAX
+        $logBimbinganId = $request->input('log_bimbingan_id');
+        $statusDosen = $request->input('status2');
+        $nilaiPembimbingInstruktur = $request->input('nilai_instruktur_lapangan'); // Ambil nilai pembimbing dosen dari permintaan
+
+        if (
+            $statusDosen == 1 && $nilaiPembimbingInstruktur < 80
+        ) {
+            return response()->json(['success' => false, 'message' => 'Nilai pembimbing harus minimal 80']);
+        }
+        // Lakukan proses pembaruan status dosen pembimbing di sini
+        $logBimbingan = LogBimbinganModel::find($logBimbinganId);
+        $logBimbingan->status2 = $statusDosen;
+
+        // Set tanggal_status_dosen berdasarkan status yang diubah
+        if ($statusDosen == 1) {
+            // Jika status diubah menjadi 'diterima', atur tanggal_status_dosen menjadi tanggal saat ini
+            $logBimbingan->tanggal_status_instruktur = now();
+        } else if ($statusDosen == 2) {
+            // Jika status diubah menjadi 'ditolak', atur nilai_pembimbing_dosen menjadi 0
+            $logBimbingan->nilai_instruktur_lapangan = 0;
+            // Atur tanggal_status_dosen menjadi null atau kosong
+            $logBimbingan->tanggal_status_instruktur = now(); // Sesuaikan dengan preferensi Anda
+        } else {
+            // Jika status diubah menjadi 'pending', atur tanggal_status_dosen menjadi null atau kosong
+            $logBimbingan->tanggal_status_instruktur = null; // Sesuaikan dengan preferensi Anda
+        }
+
+        // Set nilai_pembimbing_dosen berdasarkan input pengguna
+        $logBimbingan->nilai_instruktur_lapangan = $nilaiPembimbingInstruktur; // Gunakan nilai yang diambil dari input pengguna
+
+        // Simpan perubahan
+        $logBimbingan->save();
+
+        // Kemudian kembalikan respons
+        return response()->json(['success' => true]);
+    }
+
     public function create()
     {
         $this->authAction('create', 'modal');
