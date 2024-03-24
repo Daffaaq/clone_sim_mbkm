@@ -148,17 +148,16 @@ class PembimbingDosenController extends Controller
             if (!empty($mahasiswa_ids)) {
                 foreach ($magang_ids as $magang_id) {
                     // Loop untuk setiap mahasiswa yang dipilih
-                    foreach ($mahasiswa_ids as $mahasiswa_id) {
-                        // Pastikan mahasiswa_id tidak null sebelum menyimpan data
-                        if ($mahasiswa_id) {
-                            // Simpan data ke dalam InstrukturLapanganModel
-                            $pembimbingDosen = PembimbingDosenModel::create([
-                                'magang_id' => $magang_id,
-                                'mahasiswa_id' => $mahasiswa_id,
-                                'dosen_id' => $request->input('dosen_id') // Gunakan id instruktur yang baru saja dibuat
-                                // Isi kolom-kolom lainnya sesuai kebutuhan
-                            ]);
-                        }
+                    $mahasiswa_id = array_shift($mahasiswa_ids);
+                    // Pastikan mahasiswa_id tidak null sebelum menyimpan data
+                    if ($mahasiswa_id) {
+                        // Simpan data ke dalam InstrukturLapanganModel
+                        $pembimbingDosen = PembimbingDosenModel::create([
+                            'magang_id' => $magang_id,
+                            'mahasiswa_id' => $mahasiswa_id,
+                            'dosen_id' => $request->input('dosen_id') // Gunakan id instruktur yang baru saja dibuat
+                            // Isi kolom-kolom lainnya sesuai kebutuhan
+                        ]);
                     }
                 }
                 // dd($magang_ids);

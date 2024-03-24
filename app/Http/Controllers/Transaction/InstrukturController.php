@@ -326,7 +326,7 @@ class InstrukturController extends Controller
             // Loop untuk setiap mahasiswa yang dipilih
             foreach ($magang_ids as $magang_id) {
                 // Loop untuk setiap mahasiswa yang dipilih
-                foreach ($mahasiswa_ids as $mahasiswa_id) {
+                $mahasiswa_id = array_shift($mahasiswa_ids);
                     // Pastikan mahasiswa_id tidak null sebelum menyimpan data
                     if ($mahasiswa_id) {
                         // Simpan data ke dalam InstrukturLapanganModel
@@ -337,7 +337,6 @@ class InstrukturController extends Controller
                             // Isi kolom-kolom lainnya sesuai kebutuhan
                         ]);
                     }
-                }
             }
             // dd($magang_ids);
         } else {
