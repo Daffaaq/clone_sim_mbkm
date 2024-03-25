@@ -17,6 +17,12 @@
                                     data-url="{{ $page->url }}/create"><i class="fas fa-plus"></i> Tambah</button>
                             @endif
                         </div>
+                        <div class="card-tools mr-2">
+    <a href="{{ route('cetak.logbimbingan') }}" class="btn btn-sm btn-warning mt-1">
+        <i class="fas fa-plus"></i> Cetak Log Bimbingan
+    </a>
+</div>
+
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">

@@ -11,6 +11,7 @@ use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\LogBimbinganModel;
+use App\Models\Transaction\Magang;
 use App\Models\Transaction\PembimbingDosenModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Validation\Rule;
 
 class LogBimbinganController extends Controller
@@ -68,7 +70,7 @@ class LogBimbinganController extends Controller
         // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
         //     ->where('created_by', $userId);
         $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
-        ->where('created_by', $userId)
+            ->where('created_by', $userId)
             ->get();
 
 
@@ -337,5 +339,41 @@ class LogBimbinganController extends Controller
         }
 
         return redirect('/');
+    }
+
+    public function reportLogBimbingan()
+    {
+        $user = auth()->user();
+        $user_id = $user->user_id;
+        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
+        // dd($mahasiswa);
+        $mahasiswa_id = $mahasiswa->mahasiswa_id;
+        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->with('instruktur')->get();
+        $instruktur = $instrukturLapangan->first(); // Ambil objek pertama dari koleksi
+        $nama_instruktur = optional($instruktur->instruktur)->nama_instruktur; // Akses atribut instruktur dari objek pertama
+        $PembimbingDosenModel = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->with('dosen')->get();
+        $dosen = $PembimbingDosenModel->first(); // Ambil objek pertama dari koleksi
+        $nama_dosen = optional($dosen->dosen)->dosen_name; // Akses atribut instruktur dari objek pertama
+        // dd($nama_instruktur);
+        // dd($mahasiswa_id);
+        $magang_ids = Magang::whereIn('mahasiswa_id', [$mahasiswa_id]) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
+            ->where('status', 1)
+            ->pluck('magang_id');
+        // dd($magang_ids);
+
+        $magang = Magang::whereIn('magang_id', $magang_ids) // Perhatikan penggunaan whereIn() untuk memeriksa apakah $magang_ids ada di dalam array
+            ->where('mahasiswa_id', $mahasiswa_id) // Tambahkan klausa where untuk mahasiswa_id
+            ->with('mitra')
+            ->with('mitra.kegiatan')
+            ->with('periode')
+            ->first();
+        // dd($magang);
+        // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
+        //     ->where('created_by', $userId);
+        $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
+            ->where('created_by', $user_id)
+            ->get();
+        $pdf = Pdf::loadView('transaction.log-bimbingan.cetak_pdf', compact('magang', 'data', 'mahasiswa', 'nama_instruktur', 'nama_dosen'));
+        return $pdf->stream();
     }
 }
