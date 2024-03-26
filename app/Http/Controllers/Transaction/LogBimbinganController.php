@@ -54,10 +54,19 @@ class LogBimbinganController extends Controller
             'title' => 'Daftar ' . $this->menuTitle
         ];
 
+        $userId = Auth::id();
+
+        // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
+        //     ->where('created_by', $userId);
+        $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
+            ->where('created_by', $userId)
+            ->get();
+
         return view($this->viewPath . 'index')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
             ->with('page', (object) $page)
+            ->with('data', $data)
             ->with('allowAccess', $this->authAccessKey());
     }
 
@@ -349,12 +358,20 @@ class LogBimbinganController extends Controller
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         // dd($mahasiswa);
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->with('instruktur')->get();
-        $instruktur = $instrukturLapangan->first(); // Ambil objek pertama dari koleksi
-        $nama_instruktur = optional($instruktur->instruktur)->nama_instruktur; // Akses atribut instruktur dari objek pertama
-        $PembimbingDosenModel = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->with('dosen')->get();
-        $dosen = $PembimbingDosenModel->first(); // Ambil objek pertama dari koleksi
-        $nama_dosen = optional($dosen->dosen)->dosen_name; // Akses atribut instruktur dari objek pertama
+        // $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->with('instruktur')->get();
+        // $instruktur = $instrukturLapangan->first(); // Ambil objek pertama dari koleksi
+        // $nama_instruktur = optional($instruktur->instruktur)->nama_instruktur; // Akses atribut instruktur dari objek pertama
+        // $PembimbingDosenModel = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->with('dosen')->get();
+        // $dosen = $PembimbingDosenModel->first(); // Ambil objek pertama dari koleksi
+        // $nama_dosen = optional($dosen->dosen)->dosen_name; // Akses atribut instruktur dari objek pertama
+        // Mengambil instruktur lapangan untuk mahasiswa tertentu dengan relasi 'instruktur'
+        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->with('instruktur')->first();
+        $nama_instruktur = optional($instrukturLapangan->instruktur)->nama_instruktur;
+
+        // Mengambil pembimbing dosen untuk mahasiswa tertentu dengan relasi 'dosen'
+        $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->with('dosen')->first();
+        $nama_dosen = optional($pembimbingDosen->dosen)->dosen_name;
+
         // dd($nama_instruktur);
         // dd($mahasiswa_id);
         $magang_ids = Magang::whereIn('mahasiswa_id', [$mahasiswa_id]) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
@@ -368,25 +385,7 @@ class LogBimbinganController extends Controller
             ->with('mitra.kegiatan')
             ->with('periode')
             ->first();
-        // dd($magang);
-        // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
-        //     ->where('created_by', $userId);
-        // $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
-        //     ->where('created_by', $user_id)
-        //     ->get();
-        // dd($data);
-        // $data = LogBimbinganModel::select(
-        //     'log_bimbingan_id',
-        //     'tanggal',
-        //     'topik_bimbingan',
-        //     DB::raw('CONCAT(SUBSTRING_INDEX(jam_mulai, ":", 2), ":00") AS jam_mulai'),
-        //     DB::raw('CONCAT(SUBSTRING_INDEX(jam_selesai, ":", 2), ":00") AS jam_selesai'),
-        //     'status1',
-        //     'status2'
-        // )
-        //     ->where('created_by', $user_id)
-        //     ->get();
-        // dd($data);
+
         $data = LogBimbinganModel::select(
             'log_bimbingan_id',
             'tanggal',

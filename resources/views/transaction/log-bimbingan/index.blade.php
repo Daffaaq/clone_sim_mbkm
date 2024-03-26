@@ -18,11 +18,16 @@
                             @endif
                         </div>
                         <div class="card-tools mr-2">
-    <a href="{{ route('cetak.logbimbingan') }}" class="btn btn-sm btn-warning mt-1">
-        <i class="fas fa-plus"></i> Cetak Log Bimbingan
-    </a>
-</div>
-
+                            @if (!$data->isEmpty())
+                                <a href="{{ route('cetak.logbimbingan') }}" class="btn btn-sm btn-info mt-1 text-white">
+                                    <i class="fas fa-plus"></i> Cetak Log Bimbingan
+                                </a>
+                            @else
+                                <button class="btn btn-sm btn-info mt-1 text-white" disabled>
+                                    <i class="fas fa-plus"></i> Cetak Log Bimbingan
+                                </button>
+                            @endif
+                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">

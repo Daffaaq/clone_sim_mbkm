@@ -11,6 +11,7 @@ use App\Models\Transaction\Magang;
 use App\Models\Transaction\PembimbingDosenModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -56,6 +57,22 @@ class PembimbingDosenController extends Controller
     {
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+        // $role = Auth::user()->prodi_id;
+        // $data = PembimbingDosenModel::select(
+        //     't_pembimbing_dosen.pembimbing_dosen_id',
+        //     'm_mahasiswa.nama_mahasiswa',
+        //     'm_dosen.dosen_name',
+        //     'm_prodi.prodi_name'
+        // )
+        //     ->leftJoin('m_mahasiswa', 't_pembimbing_dosen.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
+        //     ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
+        //     ->leftJoin('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
+        //     ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id')
+        //     ->where('t_magang.status', 1) // Pastikan status magang adalah 1 (diterima)
+        //     ->get();
+
+        $prodi_id = auth()->user()->prodi_id;
+
         $data = PembimbingDosenModel::select(
             't_pembimbing_dosen.pembimbing_dosen_id',
             'm_mahasiswa.nama_mahasiswa',
@@ -67,6 +84,10 @@ class PembimbingDosenController extends Controller
             ->leftJoin('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
             ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id')
             ->where('t_magang.status', 1) // Pastikan status magang adalah 1 (diterima)
+            ->where(function ($query) use ($prodi_id) {
+                $query->where('m_prodi.prodi_id', $prodi_id) // Filter berdasarkan prodi_id pengguna
+                    ->orWhereNull('m_prodi.prodi_id'); // Jika pengguna tidak memiliki prodi_id
+            })
             ->get();
 
 
@@ -84,7 +105,17 @@ class PembimbingDosenController extends Controller
             'url' => $this->menuUrl,
             'title' => 'Tambah ' . $this->menuTitle
         ];
+        $prodi_id = auth()->user()->prodi_id;
         // Ambil mahasiswa yang sudah memiliki magang dengan status 1 dan belum memiliki entri dalam PembimbingDosenModel
+        // $mahasiswaWithMagang = MahasiswaModel::selectRaw("m_mahasiswa.mahasiswa_id, m_mahasiswa.nama_mahasiswa, t_magang.magang_id")
+        //     ->join('t_magang', 't_magang.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
+        //     ->where('t_magang.status', 1)
+        //     ->whereNotExists(function ($query) {
+        //         $query->select(DB::raw(1))
+        //             ->from('t_pembimbing_dosen')
+        //             ->whereRaw('t_magang.magang_id = t_pembimbing_dosen.magang_id');
+        //     })
+        //     ->get();
         $mahasiswaWithMagang = MahasiswaModel::selectRaw("m_mahasiswa.mahasiswa_id, m_mahasiswa.nama_mahasiswa, t_magang.magang_id")
             ->join('t_magang', 't_magang.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
             ->where('t_magang.status', 1)
@@ -92,6 +123,12 @@ class PembimbingDosenController extends Controller
                 $query->select(DB::raw(1))
                     ->from('t_pembimbing_dosen')
                     ->whereRaw('t_magang.magang_id = t_pembimbing_dosen.magang_id');
+            })
+            ->when($prodi_id, function ($query) use ($prodi_id) {
+                // Jika pengguna memiliki prodi_id, maka batasi query untuk hanya mahasiswa dengan magang yang sesuai dengan prodi_id tersebut
+                return $query->whereHas('prodi', function ($subQuery) use ($prodi_id) {
+                    $subQuery->where('prodi_id', $prodi_id);
+                });
             })
             ->get();
 
