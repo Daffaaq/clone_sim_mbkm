@@ -26,7 +26,6 @@
                                         <div class="col-md-3">
                                             <select name="filter_mahasiswa"
                                                 class="form-control form-control-sm w-100 filter_combobox filter_mahasiswa">
-                                                <option value="">- Semua Mahasiswa -</option>
                                                 @foreach ($mahasiswaDropdown as $userId => $namaMahasiswa)
                                                     <option value="{{ $userId }}">{{ $namaMahasiswa }}</option>
                                                 @endforeach
