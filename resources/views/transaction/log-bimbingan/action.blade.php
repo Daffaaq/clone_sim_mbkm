@@ -68,10 +68,10 @@ $is_edit = isset($data);
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Topik Bimbingan</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control form-control-sm" id="topik_bimbingan"
-                            name="topik_bimbingan"
-                            value="{{ isset($data->topik_bimbingan) ? $data->topik_bimbingan : '' }}" />
-
+                        <textarea class="form-control form-control summernote " id="topik_bimbingan"
+                            name="topik_bimbingan" value="">
+                        {{ isset($data->topik_bimbingan) ? $data->topik_bimbingan : '' }}
+                        </textarea>
                     </div>
                 </div>
                 <div class="form-group required row mb-2">
@@ -93,6 +93,16 @@ $is_edit = isset($data);
 
 <script>
     $(document).ready(function() {
+        $(document).ready(function() {
+            $('.summernote').summernote({
+                height: 200, // Sesuaikan tinggi Summernote sesuai kebutuhan
+                callbacks: {
+                    onBlur: function() {
+                        $(this).val($(this).summernote('code'));
+                    }
+                }
+            });
+        });
         unblockUI();
 
         @if ($is_edit)
