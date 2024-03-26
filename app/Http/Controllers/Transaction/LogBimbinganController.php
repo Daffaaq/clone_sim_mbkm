@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Validation\Rule;
@@ -370,9 +371,36 @@ class LogBimbinganController extends Controller
         // dd($magang);
         // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
         //     ->where('created_by', $userId);
-        $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
+        // $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
+        //     ->where('created_by', $user_id)
+        //     ->get();
+        // dd($data);
+        // $data = LogBimbinganModel::select(
+        //     'log_bimbingan_id',
+        //     'tanggal',
+        //     'topik_bimbingan',
+        //     DB::raw('CONCAT(SUBSTRING_INDEX(jam_mulai, ":", 2), ":00") AS jam_mulai'),
+        //     DB::raw('CONCAT(SUBSTRING_INDEX(jam_selesai, ":", 2), ":00") AS jam_selesai'),
+        //     'status1',
+        //     'status2'
+        // )
+        //     ->where('created_by', $user_id)
+        //     ->get();
+        // dd($data);
+        $data = LogBimbinganModel::select(
+            'log_bimbingan_id',
+            'tanggal',
+            'topik_bimbingan',
+            DB::raw('TIME_FORMAT(jam_mulai, "%H:%i") AS jam_mulai'),
+            DB::raw('TIME_FORMAT(jam_selesai, "%H:%i") AS jam_selesai'),
+            'status1',
+            'status2'
+        )
             ->where('created_by', $user_id)
             ->get();
+
+        // dd($data);
+
         $pdf = Pdf::loadView('transaction.log-bimbingan.cetak_pdf', compact('magang', 'data', 'mahasiswa', 'nama_instruktur', 'nama_dosen'));
         return $pdf->stream();
     }
