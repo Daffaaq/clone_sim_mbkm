@@ -21,12 +21,9 @@ $is_edit = isset($data);
                     <div class="col-sm-9">
                         <select id="pembimbing_dosen_id" name="pembimbing_dosen_id"
                             class="form-control form-control-sm select2_combobox">
-                            <option value="">- Pilih -</option>
-                            @foreach ($dosen as $i)
-                                <option value="{{ $i->dosen_id }}">
-                                    {{ $i->dosen_name }}
-                                </option>
-                            @endforeach
+                            <option value="{{ isset($pembimbingdosen_id) ? $pembimbingdosen_id : '' }}" selected>
+                                {{ $dosen_name }}</option>
+
                         </select>
                     </div>
                 </div>
@@ -35,13 +32,11 @@ $is_edit = isset($data);
                     <div class="col-sm-9">
                         <select id="instruktur_lapangan_id" name="instruktur_lapangan_id"
                             class="form-control form-control-sm select2_combobox">
-                            <option value="">- Pilih -</option>
-                            @foreach ($instrktur as $r)
-                                <option value="{{ $r->instruktur_id }}">
-                                    {{ $r->nama_instruktur }}
-                                </option>
-                            @endforeach
+                            <option value="{{ isset($instrukturLapangan_id) ? $instrukturLapangan_id : '' }}" selected>
+                                {{ $instruktur_name }}</option>
+
                         </select>
+
                     </div>
                 </div>
                 <div class="form-group required row mb-2">
@@ -68,8 +63,7 @@ $is_edit = isset($data);
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Topik Bimbingan</label>
                     <div class="col-sm-9">
-                        <textarea class="form-control form-control summernote " id="topik_bimbingan"
-                            name="topik_bimbingan" value="">
+                        <textarea class="form-control form-control summernote " id="topik_bimbingan" name="topik_bimbingan" value="">
                         {{ isset($data->topik_bimbingan) ? $data->topik_bimbingan : '' }}
                         </textarea>
                     </div>
@@ -77,6 +71,10 @@ $is_edit = isset($data);
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Foto Kegiatan hari ini</label>
                     <div class="col-sm-9">
+                        @if (isset($data->foto))
+                            <input type="hidden" name="existing_foto" value="{{ $data->foto }}">
+                            <p>Foto saat ini: {{ $data->foto }}</p>
+                        @endif
                         <input type="file" class="form-control-file" id="foto" name="foto">
 
 
@@ -105,10 +103,10 @@ $is_edit = isset($data);
         });
         unblockUI();
 
-        @if ($is_edit)
-            $('#pembimbing_dosen_id').val('{{ $data->pembimbing_dosen_id }}').trigger('change');
-            $('#instruktur_lapangan_id').val('{{ $data->instruktur_lapangan_id }}').trigger('change');
-        @endif
+        // @if ($is_edit)
+        //     $('#pembimbing_dosen_id').val('{{ $data->pembimbing_dosen_id }}').trigger('change');
+        //     $('#instruktur_lapangan_id').val('{{ $data->instruktur_lapangan_id }}').trigger('change');
+        // @endif
 
         $("#form-master").validate({
             rules: {
@@ -131,8 +129,12 @@ $is_edit = isset($data);
                     required: true,
                 },
                 foto: {
-                    required: true,
-                }
+        // Tambahkan aturan 'required' hanya jika foto baru diunggah
+        required: function(element) {
+            // Periksa apakah ada file foto yang diunggah
+            return $('input[name=foto]').get(0).files.length > 0;
+        }
+    }
             },
             submitHandler: function(form) {
                 $('.form-message').html('');

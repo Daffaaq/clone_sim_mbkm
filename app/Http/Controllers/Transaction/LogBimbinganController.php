@@ -104,30 +104,23 @@ class LogBimbinganController extends Controller
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
         // Gunakan mahasiswa_id untuk mencari data magang
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->get();
-        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->get();
-        $dosen = []; // Inisialisasi array untuk menyimpan data dosen
-        $instrktur = []; // Inisialisasi array untuk menyimpan data dosen
+        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->first();
+        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->first();
+        $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
+        $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
+        // dd($pembimbingdosen);
 
-        foreach ($instrukturLapangan as $instruktur) {
-            // Dapatkan dosen_id dari objek pembimbing
-            $instruktur_id = $instruktur->instruktur_id;
-
-            // Ambil data intsruktur berdasarkan instruktur_id
-            $instrktur[] = InstrukturModel::findOrFail($instruktur_id);
-        }
-        foreach ($pembimbingdosen as $pembimbing) {
-            // Dapatkan dosen_id dari objek pembimbing
-            $dosen_id = $pembimbing->dosen_id;
-
-            // Ambil data dosen berdasarkan dosen_id
-            $dosen[] = DosenModel::findOrFail($dosen_id);
-        }
+        $dosen_name = $pembimbingdosen->dosen->dosen_name;
+        $instruktur_name = $instrukturLapangan->instruktur->nama_instruktur;
+        // dd($instruktur_name);
+        // dd($dosen_name);
 
         return view($this->viewPath . 'action')
             ->with('page', (object) $page)
-            ->with('dosen', $dosen)
-            ->with('instrktur', $instrktur);
+            ->with('instrukturLapangan_id', $instrukturLapangan_id)
+            ->with('pembimbingdosen_id', $pembimbingdosen_id)
+            ->with('dosen_name', $dosen_name)
+            ->with('instruktur_name', $instruktur_name);
     }
 
     public function store(Request $request)
@@ -154,6 +147,14 @@ class LogBimbinganController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
+            // $user = auth()->user();
+            // $user_id = $user->user_id;
+            // $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
+            // $mahasiswa_id = $mahasiswa->mahasiswa_id;
+            // $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
+            // $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
+            // dd($pembimbingdosen);
+            // dd($instrukturLapangan);
             // Dapatkan file foto dari request
             $file = $request->file('foto');
 
@@ -168,8 +169,10 @@ class LogBimbinganController extends Controller
                 'jam_mulai' => $request->input('jam_mulai'),
                 'jam_selesai' => $request->input('jam_selesai'),
                 'topik_bimbingan' => $request->input('topik_bimbingan'),
+                // 'pembimbing_dosen_id' => $pembimbingdosen,
+                // 'instruktur_lapangan_id' => $instrukturLapangan,
                 'pembimbing_dosen_id' => $request->input('pembimbing_dosen_id'),
-                'instruktur_lapangan_id' => $request->input('instruktur_lapangan_id'),
+                'instruktur_lapangan_id' =>  $request->input('instruktur_lapangan_id'),
                 'status1' => 0, // Status 1 defaultnya adalah 0
                 'status2' => 0, // Status 2 defaultnya adalah 0
                 'foto' => $fileName,
@@ -203,33 +206,24 @@ class LogBimbinganController extends Controller
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
         // Gunakan mahasiswa_id untuk mencari data magang
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->get();
-        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->get();
-        $dosen = []; // Inisialisasi array untuk menyimpan data dosen
-        $instrktur = []; // Inisialisasi array untuk menyimpan data dosen
+        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->first();
+        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->first();
+        $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
+        $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
+        // dd($pembimbingdosen);
 
-        foreach ($instrukturLapangan as $instruktur) {
-            // Dapatkan dosen_id dari objek pembimbing
-            $instruktur_id = $instruktur->instruktur_id;
-
-            // Ambil data intsruktur berdasarkan instruktur_id
-            $instrktur[] = InstrukturModel::findOrFail($instruktur_id);
-        }
-        foreach ($pembimbingdosen as $pembimbing) {
-            // Dapatkan dosen_id dari objek pembimbing
-            $dosen_id = $pembimbing->dosen_id;
-
-            // Ambil data dosen berdasarkan dosen_id
-            $dosen[] = DosenModel::findOrFail($dosen_id);
-        }
+        $dosen_name = $pembimbingdosen->dosen->dosen_name;
+        $instruktur_name = $instrukturLapangan->instruktur->nama_instruktur;
         $data = LogBimbinganModel::find($id);
 
         return (!$data) ? $this->showModalError() :
             view($this->viewPath . 'action')
             ->with('page', (object) $page)
             ->with('id', $id)
-            ->with('dosen', $dosen)
-            ->with('instrktur', $instrktur)
+        ->with('instrukturLapangan_id', $instrukturLapangan_id)
+        ->with('pembimbingdosen_id', $pembimbingdosen_id)
+        ->with('dosen_name', $dosen_name)
+        ->with('instruktur_name', $instruktur_name)
             ->with('data', $data);
     }
 
@@ -244,7 +238,7 @@ class LogBimbinganController extends Controller
                 'jam_mulai' => 'required',
                 'jam_selesai' => 'required',
                 'topik_bimbingan' => 'required|string',
-                'foto' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048', // Gunakan 'sometimes' agar validasi tidak wajib
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Gunakan 'sometimes' agar validasi tidak wajib
             ];
 
             $validator = Validator::make($request->all(), $rules);
