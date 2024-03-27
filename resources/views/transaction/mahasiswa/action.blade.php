@@ -50,6 +50,13 @@ $is_edit = isset($data);
                     </div>
                 </div>
                 <div class="form-group required row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Kelas</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control form-control-sm" id="kelas" name="kelas"
+                            value="{{ isset($data->kelas) ? $data->kelas : '' }}" />
+                    </div>
+                </div>
+                <div class="form-group row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Email</label>
                     <div class="col-sm-9">
                         <input type="text" class="form-control form-control-sm" id="email_mahasiswa"
@@ -57,14 +64,14 @@ $is_edit = isset($data);
                             value="{{ isset($data->email_mahasiswa) ? $data->email_mahasiswa : '' }}" />
                     </div>
                 </div>
-                <div class="form-group required row mb-2">
+                <div class="form-group row mb-2">
                     <label class="col-sm-3 control-label col-form-label">No HP</label>
                     <div class="col-sm-9">
                         <input type="text" class="form-control form-control-sm" id="no_hp" name="no_hp"
                             value="{{ isset($data->no_hp) ? $data->no_hp : '' }}" />
                     </div>
                 </div>
-                <div class="form-group required row mb-2">
+                <div class="form-group row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Jenis Kelamin</label>
                     <div class="col-sm-9">
                         <select data-testid="partner-category" class="form-control form-control-sm" id="jenis_kelamin"
@@ -79,13 +86,6 @@ $is_edit = isset($data);
                                 Perempuan
                             </option>
                         </select>
-                    </div>
-                </div>
-                <div class="form-group required row mb-2">
-                    <label class="col-sm-3 control-label col-form-label">Kelas</label>
-                    <div class="col-sm-9">
-                        <input type="text" class="form-control form-control-sm" id="kelas" name="kelas"
-                            value="{{ isset($data->kelas) ? $data->kelas : '' }}" />
                     </div>
                 </div>
                 <div class="form-group row mb-2">
@@ -117,10 +117,10 @@ $is_edit = isset($data);
 
         $("#form-master").validate({
             rules: {
-                nama_kegiatan: {
-                    required: true,
-                    maxlength: 100
-                }
+                // nama_kegiatan: {
+                //     required: true,
+                //     maxlength: 100
+                // }
             },
             submitHandler: function(form) {
                 $('.form-message').html('');

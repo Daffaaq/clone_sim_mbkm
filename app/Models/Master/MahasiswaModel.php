@@ -3,6 +3,7 @@
 namespace App\Models\Master;
 
 use App\Models\AppModel;
+use App\Models\Transaction\Magang;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;

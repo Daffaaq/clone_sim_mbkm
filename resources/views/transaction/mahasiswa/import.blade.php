@@ -5,7 +5,7 @@ $is_edit = isset($data);
 
 <form method="post" action="{{ $page->url }}" role="form" class="form-horizontal" id="form-master">
     @csrf
-    {!! $is_edit ? method_field('PUT') : '' !!}
+    @method('POST')
     <div id="modal-master" class="modal-dialog modal-md" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -16,26 +16,34 @@ $is_edit = isset($data);
             </div>
             <div class="modal-body">
                 <div class="form-message text-center"></div>
+                @if (Auth::user()->group_id == 1)
+                    <div class="form-group required row mb-2">
+                        <label class="col-sm-3 control-label col-form-label">Prodi</label>
+                        <div class="col-sm-9">
+                            <select data-testid="partner-category" class="form-control form-control-sm" id="prodi_id"
+                                name="prodi_id" value="{{ isset($data->prodi_id) ? $data->prodi_id : '' }}">
+                                <option disabled selected value="">Pilih opsi</option>
+                                @foreach ($prodis as $prodi)
+                                    <option value="{{ $prodi->prodi_id }}"
+                                        {{ isset($data->prodi_id) ? ($data->prodi_id == $prodi->prodi_id ? 'selected' : '') : '' }}>
+                                        {{ $prodi->prodi_code }} - {{ $prodi->prodi_name }}
+                                    </option>
+                                @endforeach
+                            </select>
 
-                <div class="form-group required row mb-2">
-                    <label class="col-sm-3 control-label col-form-label">Kode Jurusan</label>
-                    <div class="col-sm-9">
-                        <input @if ($is_edit) disabled @endif type="text"
-                            class="form-control form-control-sm" id="jurusan_code" name="jurusan_code"
-                            value="{{ isset($data->jurusan_code) ? $data->jurusan_code : '' }}" />
+                        </div>
                     </div>
-                </div>
+                @endif
                 <div class="form-group required row mb-2">
-                    <label class="col-sm-3 control-label col-form-label">Nama Jurusan</label>
+                    <label class="col-sm-3 control-label col-form-label">File</label>
                     <div class="col-sm-9">
-                        <input type="text" class="form-control form-control-sm" id="jurusan_name" name="jurusan_name"
-                            value="{{ isset($data->jurusan_name) ? $data->jurusan_name : '' }}" />
+                        <input type="file" class="form-control form-control-sm" id="file" name="file" />
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+                <button type="submit" class="btn btn-primary">Import</button>
             </div>
         </div>
     </div>
@@ -47,14 +55,10 @@ $is_edit = isset($data);
 
         $("#form-master").validate({
             rules: {
-                jurusan_code: {
-                    required: true,
-                    maxlength: 10
-                },
-                jurusan_name: {
-                    required: true,
-                    maxlength: 100
-                }
+                // nama_kegiatan: {
+                //     required: true,
+                //     maxlength: 100
+                // }
             },
             submitHandler: function(form) {
                 $('.form-message').html('');

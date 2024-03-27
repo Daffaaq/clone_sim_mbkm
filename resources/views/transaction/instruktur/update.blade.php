@@ -173,10 +173,20 @@
 @push('content-js')
     <script>
         $(document).ready(function() {
+            function validateMahasiswaSelection() {
+                var selectedMahasiswa = $('input[name="mahasiswa_id[]"]:checked').length;
+                if (selectedMahasiswa === 0) {
+                    alert('Mohon pilih setidaknya satu mahasiswa.');
+                    return false; // Batalkan pengiriman formulir
+                }
+                return true; // Lanjutkan pengiriman formulir
+            }
             // Submit form
             $('#form-sb').submit(function(event) {
                 event.preventDefault(); // Prevent default form submission
-
+                if (!validateMahasiswaSelection()) {
+                    return; // Batalkan pengiriman formulir jika validasi gagal
+                }
                 // Send AJAX request to submit form
                 $.ajax({
                     url: $(this).attr('action'),
@@ -185,6 +195,11 @@
                     success: function(response) {
                         // Reload the page after successful form submission
                         window.location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        // Tangani kesalahan jika permintaan AJAX gagal
+                        console.error(error);
+                        handleResponse(response);
                     }
                 });
             });

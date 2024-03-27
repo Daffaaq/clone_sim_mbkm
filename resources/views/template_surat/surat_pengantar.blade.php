@@ -81,7 +81,13 @@
                             <tr>
                                 <td><span style="font-size: 16px;">Perihal</span></td>
                                 <td><span style="font-size: 16px;">:</span></td>
-                                <td><span style="font-size: 16px; font-weight:bold">Permohonan Magang Industri</span>
+                                <td><span style="font-size: 16px; font-weight:bold">Permohonan
+                                        @if ($mitra->mitra->kegiatan->program->program_id == 2)
+                                            Praktik Kerja Lapangan
+                                        @else
+                                            Magang Industri
+                                        @endif
+                                    </span>
                                 </td>
                             </tr>
                         </tbody>
@@ -115,7 +121,8 @@
                                 <td width="74" style="vertical-align: top"></td>
                                 <td width="140" style="vertical-align: top">
                                     <span style="font-size: 16px;line-height:1">
-                                        {{ $sp->surat_pengantar_alamat_mitra }}
+                                        {{ $mitra->mitra->mitra_alamat }}, {{ $mitra->mitra->kota->nama_kab_kota }},
+                                        {{ $mitra->mitra->provinsi->nama_provinsi }}
                                     </span>
                                 </td>
                                 <td width="11"></td>
@@ -154,7 +161,11 @@
                     <div align="justify">
                         <span style="font-size: 16px;">Dengan ini kami mohon bantuan Bapak/Ibu agar dapat memberi
                             kesempatan kepada mahasiswa kami dari Jurusan Teknologi Informasi Program Studi
-                            {{ $mitra->prodi->prodi_name }} untuk dapat melaksanakan magang industri di
+                            {{ $mitra->prodi->prodi_name }} untuk dapat melaksanakan @if ($mitra->mitra->kegiatan->program->program_id == 2)
+                                praktik kerja lapangan
+                            @else
+                                magang industri
+                            @endif di
                             Perusahaan/Instansi yang Bapak/Ibu
                             pimpin.
                             <br />Adapun nama-nama mahasiswa tersebut sebagai berikut:</span>
@@ -188,9 +199,16 @@
                         </table>
                         <div align="justify">
                             <span style="font-size: 16px;">
-                                Permohonan magang industri tersebut rencana akan dilaksanakan pada bulan
-                                {{ $sp->surat_pengantar_awal_pelaksanaan }} sampai
-                                dengan {{ $sp->surat_pengantar_akhir_pelaksanaan }} <br />
+                                Permohonan @if ($mitra->mitra->kegiatan->program->program_id == 2)
+                                    praktik kerja lapangan
+                                @else
+                                    magang industri
+                                @endif tersebut rencana akan dilaksanakan pada bulan
+                                {{ \Carbon\Carbon::parse($mitra->magang_tgl_awal_pelaksanaan)->locale('id')->isoFormat('MMMM') }}
+                                sampai
+                                dengan
+                                {{ \Carbon\Carbon::parse($mitra->magang_tgl_akhir_pelaksanaan)->locale('id')->isoFormat('MMMM Y') }}
+                                <br />
                                 Demikian atas perhatian dan kerjasamanya disampaikan terima kasih.
                             </span>
                         </div>

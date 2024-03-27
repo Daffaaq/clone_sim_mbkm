@@ -113,7 +113,10 @@
                         "sClass": "",
                         "sWidth": "10%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
+                        "mRender": function(data, type, row, meta) {
+                            return data + ", " + row.kota.nama_kab_kota;
+                        }
                     },
                     {
                         "mData": "mitra_website",
@@ -175,12 +178,16 @@
                         "mRender": function(data, type, row, meta) {
                             var buttons = '';
                             @if ($allowAccess->update)
-                                // if (row.kegiatan.is_kuota == 1) {
-                                buttons +=
-                                    `<a href="{{ $page->url }}/${data}/show" class=" btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat detail" >Daftar</a> `
-                                // }
+                                @if ($can_daftar)
+                                    // if (row.kegiatan.is_kuota == 1) {
+                                    buttons +=
+                                        `<a href="{{ $page->url }}/${data}/show" class=" btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat detail" >Daftar</a> `
+                                    // }
+                                @endif
+                                return buttons;
+                            @else
+                                return '';
                             @endif
-                            return buttons;
                         }
                     },
                 ],

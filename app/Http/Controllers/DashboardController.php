@@ -118,8 +118,18 @@ class DashboardController extends Controller
 
     private function index_mahasiswa($breadcrumb, $activeMenu, $page)
     {
+        $mahasiswa = MahasiswaModel::where('user_id', Auth::user()->user_id)->first();
+        //jika ditemukan salah satu data kosong, maka lempar $mahasiswa->status_profile = 0
+        if (is_null($mahasiswa->email_mahasiswa) || is_null($mahasiswa->no_hp) || is_null($mahasiswa->jenis_kelamin) || is_null($mahasiswa->nama_ortu) || is_null($mahasiswa->hp_ortu)) {
+            $mahasiswa->status_profile = 0;
+        } else {
+            $mahasiswa->status_profile = 1;
+        }
+
+
         return view($this->viewPath . 'mahasiswa')
             ->with('breadcrumb', (object) $breadcrumb)
+            ->with('mahasiswa', $mahasiswa)
             ->with('activeMenu', (object) $activeMenu)
             ->with('page', (object) $page);
     }

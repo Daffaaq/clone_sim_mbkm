@@ -176,8 +176,8 @@ class AccountController extends Controller
                         MahasiswaModel::where('mahasiswa_id', getMahasiswaID())->update([
                             'updated_by' => $user->user_id,
                             'updated_at' => date('Y-m-d H:i:s'),
-                            'photo_dir' => $user->avatar_dir,
-                            'photo_url' => $user->avatar_url
+                            // 'photo_dir' => $user->avatar_dir,
+                            // 'photo_url' => $user->avatar_url
                         ]);
                     }
 

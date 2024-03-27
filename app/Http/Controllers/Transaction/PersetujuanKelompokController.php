@@ -56,8 +56,8 @@ class PersetujuanKelompokController extends Controller
             ->with('periode')
             ->with('prodi')
             ->with('mitra.kegiatan')
-            ->where('magang_tipe', '!=', '2')
-            ->where('is_accept', 0);
+            ->where('magang_tipe', '!=', '2');
+        // ->where('is_accept', 0);
 
         if (auth()->user()->group_id == 1) {
             $data = $data->get();
@@ -95,12 +95,19 @@ class PersetujuanKelompokController extends Controller
         $ketua = Magang::with('mahasiswa')->where('magang_kode', $data->magang_kode)->where('magang_tipe', 0)->first();
 
         return (!$data) ? $this->showModalError() :
-            $this->showModalConfirmCustom($this->viewPath . 'action',
-            $this->menuUrl . '/' . $id . '/approve', [
-                'Nama Ketua' => $ketua->mahasiswa->nama_mahasiswa,
-                'Mitra' => $data->mitra->mitra_nama,
-                'Kegiatan' => $data->mitra->kegiatan->kegiatan_nama,
-            ], 'Konfirmasi Terima', 'Apakah anda yakin ingin menerima undangan dari ketua:', 'Ya, Approve', 'PUT');
+            $this->showModalConfirmCustom(
+                $this->viewPath . 'action',
+                $this->menuUrl . '/' . $id . '/approve',
+                [
+                    'Nama Ketua' => $ketua->mahasiswa->nama_mahasiswa,
+                    'Mitra' => $data->mitra->mitra_nama,
+                    'Kegiatan' => $data->mitra->kegiatan->kegiatan_nama,
+                ],
+                'Konfirmasi Terima',
+                'Apakah anda yakin ingin menerima undangan dari ketua:',
+                'Ya, Approve',
+                'PUT'
+            );
     }
 
     public function confirm_reject($id)

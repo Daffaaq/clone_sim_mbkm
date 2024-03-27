@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Crypt;
 use App\Models\DokumenMagangModel;
+use App\Models\MitraModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
@@ -283,6 +284,19 @@ class InstrukturController extends Controller
 
     public function create_instruktur(Request $request)
     {
+
+        $validator = Validator::make($request->all(), [
+            'nama_instruktur' => 'required',
+            'instruktur_email' => 'required|email',
+            'instruktur_phone' => 'required',
+            'password' => 'required', // Misalnya, panjang minimal password 6 karakter
+            'mahasiswa_id' => 'required|array|min:1' // Misalnya, harus berupa array
+        ]);
+
+        // Jika validasi gagal, kembalikan respons dengan pesan error
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
         $nama_instruktur = $request->input('nama_instruktur');
         $instruktur_email = $request->input('instruktur_email');
         $instruktur_phone = $request->input('instruktur_phone');
@@ -327,16 +341,16 @@ class InstrukturController extends Controller
             foreach ($magang_ids as $magang_id) {
                 // Loop untuk setiap mahasiswa yang dipilih
                 $mahasiswa_id = array_shift($mahasiswa_ids);
-                    // Pastikan mahasiswa_id tidak null sebelum menyimpan data
-                    if ($mahasiswa_id) {
-                        // Simpan data ke dalam InstrukturLapanganModel
-                        $insertInstrukturLapangan = InstrukturLapanganModel::create([
-                            'magang_id' => $magang_id,
-                            'mahasiswa_id' => $mahasiswa_id,
-                            'instruktur_id' => $instruktur_id // Gunakan id instruktur yang baru saja dibuat
-                            // Isi kolom-kolom lainnya sesuai kebutuhan
-                        ]);
-                    }
+                // Pastikan mahasiswa_id tidak null sebelum menyimpan data
+                if ($mahasiswa_id) {
+                    // Simpan data ke dalam InstrukturLapanganModel
+                    $insertInstrukturLapangan = InstrukturLapanganModel::create([
+                        'magang_id' => $magang_id,
+                        'mahasiswa_id' => $mahasiswa_id,
+                        'instruktur_id' => $instruktur_id // Gunakan id instruktur yang baru saja dibuat
+                        // Isi kolom-kolom lainnya sesuai kebutuhan
+                    ]);
+                }
             }
             // dd($magang_ids);
         } else {

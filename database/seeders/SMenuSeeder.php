@@ -35,9 +35,7 @@ class SMenuSeeder extends Seeder
             ['menu_id' => '17', 'menu_scope' => 'ADMIN', 'menu_code' => 'SETTING.GROUP', 'menu_name' => 'Group', 'menu_url' => 'setting/group', 'menu_level' => '2', 'order_no' => '2', 'parent_id' => '5', 'class_tag' => 'setting-group', 'icon' => 'fas fa-minus text-xs', 'is_active' => '1'],
             ['menu_id' => '18', 'menu_scope' => 'ADMIN', 'menu_code' => 'SETTING.USER', 'menu_name' => 'User', 'menu_url' => 'setting/user', 'menu_level' => '2', 'order_no' => '3', 'parent_id' => '5', 'class_tag' => 'setting-user', 'icon' => 'fas fa-minus text-xs', 'is_active' => '1'],
             ['menu_id' => '19', 'menu_scope' => 'ALL', 'menu_code' => 'SETTING.ACCOUNT', 'menu_name' => 'Account', 'menu_url' => 'setting/account', 'menu_level' => '2', 'order_no' => '4', 'parent_id' => '5', 'class_tag' => 'setting-account', 'icon' => 'fas fa-minus text-xs', 'is_active' => '1'],
-            ['menu_id' => '20', 'menu_scope' => 'ADMIN', 'menu_code' => 'MASTER.DOSEN', 'menu_name' => 'Dosen', 'menu_url' => 'master/dosen', 'menu_level' => '2', 'order_no' => '24', 'parent_id' => '2', 'class_tag' => 'master-dosen', 'icon' => 'fas fa-minus text-xs', 'is_active' => '1'],
-            ['menu_id' => '21', 'menu_scope' => 'ADMIN', 'menu_code' => 'TRANSACTION.PEMBIMBING.DOSEN', 'menu_name' => 'Pembimbing Dosen', 'menu_url' => 'transaksi/pembimbing-dosen', 'menu_level' => '2', 'order_no' => '4', 'parent_id' => '3', 'class_tag' => 'transaksi-pembimbing-dosen', 'icon' => 'fas fa-minus text-xs', 'is_active' => '1'],
-            ['menu_id' => '22', 'menu_scope' => 'ALL', 'menu_code' => 'TRANSACTION.INSTRUKTUR', 'menu_name' => 'Instruktur', 'menu_url' => 'transaksi/instruktur', 'menu_level' => '2', 'order_no' => '4', 'parent_id' => '3', 'class_tag' => 'transaksi-instruktur', 'icon' => 'fas fa-minus text-xs', 'is_active' => '1'],
+
 
         ], ['menu_id', 'menu_code'], ['menu_scope', 'menu_name', 'menu_url', 'class_tag']);
     }

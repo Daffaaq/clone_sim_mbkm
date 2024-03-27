@@ -28,7 +28,6 @@ class TInstrukturLapangan extends Migration
             $table->dateTime('deleted_at')->nullable()->index();
             $table->integer('deleted_by')->nullable()->index();
         });
-
     }
 
     /**

@@ -114,6 +114,8 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::resource('mahasiswa', MahasiswaController::class)->parameter('mahasiswa', 'id');
     Route::post('mahasiswa/list', [MahasiswaController::class, 'list']);
     Route::get('mahasiswa/{id}/delete', [MahasiswaController::class, 'confirm']);
+    Route::get('mahasiswa/import', [MahasiswaController::class, 'import']);
+    Route::post('mahasiswa/import', [MahasiswaController::class, 'import_action']);
 
     //dosen
     Route::resource('dosen', DosenController::class)->parameter('dosen', 'id');
@@ -184,6 +186,8 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::post('lihat-status-pendaftaran/list', [LihatStatusPendaftaranController::class, 'list']);
     Route::get('lihat-status-pendaftaran/{encrpyt}', [LihatStatusPendaftaranController::class, 'lengkapi']);
     Route::post('lihat-status-pendaftaran/{id}/suratbalasan', [LihatStatusPendaftaranController::class, 'suratbalasan']);
+    Route::get('lihat-status-pendaftaran/{kode}/ganti-anggota', [LihatStatusPendaftaranController::class, 'ganti_anggota']);
+    Route::post('lihat-status-pendaftaran/{kode}/ganti-anggota', [LihatStatusPendaftaranController::class, 'ganti_anggota_action']);
 
     //lihat status
     Route::resource('lihat-status-pengajuan', LihatStatusPengajuanController::class)->parameter('lihat-status-pengajuan', 'id');
@@ -205,7 +209,17 @@ Route::group(['prefix' => 'laporan', 'middleware' => ['auth']], function () {
     Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');
     Route::post('daftar-mahasiswa-diterima/list', [DaftarMahasiswaDiterimaController::class, 'list']);
     Route::get('daftar-mahasiswa-diterima/{id}/delete', [DaftarMahasiswaDiterimaController::class, 'confirm']);
+    Route::get('daftar-mahasiswa/export', [MahasiswaController::class, 'export']);
+
+    Route::resource('daftar-mitra', DaftarMitraController::class)->parameter('daftar-mitra', 'id');
+    Route::post('daftar-mitra/list', [DaftarMitraController::class, 'list']);
+    Route::get('daftar-mitra/{id}/delete', [DaftarMitraController::class, 'confirm']);
+    Route::get('daftar-mitra/export', [MitraController::class, 'export']);
 });
+
+Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');
+Route::post('daftar-mahasiswa-diterima/list', [DaftarMahasiswaDiterimaController::class, 'list']);
+Route::get('daftar-mahasiswa-diterima/{id}/delete', [DaftarMahasiswaDiterimaController::class, 'confirm']);
 
 //kuota with url mitra/{id}/kuota
 Route::prefix('mitra/{id}')->group(function () {

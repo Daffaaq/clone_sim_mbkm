@@ -105,7 +105,6 @@ $avatar = $avatar ? asset($avatar) : asset('assets/dist/user/user.png');
     </div>
 
     @if (env('enableCDN', false))
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-bs4.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
             integrity="sha512-bnIvzh6FU75ZKxp0GXLH9bewza/OIw6dLVh9ICg0gogclmYGguQJWl8U30WpbsGTqbIiAwxTsbe76DErLq5EDQ=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>

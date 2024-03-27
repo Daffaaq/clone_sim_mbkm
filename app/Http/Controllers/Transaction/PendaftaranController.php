@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DokumenMagangModel;
 use App\Models\Master\PeriodeModel;
 use App\Models\MitraModel;
+use App\Models\SuratPengantarModel;
 use App\Models\Transaction\Magang;
 use Illuminate\Http\Request;
 use stdClass;
@@ -75,7 +76,7 @@ class PendaftaranController extends Controller
 
         //cek proposal ex ist if$data->mitra->kegiatan->is submit proposal == 0 then false
         $data = $data->map(function ($item) {
-            $item->proposal = DokumenMagangModel::where('magang_id', $item->magang_id)->where('dokumen_magang_nama', 'PROPOSAL')->first();
+            $item->proposal = DokumenMagangModel::where('magang_id', $item->magang_id)->where('dokumen_magang_nama', 'PROPOSAL')->latest()->first();
             $item->surat_balasan = DokumenMagangModel::where('magang_id', $item->magang_id)->where('dokumen_magang_nama', 'SURAT_BALASAN')->first();
             return $item;
         });
@@ -426,8 +427,9 @@ class PendaftaranController extends Controller
             ->first();
         $check = Magang::where('magang_kode', $kode_magang)->get();
         $id_joined = $check->pluck('magang_id');
-        $proposal = DokumenMagangModel::whereIn('magang_id', $id_joined)->where('dokumen_magang_nama', 'PROPOSAL')->first();
+        $proposal = DokumenMagangModel::whereIn('magang_id', $id_joined)->where('dokumen_magang_nama', 'PROPOSAL')->latest()->first();
         $magang->proposal = $proposal;
+        $magang->proposals = DokumenMagangModel::whereIn('magang_id', $id_joined)->where('dokumen_magang_nama', 'PROPOSAL')->get();
 
         return view($this->viewPath . 'validasi_proposal')
             ->with('page', (object) $page)
@@ -469,6 +471,7 @@ class PendaftaranController extends Controller
         $magang->surat_balasan = $surat_balasan;
         $proposal = DokumenMagangModel::whereIn('magang_id', $id_joined)->where('dokumen_magang_nama', 'PROPOSAL')->first();
         $magang->proposal = $proposal;
+        $magang->proposals = DokumenMagangModel::whereIn('magang_id', $id_joined)->where('dokumen_magang_nama', 'PROPOSAL')->get();
 
         return view($this->viewPath . 'validasi_surat_balasan')
             ->with('page', (object) $page)
@@ -494,8 +497,15 @@ class PendaftaranController extends Controller
             $kode_magang = DokumenMagangModel::with('magang')->where('dokumen_magang_id', $id)->first()->magang->magang_kode;
             // dd($kode_magang);
             //update status Magang where magang_kode = $kode_magang
-            $res = Magang::where('magang_kode', $kode_magang)->update(['status' => $status]);
+            $res = Magang::where('magang_kode', $kode_magang)->update(['status' => $status == 3 ? 3 : 0]);
             $res = DokumenMagangModel::where('dokumen_magang_id', $id)->where('dokumen_magang_nama', 'PROPOSAL')->update(['dokumen_magang_status' => $status == 3 ? 1 : 0, 'dokumen_magang_keterangan' => $request->keterangan]);
+
+            $request['surat_pengantar_no'] = '/PL.2.1/PM/' . date('Y');
+            $request['magang_kode'] = $kode_magang;
+
+            if ($status == 3) {
+                SuratPengantarModel::insertData($request, ['status', 'id', 'keterangan']);
+            }
 
             return response()->json([
                 'stat' => $status == 3 ? 1 : 0,

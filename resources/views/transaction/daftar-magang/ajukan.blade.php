@@ -72,12 +72,12 @@ $is_edit = isset($data);
                     </div>
                 </div>
 
-                {{-- <div class="form-group required row mb-2">
+                <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Alamat</label>
                     <div class="col-sm-9">
                         <textarea type="text" class="form-control form-control-sm" id="mitra_alamat" name="mitra_alamat">{{ isset($data->mitra_alamat) ? $data->mitra_alamat : '' }}</textarea>
                     </div>
-                </div> --}}
+                </div>
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Provinsi</label>
                     <div class="col-sm-9">
@@ -267,8 +267,10 @@ $is_edit = isset($data);
                         unblockUI(form);
                         setFormMessage('.form-message', data);
                         if (data.stat) {
-                            resetForm('#form-master');
-                            dataMaster.draw(false);
+                            //     resetForm('#form-master');
+                            //     dataMaster.draw(false);
+                            window.location.href =
+                                "{{ url('transaksi/lihat-status-pengajuan') }}"
                         }
                         closeModal($modal, data);
                     }

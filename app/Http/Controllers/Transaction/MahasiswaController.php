@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Transaction;
 
+use App\Exports\MahasiswaExport;
 use App\Http\Controllers\Controller;
+use App\Imports\MahasiswaImport;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Setting\UserModel;
 use App\Models\Transaction\Magang;
@@ -12,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 
 class MahasiswaController extends Controller
@@ -110,9 +114,6 @@ class MahasiswaController extends Controller
                 'prodi_id' => 'required',
                 'nim'  => 'required',
                 'nama_mahasiswa' => 'required',
-                'email_mahasiswa' => 'required',
-                'no_hp' => 'required',
-                'jenis_kelamin' => 'required',
                 'kelas' => 'required',
             ];
 
@@ -196,9 +197,6 @@ class MahasiswaController extends Controller
                 'prodi_id' => 'required',
                 'nim'  => 'required',
                 'nama_mahasiswa' => 'required',
-                'email_mahasiswa' => 'required',
-                'no_hp' => 'required',
-                'jenis_kelamin' => 'required',
                 'kelas' => 'required',
             ];
 
@@ -290,6 +288,8 @@ class MahasiswaController extends Controller
 
     public function cari($nim)
     {
+        $current_mahasiswa = MahasiswaModel::where('user_id', Auth::user()->user_id)->first();
+        $id_prodi = $current_mahasiswa->prodi_id;
 
         $data = MahasiswaModel::where('nim', $nim)->first();
 
@@ -301,7 +301,16 @@ class MahasiswaController extends Controller
             ]);
         }
 
-        $check = Magang::where('mahasiswa_id', $data->mahasiswa_id)->count();
+        //check if $data->prodi_id != $id_prodi
+        if ($data->prodi_id != $id_prodi) {
+            return response()->json([
+                'stat' => false,
+                'mc' => false, // close modal
+                'msg' => 'Mahasiswa beda prodi',
+            ]);
+        }
+
+        $check = Magang::where('mahasiswa_id', $data->mahasiswa_id)->where('is_accept', '!=', 2)->count();
 
         if ($check > 0) {
             return response()->json([
@@ -318,5 +327,162 @@ class MahasiswaController extends Controller
             'msg' => 'Data ditemukan',
             'data' => $data,
         ]);
+    }
+
+    public function export(Request $request)
+    {
+
+        $active_periode = PeriodeModel::where('is_current', 1)->first();
+
+        $data  = MahasiswaModel::with('prodi');
+
+
+        if ($request->prodi_id) {
+            $data->where('prodi_id', $request->prodi_id);
+        }
+
+        if (auth()->user()->group_id == 1) {
+            $data = $data->get();
+        } else if (auth()->user()->group_id == 4) {
+            $data = $data->where('mahasiswa_id', auth()->user()->getUserMahasiswa->mahasiswa_id)->get();
+        } else {
+            $prodi_id = auth()->user()->getProdiId();
+            $data = $data->where('prodi_id', $prodi_id)->get();
+        }
+
+        $data = $data->map(function ($item) use ($active_periode) {
+            $magang = Magang::with('mitra')
+                ->with('mitra.kegiatan')
+                ->where('mahasiswa_id', $item->mahasiswa_id)
+                ->where('periode_id', $active_periode->periode_id)
+                ->latest()
+                ->first();
+
+            if (!$magang) {
+                $status_magagng = "Belum Terdaftar";
+            } else {
+                if ($magang->magang_tipe == "1") {
+                    if ($magang->is_accept == "2") {
+                        $status_magagng = "Belum Terdaftar";
+                    } else {
+                        if ($magang->status == 1) {
+                            $status_magagng = "Diterima";
+                        } elseif ($magang->status == 0) {
+                            $status_magagng = "Terdaftar";
+                        } elseif ($magang->status == 2) {
+                            $status_magagng = "Belum Terdaftar";
+                        } elseif ($magang->status == 3) {
+                            $status_magagng = "Terdaftar";
+                        }
+                    }
+                } else {
+                    if ($magang->status == 1) {
+                        $status_magagng = "Diterima";
+                    } elseif ($magang->status == 0) {
+                        $status_magagng = "Terdaftar";
+                    } elseif ($magang->status == 2) {
+                        $status_magagng = "Belum Terdaftar";
+                    } elseif ($magang->status == 3) {
+                        $status_magagng = "Terdaftar";
+                    }
+                }
+            }
+
+            $item->status_magang = (string)$status_magagng;
+
+            $item->magang = $magang;
+
+            return $item;
+        });
+
+        if ($request->status) {
+            $data = $data->where('status_magang', (string)$request->status);
+        }
+
+        $random = rand(100, 999);
+        return Excel::download(new MahasiswaExport($data), 'daftar_mahasiswa_' . $random . '.xlsx');
+    }
+
+    public function import()
+    {
+        $this->authAction('update', 'modal');
+        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+
+        $page = [
+            'url' => $this->menuUrl . '/import',
+            'title' => 'Import ' . $this->menuTitle
+        ];
+
+        $prodis = ProdiModel::select('prodi_id', 'prodi_name', 'prodi_code')->get();
+
+        return view($this->viewPath . 'import')
+            ->with('page', (object) $page)
+            ->with('prodis', $prodis);
+    }
+
+    public function import_action(Request $request)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+
+            $rules = [
+                'file' => 'required|mimes:xls,xlsx'
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'stat'     => false,
+                    'mc'       => false,
+                    'msg'      => 'Terjadi kesalahan.',
+                    'msgField' => $validator->errors()
+                ]);
+            }
+
+            $file = $request->file('file');
+
+            $nama_file = rand() . '.' . $file->getClientOriginalExtension();
+
+            $file->move(public_path('assets/temp_import'), $nama_file);
+
+            $collection = Excel::toCollection(new MahasiswaImport, public_path('assets/temp_import/' . $nama_file));
+            $collection = $collection[0];
+            //remove 0,1,2 index
+            $datas = $collection->splice(3);
+
+            // dd($datas);
+
+            $prodi_id = $request->prodi_id ?? auth()->user()->getProdiId();
+
+            $datas->map(function ($item) use ($prodi_id) {
+                $nim = $item[0];
+                if ($nim != null) {
+                    $user = UserModel::insertGetId([
+                        'username' => $nim,
+                        'name' => $item[1],
+                        'password' => Hash::make($nim),
+                        'group_id' => 4,
+                        'is_active' => 1,
+                    ]);
+                    // dd($user);
+                    MahasiswaModel::insert([
+                        'user_id' => $user,
+                        'prodi_id' => $prodi_id,
+                        'nim' => $item[0],
+                        'nama_mahasiswa' => $item[1],
+                        'kelas' => $item[2],
+                    ]);
+                }
+            });
+
+            //remove file
+            unlink(public_path('assets/temp_import/' . $nama_file));
+
+            return response()->json([
+                'stat' => true,
+                'mc' => true, // close modal
+                'msg' => 'Mahasiswa berhasil diimport'
+            ]);
+        }
     }
 }

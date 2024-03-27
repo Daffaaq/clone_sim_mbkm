@@ -124,7 +124,7 @@ $is_edit = isset($data);
 				menu_code: {
 					required: true,
 					minlength: 3,
-					maxlength: 50
+					maxlength: 20
 				},
 				menu_name: {
 					required: true,

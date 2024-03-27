@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Transaction;
 
+use App\Exports\MitraExport;
 use App\Http\Controllers\Controller;
 use App\Models\KabupatenModel;
 use App\Models\Master\KegiatanModel;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 use stdClass;
 use Symfony\Component\VarDumper\Cloner\Data;
 use Yajra\DataTables\Facades\DataTables;
@@ -68,6 +70,7 @@ class MitraController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         $data  = MitraModel::with('kegiatan')
+            ->with('kota')
             ->with('periode');
         // ->get();
 
@@ -87,8 +90,12 @@ class MitraController extends Controller
             //TODO: get jumlah pendaftar
             $item['mitra_jumlah_pendaftar'] = Magang::where('mitra_id', $item->mitra_id)
                 ->where('periode_id', PeriodeModel::where('is_current', 1)->first()->periode_id)
-                ->whereIn('status', [1, 3])
-                ->count();
+                ->whereIn('status', [1, 3])->get();
+            //if magang_tipe == 1 and is_accept == 2 then remove
+            $item['mitra_jumlah_pendaftar'] = $item['mitra_jumlah_pendaftar']->filter(function ($item) {
+                return $item->magang_tipe != 1 || $item->is_accept != 2;
+            })->count();
+
 
             $item['encrypt_mitra_id'] = Crypt::encrypt($item->mitra_id);
 
@@ -141,6 +148,7 @@ class MitraController extends Controller
                 'mitra_nama' => 'required|string',
                 'mitra_deskripsi' => 'required',
                 'mitra_batas_pendaftaran' => 'required',
+                'mitra_alamat' => 'required',
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -180,7 +188,7 @@ class MitraController extends Controller
             unset($request['skema_arr']);
 
             $kota = KabupatenModel::find($request['kota_id']);
-            $request['mitra_alamat'] = $kota->nama_kab_kota;
+            // $request['mitra_alamat'] = $kota->nama_kab_kota;
             $request['status'] = 1;
 
             $file = $request->file('flyer');
@@ -249,6 +257,7 @@ class MitraController extends Controller
             $rules = [
                 'kegiatan_id' => 'required',
                 'periode_id' => 'required',
+                'mitra_alamat' => 'required',
                 'mitra_nama' => 'required|string',
                 'mitra_deskripsi' => 'required',
                 'mitra_batas_pendaftaran' => 'required'
@@ -266,7 +275,7 @@ class MitraController extends Controller
             }
 
             $kota = KabupatenModel::find($request['kota_id']);
-            $request['mitra_alamat'] = $kota->nama_kab_kota;
+            // $request['mitra_alamat'] = $kota->nama_kab_kota;
 
             if (auth()->user()->group_id == 1) {
                 $request['mitra_prodi'] = implode(',', $request->prodi_arr);
@@ -392,6 +401,7 @@ class MitraController extends Controller
         $mitra = MitraModel::where('mitra_id', $id)
             ->with('kegiatan')
             ->with('periode')
+            ->with('kota')
             ->first();
 
         $datas = [
@@ -705,5 +715,40 @@ class MitraController extends Controller
             ->with('url', $this->menuUrl . '/' . $id . '/kuota')
             ->with('action', 'PUT')
             ->with('mitra', $mitra);
+    }
+
+    public function export()
+    {
+        $data  = MitraModel::with('kegiatan')
+            ->with('periode');
+        // ->get();
+
+        // if (auth()->user()->group_id != 1) {
+        //     //data in mitra with column mitra_prodi is [1,2,3,etc]
+        //     //how to get with getProdiId() include with mitra_prodi
+        //     $prodi_id = auth()->user()->getProdiId();
+
+        //     // $data = $data->filter(function ($item) use ($prodi_id) {
+        //     //     dd($prodi_id, json_decode($item->mitra_prodi));
+        //     //     return in_array($prodi_id, json_decode($item->mitra_prodi));
+        //     // });
+        //     $data->whereRaw('find_in_set(?, mitra_prodi)', $prodi_id);
+        // }
+        $data = $data->get();
+        $data = $data->map(function ($item) {
+            //TODO: get jumlah pendaftar
+            $item['mitra_jumlah_pendaftar'] = Magang::where('mitra_id', $item->mitra_id)
+                ->where('periode_id', PeriodeModel::where('is_current', 1)->first()->periode_id)
+                ->whereIn('status', [1])->get();
+            //if magang_tipe == 1 and is_accept == 2 then remove
+            $item['mitra_jumlah_pendaftar'] = $item['mitra_jumlah_pendaftar']->filter(function ($item) {
+                return $item->magang_tipe != 1 || $item->is_accept != 2;
+            })->count();
+
+            return $item;
+        });
+
+        $random = rand(100, 999);
+        return Excel::download(new MitraExport($data), 'daftar_mitra_' . $random . '.xlsx');
     }
 }

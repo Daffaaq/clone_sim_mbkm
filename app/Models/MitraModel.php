@@ -57,4 +57,14 @@ class MitraModel extends AppModel
     {
         return $this->belongsTo(PeriodeModel::class, 'periode_id');
     }
+
+    public function provinsi()
+    {
+        return $this->belongsTo('App\Models\ProvinsiModel', 'provinsi_id', 'id');
+    }
+
+    public function kota()
+    {
+        return $this->belongsTo('App\Models\KabupatenModel', 'kota_id', 'id');
+    }
 }

@@ -29,6 +29,16 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <th class="w-15 text-right">Alamat Mitra</th>
+                                    <th class="w-1">:</th>
+                                    <td class="w-84">
+                                        <i
+                                            class="fas fa-map-marker-alt
+                                        text-md text-primary"></i>
+                                        {{ $mitra->mitra_alamat }}, {{ $mitra->kota->nama_kab_kota }}
+                                    </td>
+                                </tr>
+                                <tr>
                                     <th class="w-15 text-right">Periode</th>
                                     <th class="w-1">:</th>
                                     <td class="w-84">{{ $mitra->periode->periode_nama }}</td>

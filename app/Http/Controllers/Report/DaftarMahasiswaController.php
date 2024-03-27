@@ -3,19 +3,21 @@
 namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
+use App\Models\Master\MahasiswaModel;
 use App\Models\Master\PeriodeModel;
+use App\Models\Master\ProdiModel;
 use App\Models\Transaction\Magang;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
-class DaftarMahasiswaDiterimaController extends Controller
+class DaftarMahasiswaController extends Controller
 {
     public function __construct()
     {
-        $this->menuCode  = 'DAFTAR.ACC';
-        $this->menuUrl   = url('daftar-mahasiswa-diterima');     // set URL untuk menu ini
-        $this->menuTitle = 'Daftar Mahasiswa Diterima';                       // set nama menu
-        $this->viewPath  = 'report.daftar_mahasiswa_diterima.';         // untuk menunjukkan direktori view. Diakhiri dengan tanda titik
+        $this->menuCode  = 'LAPORAN.DAFTAR.MHS';
+        $this->menuUrl   = url('laporan/daftar-mahasiswa');     // set URL untuk menu ini
+        $this->menuTitle = 'Daftar Mahasiswa';                       // set nama menu
+        $this->viewPath  = 'report.daftar_mahasiswa.';         // untuk menunjukkan direktori view. Diakhiri dengan tanda titik
     }
 
     public function index()
@@ -25,12 +27,12 @@ class DaftarMahasiswaDiterimaController extends Controller
 
         $breadcrumb = [
             'title' => $this->menuTitle,
-            'list'  => ['Daftar Mahasiswa Diterima']
+            'list'  => ['Report', 'Daftar Mahasiswa']
         ];
 
         $activeMenu = [
-            'l1' => 'daftar-acc',
-            'l2' => null,
+            'l1' => 'report',
+            'l2' => 'daftar-mahasiswa',
             'l3' => null
         ];
 
@@ -39,10 +41,21 @@ class DaftarMahasiswaDiterimaController extends Controller
             'title' => $this->menuTitle
         ];
 
+        //make static statues with 0=Diterima, 1=Terdaftar, 2=Belum Terdaftar/Ditolak
+        $statuses = [
+            (object) ['id' => 1, 'name' => 'Diterima'],
+            (object) ['id' => 2, 'name' => 'Terdaftar'],
+            (object) ['id' => 3, 'name' => 'Belum Terdaftar/Ditolak']
+        ];
+
+        $prodis = ProdiModel::select('prodi_id', 'prodi_name', 'prodi_code')->get();
+
         return view($this->viewPath . 'index')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
             ->with('page', (object) $page)
+            ->with('statuses', $statuses)
+            ->with('prodis', $prodis)
             ->with('allowAccess', $this->authAccessKey());
     }
 
@@ -53,13 +66,12 @@ class DaftarMahasiswaDiterimaController extends Controller
 
         $active_periode = PeriodeModel::where('is_current', 1)->first();
 
-        $data  = Magang::with('mahasiswa')
-            ->with('mitra')
-            ->with('periode')
-            ->with('prodi')
-            ->with('mitra.kegiatan')
-            ->where('periode_id', $active_periode->periode_id)
-            ->where('status', 1);
+        $data  = MahasiswaModel::with('prodi');
+
+
+        if ($request->prodi_id) {
+            $data->where('prodi_id', $request->prodi_id);
+        }
 
         if (auth()->user()->group_id == 1) {
             $data = $data->get();
@@ -70,10 +82,54 @@ class DaftarMahasiswaDiterimaController extends Controller
             $data = $data->where('prodi_id', $prodi_id)->get();
         }
 
-        //if magang_tipe == 1 and is_accept == 2 then remove the data
-        $data = $data->filter(function ($item) {
-            return $item->magang_tipe != 1 || $item->is_accept != 2;
+        $data = $data->map(function ($item) use ($active_periode) {
+            $magang = Magang::with('mitra')
+                ->with('mitra.kegiatan')
+                ->where('mahasiswa_id', $item->mahasiswa_id)
+                ->where('periode_id', $active_periode->periode_id)
+                ->latest()
+                ->first();
+
+            if (!$magang) {
+                $status_magagng = 3;
+            } else {
+                if ($magang->magang_tipe == "1") {
+                    if ($magang->is_accept == "2") {
+                        $status_magagng = 3;
+                    } else {
+                        if ($magang->status == 1) {
+                            $status_magagng = 1;
+                        } elseif ($magang->status == 0) {
+                            $status_magagng = 2;
+                        } elseif ($magang->status == 2) {
+                            $status_magagng = 3;
+                        } elseif ($magang->status == 3) {
+                            $status_magagng = 2;
+                        }
+                    }
+                } else {
+                    if ($magang->status == 1) {
+                        $status_magagng = 1;
+                    } elseif ($magang->status == 0) {
+                        $status_magagng = 2;
+                    } elseif ($magang->status == 2) {
+                        $status_magagng = 3;
+                    } elseif ($magang->status == 3) {
+                        $status_magagng = 2;
+                    }
+                }
+            }
+
+            $item->status_magang = (string)$status_magagng;
+
+            $item->magang = $magang;
+
+            return $item;
         });
+
+        if ($request->status) {
+            $data = $data->where('status_magang', (string)$request->status);
+        }
 
         return DataTables::of($data)
             ->addIndexColumn()

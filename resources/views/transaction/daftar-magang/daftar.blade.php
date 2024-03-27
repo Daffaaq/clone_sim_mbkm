@@ -85,9 +85,33 @@
                                                 <small class="form-text text-muted">Pilih skema yang akan diambil</small>
                                             </div>
                                         </div>
-                                        <a class="btn btn-primary text-white" onclick="stepper1.next()">Simpan</a>
+                                        <button type="button" class="btn btn-primary text-white" onclick="stepper1.next()"
+                                            @if ($disabled) disabled @endif>Simpan</button>
                                     </div>
                                     <div id="test-l-2" class="content">
+                                        <div class="form-group required row mb-2">
+                                            <label class="col-12 col-md-2 control-label col-form-label">Awal
+                                                Pelaksanaan</label>
+                                            <div class="col-12 col-md-10">
+                                                {{-- loop januari until desember --}}
+                                                <input type="date" class="form-control form-control-sm"
+                                                    id="magang_tgl_awal_pelaksanaan" name="magang_tgl_awal_pelaksanaan">
+                                                <small class="form-text text-muted">
+                                                    Masukkan tanggal awal pelaksanaan magang
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required row mb-2">
+                                            <label class="col-12 col-md-2 control-label col-form-label">Akhir
+                                                Pelaksanaan</label>
+                                            <div class="col-12 col-md-10">
+                                                {{-- loop januari until desember --}}
+                                                <input type="date" readonly disabled class="form-control form-control-sm"
+                                                    id="magang_tgl_akhir" name="magang_tgl_akhir">
+                                                <input type="hidden" class="form-control form-control-sm"
+                                                    id="magang_tgl_akhir_pelaksanaan" name="magang_tgl_akhir_pelaksanaan">
+                                            </div>
+                                        </div>
                                         <div class="form-group required row mb-2">
                                             <label class="col-12 col-md-2 control-label col-form-label">Peran</label>
                                             <div class="col-12 col-md-10">
@@ -133,8 +157,8 @@
                                                                     Mahasiswa</label>
                                                                 <div class="input-group input-group-sm">
                                                                     <input type="text"
-                                                                        class="form-control form-control-sm" id="search"
-                                                                        autocomplete="off" />
+                                                                        class="form-control form-control-sm"
+                                                                        id="search" autocomplete="off" />
                                                                     <span class="input-group-append">
                                                                         <button type="button"
                                                                             class="btn btn-info btn-flat"
@@ -189,7 +213,7 @@
                                             <a class="btn btn-primary text-white" onclick="stepper1.next()">Simpan</a>
                                         @else --}}
                                         <button id="konfirm-btn" class="btn btn-warning text-dark"
-                                            type="button">Konfirmasi</button>
+                                            type="button">Simpan</button>
                                         {{-- @endif --}}
                                     </div>
                                     {{-- @if ($mitra->kegiatan->is_submit_proposal == 1)
@@ -300,6 +324,15 @@
             $('.select2_combobox').select2();
 
             $('#mahasiswa_select').hide();
+
+            $('#magang_tgl_awal_pelaksanaan').on('change', function() {
+                const durasi = parseInt('{{ $mitra->mitra_durasi }}')
+                const awal = $(this).val()
+                //count date with durasi
+                const akhir = moment(awal).add(durasi, 'months').format('YYYY-MM-DD')
+                $('#magang_tgl_akhir').val(akhir)
+                $('#magang_tgl_akhir_pelaksanaan').val(akhir)
+            })
 
             $('#tipe_pendaftar').on('change', function() {
                 var value = $(this).val()

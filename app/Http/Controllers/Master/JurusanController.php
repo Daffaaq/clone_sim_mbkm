@@ -137,7 +137,7 @@ class JurusanController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
 
             $rules = [
-                'jurusan_code' => ['required', 'string', 'max:10', JurusanModel::setUniqueInsertIgnore($id)],
+                // 'jurusan_code' => ['required', 'string', 'max:10', JurusanModel::setUniqueInsertIgnore($id)],
                 'jurusan_name' => 'required|string|max:100',
             ];
 

@@ -19,9 +19,6 @@ class SuratPengantarModel extends AppModel
     protected $fillable = [
         'surat_pengantar_no',
         'magang_kode',
-        'surat_pengantar_alamat_mitra',
-        'surat_pengantar_awal_pelaksanaan',
-        'surat_pengantar_akhir_pelaksanaan',
         'created_at',
         'created_by',
         'updated_at',

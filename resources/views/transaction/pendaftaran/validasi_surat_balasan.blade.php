@@ -114,28 +114,30 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td class="text-center w-5 p-1">1</td>
-                                                    <td>
-                                                        <a
-                                                            href="{{ asset('assets/proposal/' . $magang->proposal->dokumen_magang_file) }}">{{ $magang->proposal->dokumen_magang_file }}</a>
-                                                    </td>
-                                                    <td>
-                                                        {{ \Carbon\Carbon::parse($magang->proposal->created_at)->format('d M Y H:i') }}
-                                                    </td>
-                                                    <td>
-                                                        @if ($magang->proposal->dokumen_magang_status == '1')
-                                                            <span class="badge badge-success">Disetujui</span>
-                                                        @elseif ($magang->proposal->dokumen_magang_status == '0')
-                                                            <span class="badge badge-danger">Ditolak</span>
-                                                        @else
-                                                            <span class="badge badge-warning">Menunggu</span>
-                                                        @endif
-                                                    </td>
-                                                    <td>
-                                                        {{ $magang->proposal->dokumen_magang_keterangan ?? '-' }}
-                                                    </td>
-                                                </tr>
+                                                @foreach ($magang->proposals as $proposal)
+                                                    <tr>
+                                                        <td class="text-center w-5 p-1">1</td>
+                                                        <td>
+                                                            <a
+                                                                href="{{ asset('assets/proposal/' . $proposal->dokumen_magang_file) }}">{{ $proposal->dokumen_magang_file }}</a>
+                                                        </td>
+                                                        <td>
+                                                            {{ \Carbon\Carbon::parse($proposal->created_at)->format('d M Y H:i') }}
+                                                        </td>
+                                                        <td>
+                                                            @if ($proposal->dokumen_magang_status == '1')
+                                                                <span class="badge badge-success">Disetujui</span>
+                                                            @elseif ($proposal->dokumen_magang_status == '0')
+                                                                <span class="badge badge-danger">Ditolak</span>
+                                                            @else
+                                                                <span class="badge badge-warning">Menunggu</span>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            {{ $proposal->dokumen_magang_keterangan ?? '-' }}
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
                                             </tbody>
                                         </table>
                                     </td>
