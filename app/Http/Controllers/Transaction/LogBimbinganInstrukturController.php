@@ -57,13 +57,14 @@ class LogBimbinganInstrukturController extends Controller
         $instruktur = InstrukturModel::where('user_id', $user_id)->first();
         $instruktur_id = $instruktur->instruktur_id;
         // dd($instruktur_id);
-        $instruktur_lapangan = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)->first();
-        $instruktur_lapangan_id = $instruktur_lapangan->instruktur_lapangan_id;
+        $instruktur_lapangan = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)->get();
+        $instruktur_lapangan_ids = $instruktur_lapangan->pluck('instruktur_lapangan_id')->toArray();
         // dd($instruktur_lapangan_id);
         // $all = LogBimbinganModel::all();
         // dd($all);
         // Dapatkan semua log bimbingan yang terkait dengan instruktur lapangan tersebut
-        $logBimbingans = LogBimbinganModel::where('instruktur_lapangan_id', $instruktur_lapangan_id)->get();
+        $logBimbingans = LogBimbinganModel::whereIn('instruktur_lapangan_id', $instruktur_lapangan_ids);
+        // $logBimbingans = LogBimbinganModel::where('instruktur_lapangan_id', $instruktur_lapangan_id)->get();
 
         // Dapatkan semua user ID mahasiswa yang membuat log bimbingan
         $userIdMahasiswa = $logBimbingans->pluck('created_by')->toArray();
@@ -102,11 +103,19 @@ class LogBimbinganInstrukturController extends Controller
         $instruktur = InstrukturModel::where('user_id', $user_id)->first();
         $instruktur_id = $instruktur->instruktur_id;
 
-        $instruktur_lapangan = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)->first();
-        $instruktur_lapangan_id = $instruktur_lapangan->instruktur_lapangan_id;
-
+        $instruktur_lapangan = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)->get();
+        $instruktur_lapangan_ids = $instruktur_lapangan->pluck('instruktur_lapangan_id')->toArray();
+        // dd($instruktur_lapangan);
+        // $instruktur_lapangan_id = $instruktur_lapangan->instruktur_lapangan_id;
+        // dd($instruktur_lapangan_id);
+        // $dataall = LogBimbinganModel::all();
+        // dd($dataall);
+        // $dataall = InstrukturLapanganModel::all();
+        // dd($dataall);
         // Gunakan instruktur_lapangan_id untuk mengambil data LogBimbinganModel
-        $data = LogBimbinganModel::where('instruktur_lapangan_id', $instruktur_lapangan_id);
+        $data = LogBimbinganModel::whereIn('instruktur_lapangan_id', $instruktur_lapangan_ids);
+        // $data = LogBimbinganModel::where('instruktur_lapangan_id', $instruktur_lapangan);
+        // dd($data);
 
         // Filter data log bimbingan berdasarkan mahasiswa jika filter mahasiswa dipilih
         if ($request->filled('filter_mahasiswa')) {
