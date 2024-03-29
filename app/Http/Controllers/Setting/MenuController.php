@@ -114,8 +114,8 @@ class MenuController extends Controller
         // cek untuk Insert/Update/Delete harus via AJAX
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'menu_code' => ['required', 'string', 'min:3', 'max:20', MenuModel::setUniqueInsert()],
-                'menu_name' => ['required', 'string', 'min:3', 'max:50'],
+                'menu_code' => ['required', 'string', 'min:3', 'max:50', MenuModel::setUniqueInsert()],
+                'menu_name' => ['required', 'string', 'min:3', 'max:100'],
                 'menu_level' => ['required', 'integer', 'between:1,3'],
                 'order_no' => ['required', 'integer', 'between:1,100'],
                 'class_tag' => ['required', 'string', 'min:4', 'max:20'],

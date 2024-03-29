@@ -32,6 +32,8 @@ use App\Http\Controllers\Setting\UserController;
 use App\Http\Controllers\SuratPengantarController;
 use App\Http\Controllers\Transaction\BeritaController as TransactionBeritaController;
 use App\Http\Controllers\Transaction\DaftarMagangController;
+use App\Http\Controllers\Transaction\DosenPenilaianMahasiswaController;
+use App\Http\Controllers\Transaction\InstrukturPenilaianMahasiswaController;
 use App\Http\Controllers\Transaction\LihatStatusPendaftaranController;
 use App\Http\Controllers\Transaction\LihatStatusPengajuanController;
 use App\Http\Controllers\Transaction\LogBimbinganController;
@@ -141,6 +143,18 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::get('log-bimbingan-instruktur/{id}/delete', [LogBimbinganInstrukturController::class, 'confirm']);
 
     Route::post('log-bimbingan-dosen/updateinstruktur', [LogBimbinganInstrukturController::class, 'updateStatusInstruktur'])->name('update.logbimbingan.instruktur');
+
+    //penilaian Mahasiswa instrukur
+    Route::resource('penilaian-mahasiswa-instruktur', InstrukturPenilaianMahasiswaController::class)->parameter('penilaian-mahasiswa-instruktur', 'id');
+    Route::post('penilaian-mahasiswa-instruktur/list', [InstrukturPenilaianMahasiswaController::class, 'list']);
+    Route::get('penilaian-mahasiswa-instruktur/{id}/delete', [InstrukturPenilaianMahasiswaController::class, 'confirm']);
+    Route::post('penilaian-mahasiswa-instruktur/updatedataPenilaianMahasiswa', [InstrukturPenilaianMahasiswaController::class, 'updatedataPenilaianMahasiswa'])->name('update.penilaian.mahasiswa');
+    //penilaian Mahasiswa instrukur
+    Route::resource('penilaian-mahasiswa-dosen', DosenPenilaianMahasiswaController::class)->parameter('log-bimbingan', 'id');
+    Route::post('penilaian-mahasiswa-dosen/list', [DosenPenilaianMahasiswaController::class, 'list']);
+    Route::get('penilaian-mahasiswa-dosen/{id}/delete', [DosenPenilaianMahasiswaController::class, 'confirm']);
+    Route::post('penilaian-mahasiswa-dosen/updatedataPenilaianMahasiswa', [DosenPenilaianMahasiswaController::class, 'updatedataPenilaianMahasiswa'])->name('update.penilaian.mahasiswa.dosen');
+
 
     //daftar magang
     Route::resource('daftar-magang', DaftarMagangController::class)->parameter('daftar-magang', 'id');

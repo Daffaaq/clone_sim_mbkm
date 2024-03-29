@@ -32,33 +32,86 @@ class InstrukturController extends Controller
 
     public function index()
     {
-        $this->authAction('read');
-        $this->authCheckDetailAccess();
+        $user = auth()->user();
+        // $user = auth()->user()->id;
+        $user_id = $user->user_id;
+        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
+        $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
-        $breadcrumb = [
-            'title' => $this->menuTitle,
-            'list'  => ['Transaksi', 'Instruktur']
-        ];
+        // Gunakan mahasiswa_id untuk mencari data magang
+        $magang_data = Magang::where('mahasiswa_id', $mahasiswa_id)->get();
 
-        $activeMenu = [
-            'l1' => 'transaction',
-            'l2' => 'transaksi-instruktur',
-            'l3' => null
-        ];
+        $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
+            ->where('status', 1) // Status 1 menunjukkan 'Diterima'
+            ->exists();
+        if ($magang_status) {
+            $this->authAction('read');
+            $this->authCheckDetailAccess();
 
-        $page = [
-            'url' => $this->menuUrl,
-            'title' => 'Daftar ' . $this->menuTitle
-        ];
+            $breadcrumb = [
+                'title' => $this->menuTitle,
+                'list'  => ['Transaksi', 'Instruktur']
+            ];
 
-        $prodis = ProdiModel::select('prodi_id', 'prodi_name', 'prodi_code')->get();
+            $activeMenu = [
+                'l1' => 'transaction',
+                'l2' => 'transaksi-instruktur',
+                'l3' => null
+            ];
 
-        return view($this->viewPath . 'index')
-            ->with('breadcrumb', (object) $breadcrumb)
-            ->with('activeMenu', (object) $activeMenu)
-            ->with('page', (object) $page)
-            ->with('prodis', $prodis)
-            ->with('allowAccess', $this->authAccessKey());
+            $page = [
+                'url' => $this->menuUrl,
+                'title' => 'Daftar ' . $this->menuTitle
+            ];
+
+            $prodis = ProdiModel::select('prodi_id', 'prodi_name', 'prodi_code')->get();
+
+            return view($this->viewPath . 'index')
+                ->with('breadcrumb', (object) $breadcrumb)
+                ->with('activeMenu', (object) $activeMenu)
+                ->with('page', (object) $page)
+                ->with('prodis', $prodis)
+                ->with('allowAccess', $this->authAccessKey());
+        } else {
+            $this->authAction('read');
+            $this->authCheckDetailAccess();
+
+            $breadcrumb = [
+                'title' => $this->menuTitle,
+                'list'  => ['Transaksi', 'Instruktur']
+            ];
+
+            $activeMenu = [
+                'l1' => 'transaction',
+                'l2' => 'transaksi-instruktur',
+                'l3' => null
+            ];
+
+            $page = [
+                'url' => $this->menuUrl,
+                'title' => 'Daftar ' . $this->menuTitle
+            ];
+
+            $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
+                ->where('status', 0) // Status 0 menunjukkan 'Belum keterima'
+                ->exists();
+
+            if ($magang_status) {
+                $message = "Anda belum keterima dalam magang. Silahkan untuk menunggu.";
+            } elseif (Magang::where('mahasiswa_id', $mahasiswa_id)->exists()) {
+                // Mahasiswa telah mendaftar magang tetapi belum diterima atau ditolak
+                $message = "Anda belum keterima dalam magang. Silahkan untuk mendaftar ulang.";
+            } else {
+                // Mahasiswa belum mendaftar magang
+                $message = "Anda belum mendaftar magang. Silahkan untuk mendaftar magang.";
+            }
+            return view('transaction.instruktur.index1')
+                ->with('breadcrumb', (object) $breadcrumb)
+                ->with('activeMenu', (object) $activeMenu)
+                ->with('page', (object) $page)
+                ->with('message', $message)
+                ->with('allowAccess', $this->authAccessKey());
+        }
     }
 
     public function list(Request $request)

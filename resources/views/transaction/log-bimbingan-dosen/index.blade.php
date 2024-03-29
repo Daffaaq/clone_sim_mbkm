@@ -10,13 +10,13 @@
                             <i class="fas fa-angle-double-right text-md text-{{ $theme->card_outline }} mr-1"></i>
                             {!! $page->title !!}
                         </h3>
-                        <div class="card-tools">
+                        {{-- <div class="card-tools">
                             @if ($allowAccess->create)
                                 <button type="button" data-block="body"
                                     class="btn btn-sm btn-{{ $theme->button }} mt-1 ajax_modal"
                                     data-url="{{ $page->url }}/create"><i class="fas fa-plus"></i> Tambah</button>
                             @endif
-                        </div>
+                        </div> --}}
                     </div>
                     <div class="card-body p-0">
                         <div id="filter" class="form-horizontal filter-date p-2 border-bottom">
