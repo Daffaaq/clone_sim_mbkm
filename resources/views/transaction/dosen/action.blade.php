@@ -70,6 +70,11 @@ $is_edit = isset($data);
                             <input type="number" class="form-control form-control-sm" id="dosen_tahun"
                                 name="dosen_tahun" value="{{ isset($data->dosen_tahun) ? $data->dosen_tahun : '' }}" />
                         </div>
+                        <div class="form-group required mb-2">
+                            <label class="control-label">kuota Dosen</label>
+                            <input type="number" class="form-control form-control-sm" id="kuota"
+                                name="kuota" value="{{ isset($data->kuota) ? $data->kuota : '' }}" />
+                        </div>
 
                     </div>
                 </div>
@@ -102,6 +107,9 @@ $is_edit = isset($data);
                 dosen_tahun: {
                     required: true,
                 },
+                kuota: {
+                    required: true,
+                }
             },
             submitHandler: function(form) {
                 $('.form-message').html('');

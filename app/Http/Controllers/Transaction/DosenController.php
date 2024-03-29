@@ -56,7 +56,7 @@ class DosenController extends Controller
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data  = DosenModel::selectRaw("dosen_id, dosen_name, dosen_email");
+        $data  = DosenModel::selectRaw("dosen_id, dosen_name, dosen_email, kuota");
 
         return DataTables::of($data)
             ->addIndexColumn()
@@ -95,6 +95,7 @@ class DosenController extends Controller
                 'dosen_tahun' => 'required|integer',
                 'dosen_nip' =>'nullable',
                 'dosen_nidn' =>'nullable',
+                'kuota' =>'nullable',
                 // Add other rules for DosenModel fields
             ];
             $validator = Validator::make($request->all(), $rules);
@@ -131,6 +132,7 @@ class DosenController extends Controller
                 'dosen_tahun' => $request->input('dosen_tahun'),
                 'dosen_nidn' => $request->input('dosen_nidn'),
                 'dosen_nip' => $request->input('dosen_nip'),
+                'kuota' => $request->input('kuota'),
                 'user_id' => $insert->user_id,
                 // fill other fields as needed
             ]);
@@ -187,6 +189,7 @@ class DosenController extends Controller
                 ],
                 'dosen_gender' => 'required|in:L,P',
                 'dosen_tahun' => 'required|integer',
+                'kuota' =>'required',
                 // Add other rules for DosenModel fields
             ];
 

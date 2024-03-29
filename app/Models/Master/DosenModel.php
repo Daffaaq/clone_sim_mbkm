@@ -25,6 +25,7 @@ class DosenModel extends AppModel
         'dosen_phone',
         'dosen_gender',
         'dosen_tahun',
+        'kuota',
         'user_id',
         'created_at',
         'created_by',

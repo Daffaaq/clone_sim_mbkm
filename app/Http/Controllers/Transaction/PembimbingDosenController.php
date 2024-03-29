@@ -79,16 +79,16 @@ class PembimbingDosenController extends Controller
             'm_dosen.dosen_name',
             'm_prodi.prodi_name'
         )
-        ->leftJoin('m_mahasiswa', 't_pembimbing_dosen.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
-        ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
-        ->leftJoin('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
-        ->leftJoin('m_prodi', function ($join) use ($prodi_id) {
-            $join->on('t_magang.prodi_id', '=', 'm_prodi.prodi_id')
-            ->where(function ($query) use ($prodi_id) {
-                $query->where('m_prodi.prodi_id', $prodi_id) // Filter berdasarkan prodi_id pengguna
-                    ->orWhereNull('m_prodi.prodi_id'); // Jika pengguna tidak memiliki prodi_id
-            });
-        })
+            ->leftJoin('m_mahasiswa', 't_pembimbing_dosen.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
+            ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
+            ->leftJoin('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
+            ->leftJoin('m_prodi', function ($join) use ($prodi_id) {
+                $join->on('t_magang.prodi_id', '=', 'm_prodi.prodi_id')
+                    ->where(function ($query) use ($prodi_id) {
+                        $query->where('m_prodi.prodi_id', $prodi_id) // Filter berdasarkan prodi_id pengguna
+                            ->orWhereNull('m_prodi.prodi_id'); // Jika pengguna tidak memiliki prodi_id
+                    });
+            })
             ->where('t_magang.status', 1) // Pastikan status magang adalah 1 (diterima)
             ->get();
 
@@ -177,6 +177,17 @@ class PembimbingDosenController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
+            $dosen = DosenModel::findOrFail($request->input('dosen_id'));
+            // dd($dosen);
+
+            // Periksa apakah kuota dosen sudah mencapai 0
+            if ($dosen->kuota <= 0) {
+                return response()->json([
+                    'stat' => false,
+                    'mc' => false,
+                    'msg' => 'Kuota dosen sudah habis. Tidak bisa menambahkan pembimbing baru.'
+                ]);
+            }
             $mahasiswa_ids = $request->input('mahasiswa_id');
 
             $magang_ids = Magang::whereIn('mahasiswa_id', $mahasiswa_ids)
@@ -198,6 +209,9 @@ class PembimbingDosenController extends Controller
                             'dosen_id' => $request->input('dosen_id') // Gunakan id instruktur yang baru saja dibuat
                             // Isi kolom-kolom lainnya sesuai kebutuhan
                         ]);
+                        // Mengurangi nilai kuota dosen terkait
+                        $dosen->kuota -= 1; // Kurangi kuota dengan 1, karena menambahkan 1 mahasiswa
+                        $dosen->save();
                     }
                 }
                 // dd($magang_ids);
@@ -298,6 +312,28 @@ class PembimbingDosenController extends Controller
                     // Temukan model PembimbingDosen berdasarkan ID
                     $pembimbingDosen = PembimbingDosenModel::find($id);
                     if ($pembimbingDosen) {
+                        // Ambil data dosen yang akan diubah
+                        $dosen = DosenModel::findOrFail($request->input('dosen_id'));
+
+                        // Periksa apakah kuota dosen sudah mencapai 0
+                        if ($dosen->kuota <= 0) {
+                            return response()->json([
+                                'stat' => false,
+                                'mc' => false,
+                                'msg' => 'Kuota dosen sudah habis. Tidak bisa mengubah pembimbing.'
+                            ]);
+                        }
+
+                        // Mengembalikan kuota untuk dosen sebelumnya
+                        $previousDosen = PembimbingDosenModel::findOrFail($id)->dosen_id;
+                        $previousDosenModel = DosenModel::findOrFail($previousDosen);
+                        $previousDosenModel->kuota += 1;
+                        $previousDosenModel->save();
+
+                        // Mengurangi kuota untuk dosen baru
+                        $dosen->kuota -= 1;
+                        $dosen->save();
+
                         // Perbarui atribut model dan simpan perubahan
                         $pembimbingDosen->magang_id = $magang_id;
                         $pembimbingDosen->mahasiswa_id = $mahasiswa_id;

@@ -26,6 +26,7 @@
                                         <th>No</th>
                                         <th>Email Dosen</th>
                                         <th>Nama Dosen</th>
+                                        <th>Kuota Dosen</th>
                                         <th>#</th>
                                     </tr>
                                 </thead>
@@ -74,6 +75,13 @@
                         "bSearchable": true
                     },
                     {
+                        "mData": "kuota",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": true,
+                        "bSearchable": true
+                    },
+                    {
                         "mData": "dosen_id",
                         "sClass": "text-center pr-2",
                         "sWidth": "10%",
@@ -81,9 +89,14 @@
                         "bSearchable": false,
                         "mRender": function(data, type, row, meta) {
                             return ''
-                                @if ($allowAccess->update)+`<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Edit Data" ><i class="fa fa-edit"></i></a> `@endif
-                                @if ($allowAccess->delete)+`<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/delete" class="ajax_modal btn btn-xs btn-danger tooltips text-light" data-placement="left" data-original-title="Hapus Data" ><i class="fa fa-trash"></i></a> `@endif 
-                            ;
+                            @if ($allowAccess->update)
+                                +
+                                `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Edit Data" ><i class="fa fa-edit"></i></a> `
+                            @endif
+                            @if ($allowAccess->delete)
+                                +
+                                `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/delete" class="ajax_modal btn btn-xs btn-danger tooltips text-light" data-placement="left" data-original-title="Hapus Data" ><i class="fa fa-trash"></i></a> `
+                            @endif ;
                         }
                     }
                 ],
