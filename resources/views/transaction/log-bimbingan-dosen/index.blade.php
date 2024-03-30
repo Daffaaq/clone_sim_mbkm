@@ -30,7 +30,7 @@
                                                     <option value="{{ $userId }}">{{ $namaMahasiswa }}</option>
                                                 @endforeach
                                             </select>
-                                            <small class="form-text text-muted">Filter Mahasiswa</small>
+                                            <small class="form-text text-muted">Pilih Mahasiswa</small>
                                         </div>
                                     </div>
                                 </div>

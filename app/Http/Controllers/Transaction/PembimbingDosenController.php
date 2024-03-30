@@ -45,7 +45,10 @@ class PembimbingDosenController extends Controller
             'url' => $this->menuUrl,
             'title' => $this->menuTitle
         ];
-
+        // $dataall = dosenModel::all();
+        // dd($dataall);
+        // $dataall = PembimbingDosenModel::all();
+        // dd($dataall);
         return view($this->viewPath . 'index')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
@@ -233,6 +236,48 @@ class PembimbingDosenController extends Controller
 
 
 
+    // public function edit($id)
+    // {
+    //     $this->authAction('update', 'modal');
+    //     if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+
+    //     $page = [
+    //         'url' => $this->menuUrl . '/' . $id,
+    //         'title' => 'Edit ' . $this->menuTitle
+    //     ];
+
+    //     $mahasiswaWithMagang = MahasiswaModel::selectRaw("m_mahasiswa.mahasiswa_id, m_mahasiswa.nama_mahasiswa, t_magang.magang_id")
+    //         ->join('t_magang', 't_magang.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
+    //         ->where('t_magang.status', 1)
+    //         ->get();
+
+    //     $data = PembimbingDosenModel::find($id);
+
+    //     $dosen = DosenModel::selectRaw("dosen_id, dosen_name")->get();
+
+    //     $selectedMahasiswaId = $data->mahasiswa_id;
+
+    //     $mahasiswa = [];
+
+    //     foreach ($mahasiswaWithMagang as $data) {
+    //         if ($data->mahasiswa_id == $selectedMahasiswaId) {
+    //             $mahasiswa[$data->mahasiswa_id] = [
+    //                 'nama_mahasiswa' => $data->nama_mahasiswa,
+    //                 'magang_id' => $data->magang_id
+    //             ];
+    //             break; // Keluar dari loop setelah menemukan mahasiswa yang dipilih sebelumnya
+    //         }
+    //     }
+
+    //     return (!$data) ? $this->showModalError() :
+    //         view($this->viewPath . 'action')
+    //         ->with('page', (object) $page)
+    //         ->with('id', $id)
+    //         ->with('data', $data)
+    //         ->with('mahasiswa', $mahasiswa)
+    //         ->with('dosen', $dosen);;
+    // }
+
     public function edit($id)
     {
         $this->authAction('update', 'modal');
@@ -242,35 +287,40 @@ class PembimbingDosenController extends Controller
             'url' => $this->menuUrl . '/' . $id,
             'title' => 'Edit ' . $this->menuTitle
         ];
-        // dd($page);
 
+        $data = PembimbingDosenModel::find($id);
+        if (!$data) return $this->showModalError();
+
+        // Ambil ID mahasiswa yang telah dipilih sebelumnya
+        $selectedMahasiswaId = $data->mahasiswa_id;
+
+        // Load data mahasiswa setelah memastikan bahwa data PembimbingDosen ditemukan
         $mahasiswaWithMagang = MahasiswaModel::selectRaw("m_mahasiswa.mahasiswa_id, m_mahasiswa.nama_mahasiswa, t_magang.magang_id")
             ->join('t_magang', 't_magang.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
             ->where('t_magang.status', 1)
             ->get();
 
-        // Buat array untuk menyimpan mahasiswa beserta magang_id-nya
         $mahasiswa = [];
-        foreach ($mahasiswaWithMagang as $data) {
-            $mahasiswa[$data->mahasiswa_id] = [
-                'nama_mahasiswa' => $data->nama_mahasiswa,
-                'magang_id' => $data->magang_id
-            ];
+        foreach ($mahasiswaWithMagang as $mahasiswaData) {
+            if ($mahasiswaData->mahasiswa_id == $selectedMahasiswaId) {
+                $mahasiswa[$mahasiswaData->mahasiswa_id] = [
+                    'nama_mahasiswa' => $mahasiswaData->nama_mahasiswa,
+                    'magang_id' => $mahasiswaData->magang_id
+                ];
+                break; // Keluar dari loop setelah menemukan mahasiswa yang dipilih sebelumnya
+            }
         }
 
         $dosen = DosenModel::selectRaw("dosen_id, dosen_name")->get();
-        // $prodi = ProdiModel::selectRaw("prodi_id, prodi_name, prodi_code")->get();
-        $data = PembimbingDosenModel::find($id);
-        // dd($data);
 
-        return (!$data) ? $this->showModalError() :
-            view($this->viewPath . 'action')
+        return view($this->viewPath . 'action')
             ->with('page', (object) $page)
             ->with('id', $id)
             ->with('data', $data)
             ->with('mahasiswa', $mahasiswa)
-            ->with('dosen', $dosen);;
+            ->with('dosen', $dosen);
     }
+
 
     public function update(Request $request, $id)
     {

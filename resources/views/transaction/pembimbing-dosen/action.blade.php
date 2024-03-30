@@ -43,9 +43,16 @@ $is_edit = isset($data);
                             <select id="dosen_id" name="dosen_id"
                                 class="form-control form-control-sm select2_combobox">
                                 <option value="">- Pilih -</option>
-                                @foreach ($dosen as $r)
+                                {{-- @foreach ($dosen as $r)
                                     <option value="{{ $r->dosen_id }}">{{ $r->dosen_name }}</option>
+                                @endforeach --}}
+                                @foreach ($dosen as $r)
+                                    <option value="{{ $r->dosen_id }}"
+                                        {{ isset($data) && $data->dosen_id == $r->dosen_id ? 'selected' : '' }}>
+                                        {{ $r->dosen_name }}
+                                    </option>
                                 @endforeach
+
                             </select>
                         </div>
                     </div>
