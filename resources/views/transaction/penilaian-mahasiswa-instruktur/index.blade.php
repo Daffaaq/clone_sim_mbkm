@@ -48,7 +48,16 @@
                     .val(); // Ambil nilai dari dropdown di baris yang sesuai
                 var komentar = $(this).closest('tr').find('textarea')
                     .val(); // Ambil komentar dari textarea di baris yang sesuai
-
+                if (komentar.trim() === '') {
+                    $(this).closest('tr').find('textarea').css('border-color',
+                        '#dc3545'); // Set border color to red
+                    $(this).closest('tr').find('.error-message').show(); // Tampilkan pesan kesalahan
+                    return; // Stop proses jika validasi gagal
+                } else {
+                    $(this).closest('tr').find('textarea').css('border-color', ''); // Reset border color
+                    $(this).closest('tr').find('.error-message')
+                        .hide(); // Sembunyikan pesan kesalahan jika sudah valid
+                }
                 // Kirim data melalui AJAX
                 $.ajax({
                     url: "{{ route('update.penilaian.mahasiswa') }}",
@@ -133,11 +142,20 @@
                         "sWidth": "15%",
                         "bSortable": true,
                         "bSearchable": true,
+                        // "mRender": function(data, type, row) {
+                        //     var textarea = '';
+                        //     // Jika belum disubmit, tampilkan textarea untuk mengubah komentar
+                        //     textarea = '<textarea class="form-control">' + (data ? data : '') +
+                        //         '</textarea>';
+                        //     return textarea;
+                        // }
                         "mRender": function(data, type, row) {
                             var textarea = '';
                             // Jika belum disubmit, tampilkan textarea untuk mengubah komentar
                             textarea = '<textarea class="form-control">' + (data ? data : '') +
                                 '</textarea>';
+                            textarea +=
+                                '<span class="text-danger error-message" style="display: none;">Komentar harus diisi.</span>';
                             return textarea;
                         }
                     },

@@ -37,7 +37,7 @@ class PembimbingDosenController extends Controller
 
         $activeMenu = [
             'l1' => 'transaction',
-            'l2' => 'transaksi-pembimbing-dosen',
+            'l2' => 'transaksi-pembimdos',
             'l3' => null
         ];
 

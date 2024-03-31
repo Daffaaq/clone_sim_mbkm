@@ -35,39 +35,92 @@ class LogBimbinganController extends Controller
 
     public function index()
     {
-        $this->authAction('read');
-        $this->authCheckDetailAccess();
+        $user = auth()->user();
+        // $user = auth()->user()->id;
+        $user_id = $user->user_id;
+        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
+        $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
-        $breadcrumb = [
-            'title' => $this->menuTitle,
-            'list'  => ['Transaksi', 'Log Bimbingan']
-        ];
+        // Gunakan mahasiswa_id untuk mencari data magang
+        $magang_data = Magang::where('mahasiswa_id', $mahasiswa_id)->get();
 
-        $activeMenu = [
-            'l1' => 'transaction',
-            'l2' => 'transaksi-log-bimbingan',
-            'l3' => null
-        ];
+        $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
+            ->where('status', 1) // Status 1 menunjukkan 'Diterima'
+            ->exists();
+        if ($magang_status) {
+            $this->authAction('read');
+            $this->authCheckDetailAccess();
 
-        $page = [
-            'url' => $this->menuUrl,
-            'title' => 'Daftar ' . $this->menuTitle
-        ];
+            $breadcrumb = [
+                'title' => $this->menuTitle,
+                'list'  => ['Transaksi', 'Log Bimbingan']
+            ];
 
-        $userId = Auth::id();
+            $activeMenu = [
+                'l1' => 'transaction',
+                'l2' => 'transaksi-logbim',
+                'l3' => null
+            ];
 
-        // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
-        //     ->where('created_by', $userId);
-        $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
-            ->where('created_by', $userId)
-            ->get();
+            $page = [
+                'url' => $this->menuUrl,
+                'title' => 'Daftar ' . $this->menuTitle
+            ];
 
-        return view($this->viewPath . 'index')
-            ->with('breadcrumb', (object) $breadcrumb)
-            ->with('activeMenu', (object) $activeMenu)
-            ->with('page', (object) $page)
-            ->with('data', $data)
-            ->with('allowAccess', $this->authAccessKey());
+            $userId = Auth::id();
+
+            // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
+            //     ->where('created_by', $userId);
+            $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
+                ->where('created_by', $userId)
+                ->get();
+
+            return view($this->viewPath . 'index')
+                ->with('breadcrumb', (object) $breadcrumb)
+                ->with('activeMenu', (object) $activeMenu)
+                ->with('page', (object) $page)
+                ->with('data', $data)
+                ->with('allowAccess', $this->authAccessKey());
+        } else {
+            $this->authAction('read');
+            $this->authCheckDetailAccess();
+
+            $breadcrumb = [
+                'title' => $this->menuTitle,
+                'list'  => ['Transaksi', 'Log Bimbingan']
+            ];
+
+            $activeMenu = [
+                'l1' => 'transaction',
+                'l2' => 'transaksi-logbim',
+                'l3' => null
+            ];
+
+            $page = [
+                'url' => $this->menuUrl,
+                'title' => 'Daftar ' . $this->menuTitle
+            ];
+
+            $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
+                ->where('status', 0) // Status 0 menunjukkan 'Belum keterima'
+                ->exists();
+
+            if ($magang_status) {
+                $message = "Anda belum keterima dalam magang. Silahkan untuk menunggu.";
+            } elseif (Magang::where('mahasiswa_id', $mahasiswa_id)->exists()) {
+                // Mahasiswa telah mendaftar magang tetapi belum diterima atau ditolak
+                $message = "Anda belum keterima dalam magang. Silahkan untuk mendaftar ulang.";
+            } else {
+                // Mahasiswa belum mendaftar magang
+                $message = "Anda belum mendaftar magang. Silahkan untuk mendaftar magang.";
+            }
+            return view('transaction.instruktur.index1')
+                ->with('breadcrumb', (object) $breadcrumb)
+                ->with('activeMenu', (object) $activeMenu)
+                ->with('page', (object) $page)
+                ->with('message', $message)
+                ->with('allowAccess', $this->authAccessKey());
+        }
     }
 
     public function list(Request $request)
@@ -220,10 +273,10 @@ class LogBimbinganController extends Controller
             view($this->viewPath . 'action')
             ->with('page', (object) $page)
             ->with('id', $id)
-        ->with('instrukturLapangan_id', $instrukturLapangan_id)
-        ->with('pembimbingdosen_id', $pembimbingdosen_id)
-        ->with('dosen_name', $dosen_name)
-        ->with('instruktur_name', $instruktur_name)
+            ->with('instrukturLapangan_id', $instrukturLapangan_id)
+            ->with('pembimbingdosen_id', $pembimbingdosen_id)
+            ->with('dosen_name', $dosen_name)
+            ->with('instruktur_name', $instruktur_name)
             ->with('data', $data);
     }
 
@@ -299,17 +352,26 @@ class LogBimbinganController extends Controller
     {
         $this->authAction('read', 'modal');
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        $data = DosenModel::find($id);
+        $userId = Auth::id();
+        $data = LogBimbinganModel::find($id);
+        // Memeriksa apakah entitas ditemukan dan apakah dibuat oleh pengguna yang saat ini diotentikasi
+        if (!$data || $data->created_by != $userId) {
+            // Jika tidak, mungkin Anda ingin menampilkan pesan error atau melakukan tindakan lainnya
+            return $this->showModalError();
+        }
         $page = [
             'title' => 'Detail ' . $this->menuTitle
         ];
 
-        return (!$data) ? $this->showModalError() :
-            view($this->viewPath . 'detail')
+        return view($this->viewPath . 'detail')
             ->with('page', (object) $page)
             ->with('id', $id)
             ->with('data', $data);
+        // return (!$data) ? $this->showModalError() :
+        //     view($this->viewPath . 'detail')
+        //     ->with('page', (object) $page)
+        //     ->with('id', $id)
+        //     ->with('data', $data);
     }
 
     public function confirm($id)

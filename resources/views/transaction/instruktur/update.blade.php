@@ -133,29 +133,39 @@
                                                         {{-- @endif --}}
                                                     </div>
                                                 @endforeach
+                                                <span id="validation-message" class="text-danger"
+                                                    style="display: none;">Mohon pilih setidaknya satu mahasiswa.</span>
                                                 <!-- Tambahkan input untuk data instruktur -->
                                                 <div class="form-group required">
                                                     <label for="nama_instruktur" class="control-label">Nama
                                                         Instruktur</label>
                                                     <input type="text" class="form-control" id="nama_instruktur"
-                                                        name="nama_instruktur" required>
+                                                        name="nama_instruktur">
+                                                    <span id="valid-message-nama_instruktur" class="text-danger"
+                                                        style="display: none;">Kolom ini harus diisi.</span>
                                                 </div>
                                                 <div class="form-group required">
                                                     <label for="instruktur_email" class="control-label">Email
                                                         Instruktur</label>
                                                     <input type="email" class="form-control" id="instruktur_email"
-                                                        name="instruktur_email" required>
+                                                        name="instruktur_email">
+                                                    <span id="valid-message-instruktur_email" class="text-danger"
+                                                        style="display: none;">Kolom ini harus diisi.</span>
                                                 </div>
                                                 <div class="form-group required">
                                                     <label for="instruktur_phone" class="control-label">Nomor Telepon
                                                         Instruktur</label>
                                                     <input type="text" class="form-control" id="instruktur_phone"
-                                                        name="instruktur_phone" required>
+                                                        name="instruktur_phone">
+                                                    <span id="valid-message-instruktur_phone" class="text-danger"
+                                                        style="display: none;">Kolom ini harus diisi.</span>
                                                 </div>
                                                 <div class="form-group required">
                                                     <label for="password" class="control-label">Password</label>
                                                     <input type="password" class="form-control" id="password"
-                                                        name="password" required>
+                                                        name="password">
+                                                    <span id="valid-message-password" class="text-danger"
+                                                        style="display: none;">Kolom ini harus diisi.</span>
                                                 </div>
                                                 <button type="submit" class="btn btn-primary">Simpan</button>
                                             </form>
@@ -176,10 +186,12 @@
             function validateMahasiswaSelection() {
                 var selectedMahasiswa = $('input[name="mahasiswa_id[]"]:checked').length;
                 if (selectedMahasiswa === 0) {
-                    alert('Mohon pilih setidaknya satu mahasiswa.');
+                    $('#validation-message').show(); // Tampilkan pesan validasi
                     return false; // Batalkan pengiriman formulir
+                } else {
+                    $('#validation-message').hide(); // Sembunyikan pesan validasi jika valid
+                    return true; // Lanjutkan pengiriman formulir
                 }
-                return true; // Lanjutkan pengiriman formulir
             }
             // Submit form
             $('#form-sb').submit(function(event) {
@@ -187,6 +199,21 @@
                 if (!validateMahasiswaSelection()) {
                     return; // Batalkan pengiriman formulir jika validasi gagal
                 }
+                var valid = true;
+                $('.form-group.required').each(function() {
+                    var input = $(this).find('input');
+                    var messageId = $(this).find('span').attr('id');
+                    if (input.val() === '') {
+                        $('#' + messageId).show(); // Tampilkan pesan validasi
+                        valid = false;
+                    } else {
+                        $('#' + messageId).hide(); // Sembunyikan pesan validasi jika valid
+                    }
+                });
+                if (!valid) {
+                    return; // Batalkan pengiriman formulir jika validasi gagal
+                }
+
                 // Send AJAX request to submit form
                 $.ajax({
                     url: $(this).attr('action'),

@@ -43,7 +43,7 @@ class InstrukturPenilaianMahasiswaController extends Controller
 
         $activeMenu = [
             'l1' => 'transaction',
-            'l2' => 'transaksi-penilaian-mahasiswa-instruktur',
+            'l2' => 'transaksi-penmainst',
             'l3' => null
         ];
 
@@ -112,7 +112,7 @@ class InstrukturPenilaianMahasiswaController extends Controller
             'mahasiswa_id' => 'required', // Pastikan mahasiswa_id tidak boleh kosong
             'instruktur_lapangan_id' => 'required', // Pastikan instruktur_lapangan_id tidak boleh kosong
             'nilai_instruktur_lapangan' => 'required', // Pastikan nilai_instruktur_lapangan tidak boleh kosong
-            'komentar_instruktur_lapangan' => 'nullable', // Komentar_instruktur_lapangan boleh kosong
+            'komentar_instruktur_lapangan' => 'required', // Komentar_instruktur_lapangan boleh kosong
         ]);
         $instruktur = InstrukturModel::where('user_id', auth()->user()->user_id)->first();
         if (!$instruktur) {

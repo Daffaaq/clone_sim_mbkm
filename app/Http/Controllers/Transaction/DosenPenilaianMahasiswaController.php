@@ -43,7 +43,7 @@ class DosenPenilaianMahasiswaController extends Controller
 
         $activeMenu = [
             'l1' => 'transaction',
-            'l2' => 'transaksi-penilaian-mahasiswa-dosen',
+            'l2' => 'transaksi-penmados',
             'l3' => null
         ];
 
@@ -113,7 +113,7 @@ class DosenPenilaianMahasiswaController extends Controller
             'mahasiswa_id' => 'required', // Pastikan mahasiswa_id tidak boleh kosong
             'pembimbing_dosen_id' => 'required', // Pastikan instruktur_lapangan_id tidak boleh kosong
             'nilai_dosen_pembimbing' => 'required', // Pastikan nilai_instruktur_lapangan tidak boleh kosong
-            'komentar_dosen_pembimbing' => 'nullable', // Komentar_instruktur_lapangan boleh kosong
+            'komentar_dosen_pembimbing' => 'required', // Komentar_instruktur_lapangan boleh kosong
         ]);
         $dosen = DosenModel::where('user_id', auth()->user()->user_id)->first();
         if (!$dosen) {
