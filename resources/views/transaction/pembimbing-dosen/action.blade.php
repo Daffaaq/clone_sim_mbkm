@@ -32,9 +32,11 @@ $is_edit = isset($data);
                                 <option disabled selected>Tidak ada mahasiswa yang diterima magang</option>
                             @endif
                         </select>
+                        <span id="validation-message" class="text-danger" style="display: none;">Mohon pilih setidaknya
+                            satu
+                            mahasiswa.</span>
                     </div>
                 </div>
-
                 <div class="modal-body">
                     <div class="form-message text-center"></div>
                     <div class="form-group required row mb-2">
@@ -67,16 +69,50 @@ $is_edit = isset($data);
 {{-- <script src="/assets/js/select2.min.js"></script> --}}
 <script>
     $(document).ready(function() {
+        // function validateMahasiswaSelection() {
+        //     var selectedMahasiswa = $('input[name="mahasiswa_id[]"]:checked').length;
+        //     if (selectedMahasiswa === 0) {
+        //         $('#validation-message').show(); // Tampilkan pesan validasi
+        //         return false; // Batalkan pengiriman formulir
+        //     } else {
+        //         $('#validation-message').hide(); // Sembunyikan pesan validasi jika valid
+        //         return true; // Lanjutkan pengiriman formulir
+        //     }
+        // }
+        function validateForm() {
+            var selectedMahasiswa = $('#mahasiswa_id').val();
+            var isValid = true;
 
+            if (!selectedMahasiswa || selectedMahasiswa.length === 0) {
+                $('#validation-message').show(); // Tampilkan pesan validasi untuk Mahasiswa
+                isValid = false; // Set isValid ke false jika Mahasiswa kosong
+            } else {
+                $('#validation-message')
+                    .hide(); // Sembunyikan pesan validasi untuk Mahasiswa jika valid
+            }
+
+            return isValid; // Kembalikan nilai isValid
+        }
+
+        function checkInitialMahasiswaSelection() {
+            var selectedMahasiswa = $('#mahasiswa_id').val();
+            if (selectedMahasiswa && selectedMahasiswa.length > 0) {
+                $('#validation-message').hide(); // Sembunyikan pesan validasi jika sudah ada pilihan
+            } else {
+                $('#validation-message').show(); // Tampilkan pesan validasi jika tidak ada pilihan
+            }
+        }
+
+        // Memeriksa pilihan mahasiswa saat modal dibuka
+        $('#modal-master').on('shown.bs.modal', function() {
+            checkInitialMahasiswaSelection();
+        });
         $('#mahasiswa_id').select2({
             placeholder: "Pilih satu atau lebih Mahasiswa",
             allowClear: true
         });
-    });
-</script>
-<script>
-    $(document).ready(function() {
         unblockUI();
+
 
         @if ($is_edit)
             $('#mahasiswa_id').val('{{ $data->mahasiswa_id }}').trigger('change');
@@ -93,6 +129,9 @@ $is_edit = isset($data);
                 }
             },
             submitHandler: function(form) {
+                if (!validateForm()) {
+                    return false; // Batalkan pengiriman formulir jika validasi gagal
+                }
                 $('.form-message').html('');
                 blockUI(form);
                 $(form).ajaxSubmit({

@@ -115,7 +115,6 @@
                         "bSortable": false,
                         "bSearchable": false,
                         "mRender": function(data, type, row, meta) {
-                            console.log(row);
                             var buttons = '';
                             @if ($allowAccess->update)
                                 // if (row.status == 0) {
