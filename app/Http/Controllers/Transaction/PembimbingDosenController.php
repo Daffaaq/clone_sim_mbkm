@@ -192,7 +192,13 @@ class PembimbingDosenController extends Controller
                 ]);
             }
             $mahasiswa_ids = $request->input('mahasiswa_id');
-
+            // Periksa apakah kuota dosen masih mencukupi sebelum menambahkan mahasiswa
+            if ($dosen->kuota < count($mahasiswa_ids)) {
+                return response()->json([
+                    'stat' => false,
+                    'msg' => 'Kuota dosen tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
+                ]);
+            }
             $magang_ids = Magang::whereIn('mahasiswa_id', $mahasiswa_ids)
                 ->where('status', 1)
                 ->pluck('magang_id')
@@ -201,6 +207,9 @@ class PembimbingDosenController extends Controller
             $pembimbingDosen = null;
             if (!empty($mahasiswa_ids)) {
                 foreach ($magang_ids as $magang_id) {
+                    if (empty($mahasiswa_ids)) {
+                        break; // Keluar dari perulangan jika tidak ada mahasiswa lagi
+                    }
                     // Loop untuk setiap mahasiswa yang dipilih
                     $mahasiswa_id = array_shift($mahasiswa_ids);
                     // Pastikan mahasiswa_id tidak null sebelum menyimpan data
