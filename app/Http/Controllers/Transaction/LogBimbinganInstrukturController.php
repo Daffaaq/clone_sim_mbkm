@@ -387,7 +387,7 @@ class LogBimbinganInstrukturController extends Controller
         $this->authAction('read', 'modal');
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data = DosenModel::find($id);
+        $data = LogBimbinganModel::find($id);
         $page = [
             'title' => 'Detail ' . $this->menuTitle
         ];

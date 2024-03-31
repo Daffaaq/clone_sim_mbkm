@@ -92,13 +92,38 @@ $is_edit = isset($data);
 <script>
     $(document).ready(function() {
         $(document).ready(function() {
+            // $('.summernote').summernote({
+            //     height: 200, // Sesuaikan tinggi Summernote sesuai kebutuhan
+            //     callbacks: {
+            //         onBlur: function() {
+            //             $(this).val($(this).summernote('code'));
+            //         }
+            //     }
+            // });
             $('.summernote').summernote({
-                height: 200, // Sesuaikan tinggi Summernote sesuai kebutuhan
+                height: 200,
                 callbacks: {
                     onBlur: function() {
-                        $(this).val($(this).summernote('code'));
+                        // Hapus karakter spasi dan tag br sebelum menyimpan konten
+                        var content = $(this).summernote('code').replace(/&nbsp;/g, ' ')
+                            .replace(/<br\s*[\/]?>/gi, '\n');
+                        $(this).val(content);
+                    },
+                    onKeydown: function(e) {
+                        if (e.keyCode === 13) { // Jika tombol enter ditekan
+                            var cursorPosition = $(this).summernote('core.editor')
+                                .getCursorPosition();
+                            var contentAfterCursor = $(this).summernote('core.editor')
+                                .getTextRange(cursorPosition, cursorPosition + 1);
+                            if (contentAfterCursor === " " || contentAfterCursor === "\n") {
+                                e
+                                    .preventDefault(); // Hentikan penambahan baris baru jika hanya ada spasi atau baris baru setelah kursor
+                                return false;
+                            }
+                        }
                     }
-                }
+                },
+                disableNormalizeContent: true
             });
         });
         unblockUI();
@@ -129,12 +154,12 @@ $is_edit = isset($data);
                     required: true,
                 },
                 foto: {
-        // Tambahkan aturan 'required' hanya jika foto baru diunggah
-        required: function(element) {
-            // Periksa apakah ada file foto yang diunggah
-            return $('input[name=foto]').get(0).files.length > 0;
-        }
-    }
+                    // Tambahkan aturan 'required' hanya jika foto baru diunggah
+                    required: function(element) {
+                        // Periksa apakah ada file foto yang diunggah
+                        return $('input[name=foto]').get(0).files.length > 0;
+                    }
+                }
             },
             submitHandler: function(form) {
                 $('.form-message').html('');

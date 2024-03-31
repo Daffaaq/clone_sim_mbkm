@@ -47,6 +47,7 @@
                                     <th>Status Dosen Pembimbing</th>
                                     <th>Nilai Pembimbing Dosen</th>
                                     <th>Action</th>
+                                    <th>#</th>
                                 </tr>
                             </thead>
                         </table>
@@ -224,7 +225,7 @@
 
                             setTimeout(function() {
                                 $(".error-message").fadeOut(
-                                1000); // Hilangkan error message setelah 5 detik
+                                    1000); // Hilangkan error message setelah 5 detik
                             }, 5000);
 
                             return inputHtml;
@@ -248,13 +249,33 @@
                             //     `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/delete" class="ajax_modal btn btn-xs btn-danger tooltips text-light" data-placement="left" data-original-title="Hapus Data" ><i class="fa fa-trash"></i></a> `
                             // @endif ;
                             buttons += '<button id="manual_submit_button_' + data +
-                                '" class="manual_submit_button btn btn-xs btn-primary tooltips text-light" data-id="' +
-                                data + '"><i class="fa fa-check"></i> Submit</button>';
+                                '" class="manual_submit_button btn btn-xs btn-success py-0 px-1 tooltips text-secondary" data-id="' +
+                                data +
+                                '"><i class="fa fa-check text-white" style="font-size: smaller;"></i></button>';
 
                             return buttons;
                         }
+                    },
+                    {
+                        "mData": "log_bimbingan_id",
+                        "sClass": "text-center",
+                        "sWidth": "8%",
+                        "bSortable": false,
+                        "bSearchable": false,
+                        "mRender": function(data, type, row, meta) {
+                            return '<a href="#" data-block="body" data-url="{{ $page->url }}/' +
+                                data +
+                                '" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="show Data" ><i class="fa fa-eye text-white"></i></a>';
+                        }
                     }
                 ],
+                "columnDefs": [{
+                    "targets": 4,
+                    "render": function(data, type, row, meta) {
+                        return '<div style="overflow-wrap: break-word; max-width: 300px;">' +
+                            data + '</div>';
+                    }
+                }],
                 "fnDrawCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     $('a', this.fnGetNodes()).tooltip();
                 }

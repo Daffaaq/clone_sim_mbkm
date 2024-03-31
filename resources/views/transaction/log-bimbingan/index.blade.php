@@ -19,7 +19,8 @@
                         </div>
                         <div class="card-tools mr-2">
                             @if (!$data->isEmpty())
-                                <a href="{{ route('cetak.logbimbingan') }}" class="btn btn-sm btn-info mt-1 text-white">
+                                <a href="{{ route('cetak.logbimbingan') }}" class="btn btn-sm btn-info mt-1 text-white"
+                                    target="_blank">
                                     <i class="fas fa-plus"></i> Cetak Log Bimbingan
                                 </a>
                             @else
@@ -168,6 +169,13 @@
                         }
                     }
                 ],
+                "columnDefs": [{
+                    "targets": 4,
+                    "render": function(data, type, row, meta) {
+                        return '<div style="overflow-wrap: break-word; max-width: 300px;">' +
+                            data + '</div>';
+                    }
+                }],
                 "fnDrawCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     $('a', this.fnGetNodes()).tooltip();
                 }
