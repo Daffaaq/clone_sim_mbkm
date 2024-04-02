@@ -97,13 +97,13 @@ class InstrukturController extends Controller
                 ->exists();
 
             if ($magang_status) {
-                $message = "Anda belum keterima dalam magang. Silahkan untuk menunggu.";
+                $message = "halaman belum bisa diakses. Silahkan untuk menunggu.";
             } elseif (Magang::where('mahasiswa_id', $mahasiswa_id)->exists()) {
                 // Mahasiswa telah mendaftar magang tetapi belum diterima atau ditolak
-                $message = "Anda belum keterima dalam magang. Silahkan untuk mendaftar ulang.";
+                $message = "halaman belum bisa diakses. Silahkan untuk mendaftar ulang.";
             } else {
                 // Mahasiswa belum mendaftar magang
-                $message = "Anda belum mendaftar magang. Silahkan untuk mendaftar magang.";
+                $message = "halaman belum bisa diakses. Silahkan untuk mendaftar magang.";
             }
             return view('transaction.instruktur.index1')
                 ->with('breadcrumb', (object) $breadcrumb)

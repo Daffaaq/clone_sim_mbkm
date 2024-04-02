@@ -147,7 +147,7 @@ class PembimbingDosenController extends Controller
             ];
         }
 
-        $dosen = DosenModel::selectRaw("dosen_id, dosen_name")->get();
+        $dosen = DosenModel::selectRaw("dosen_id, dosen_name, kuota")->get();
         // $instuktur = InstrukturModel::selectRaw("instruktur_id, nama_instruktur")->get();
         // $prodi = ProdiModel::selectRaw("prodi_id, prodi_name, prodi_code")->get();
 

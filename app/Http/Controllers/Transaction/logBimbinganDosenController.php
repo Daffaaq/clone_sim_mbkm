@@ -134,12 +134,23 @@ class LogBimbinganDosenController extends Controller
         $nilaiPembimbingDosen = $request->input('nilai_pembimbing_dosen'); // Ambil nilai pembimbing dosen dari permintaan
 
         if (
-            $statusDosen == 1 && $nilaiPembimbingDosen < 80
+            $statusDosen == 1 && $nilaiPembimbingDosen < 81
         ) {
-            return response()->json(['success' => false, 'message' => 'Nilai pembimbing harus minimal 80']);
+            return response()->json(['success' => false, 'message' => 'Nilai pembimbing harus minimal 81']);
+        }
+        if (
+            $statusDosen == 1 && $nilaiPembimbingDosen > 100
+        ) {
+            return response()->json(['success' => false, 'message' => 'Nilai pembimbing harus minimal 100']);
         }
         // Lakukan proses pembaruan status dosen pembimbing di sini
         $logBimbingan = LogBimbinganModel::find($logBimbinganId);
+        // Periksa apakah entitas ditemukan
+        // if (!$logBimbingan) {
+        //     return response()->json([
+        //         'success' => false, 'message' => 'Log bimbingan tidak ditemukan'
+        //     ]);
+        // }
         $logBimbingan->status1 = $statusDosen;
 
         // Set tanggal_status_dosen berdasarkan status yang diubah
@@ -395,6 +406,54 @@ class LogBimbinganDosenController extends Controller
             ->with('id', $id)
             ->with('data', $data);
     }
+
+    public function updateStatusDosenFromModal(Request $request, $id)
+    {
+        // Validasi data yang diterima dari permintaan
+        $request->validate([
+            'status1' => 'required|in:0,1,2',
+            'nilai_pembimbing_dosen' => 'required|numeric'
+        ]);
+
+        // Ambil data yang dikirimkan melalui permintaan AJAX
+        $statusDosen = $request->input('status1');
+        $nilaiPembimbingDosen = $request->input('nilai_pembimbing_dosen');
+
+        // Lakukan proses pembaruan status dosen pembimbing di sini
+        $logBimbingan = LogBimbinganModel::find($id);
+
+        if (!$logBimbingan) {
+            // Jika log bimbingan tidak ditemukan, kembalikan respons dengan pesan error
+            return response()->json(['success' => false, 'message' => 'Log bimbingan tidak ditemukan']);
+        }
+
+        // Proses update status dosen pembimbing
+        $logBimbingan->status1 = $statusDosen;
+
+        // Set tanggal_status_dosen berdasarkan status yang diubah
+        if ($statusDosen == 1) {
+            // Jika status diubah menjadi 'diterima', atur tanggal_status_dosen menjadi tanggal saat ini
+            $logBimbingan->tanggal_status_dosen = now();
+        } else if ($statusDosen == 2) {
+            // Jika status diubah menjadi 'ditolak', atur nilai_pembimbing_dosen menjadi 0
+            $logBimbingan->nilai_pembimbing_dosen = 0;
+            // Atur tanggal_status_dosen menjadi null atau kosong
+            $logBimbingan->tanggal_status_dosen = now(); // Sesuaikan dengan preferensi Anda
+        } else {
+            // Jika status diubah menjadi 'pending', atur tanggal_status_dosen menjadi null atau kosong
+            $logBimbingan->tanggal_status_dosen = null; // Sesuaikan dengan preferensi Anda
+        }
+
+        // Set nilai_pembimbing_dosen berdasarkan input pengguna
+        $logBimbingan->nilai_pembimbing_dosen = $nilaiPembimbingDosen; // Gunakan nilai yang diambil dari input pengguna
+
+        // Simpan perubahan
+        $logBimbingan->save();
+
+        // Kemudian kembalikan respons
+        return response()->json(['success' => true]);
+    }
+
 
     public function confirm($id)
     {
