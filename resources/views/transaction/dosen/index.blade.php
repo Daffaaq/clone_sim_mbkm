@@ -16,6 +16,8 @@
                                     class="btn btn-sm btn-{{ $theme->button }} mt-1 ajax_modal"
                                     data-url="{{ $page->url }}/create"><i class="fas fa-plus"></i> Tambah</button>
                             @endif
+                            <button type="button" class="btn btn-sm btn-info mt-1" id="btnImport"><i
+                                    class="fas fa-file-import"></i> Import</button>
                         </div>
                     </div>
                     <div class="card-body p-0">
@@ -37,11 +39,64 @@
             </section>
         </div>
     </div>
+    <div class="modal fade" id="importFileModal" tabindex="-1" role="dialog" aria-labelledby="importFileModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importFileModalLabel">Import File</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="importFileForm" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="file">Pilih File:</label>
+                            <input type="file" class="form-control-file" id="file" name="file"
+                                accept=".xls,.xlsx">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                        <button type="submit" class="btn btn-primary">Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 @push('content-js')
     <script>
         $(document).ready(function() {
-
+            $('#btnImport').click(function() {
+                // Tampilkan modal untuk memilih file
+                $('#importFileModal').modal('show');
+            });
+            $('#importFileForm').submit(function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '{{ route('dosen.import') }}', // Menggunakan route untuk mengikat ke URL dengan nama yang benar
+                    type: 'POST',
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        // Tutup modal setelah berhasil mengimpor
+                        $('#importFileModal').modal('hide');
+                        // Tampilkan pesan sukses
+                        alert('Dosen berhasil diimpor');
+                        // Refresh tabel data
+                        dataMaster.ajax.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        // Tangani kesalahan
+                        alert('Terjadi kesalahan saat mengimpor data');
+                    }
+                });
+            });
             $('.filter_combobox').select2();
 
             var v = 0;

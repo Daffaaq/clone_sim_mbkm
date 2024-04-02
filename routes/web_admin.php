@@ -124,6 +124,7 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::resource('dosen', DosenController::class)->parameter('dosen', 'id');
     Route::post('dosen/list', [DosenController::class, 'list']);
     Route::get('dosen/{id}/delete', [DosenController::class, 'confirm']);
+    Route::post('dosen/import', [DosenController::class, 'import_action'])->name('dosen.import');
 
     Route::resource('seminar-hasil', SemhasController::class)->parameter('semhas', 'id');
     Route::post('seminar-hasil/list', [SemhasController::class, 'list']);
