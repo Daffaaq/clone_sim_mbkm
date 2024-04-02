@@ -42,6 +42,7 @@ use App\Http\Controllers\Transaction\LogBimbinganInstrukturController;
 use App\Http\Controllers\Transaction\PembimbingDosenController;
 use App\Http\Controllers\Transaction\PersetujuanKelompokController;
 use App\Http\Controllers\Transaction\QuotaDosenController;
+use App\Http\Controllers\Transaction\SemhasController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'master', 'middleware' => ['auth']], function () {
@@ -123,6 +124,10 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::resource('dosen', DosenController::class)->parameter('dosen', 'id');
     Route::post('dosen/list', [DosenController::class, 'list']);
     Route::get('dosen/{id}/delete', [DosenController::class, 'confirm']);
+
+    Route::resource('seminar-hasil', SemhasController::class)->parameter('semhas', 'id');
+    Route::post('seminar-hasil/list', [SemhasController::class, 'list']);
+    Route::get('seminar-hasil/{id}/delete', [SemhasController::class, 'confirm']);
 
     //log bimbingan
     Route::resource('log-bimbingan', LogBimbinganController::class)->parameter('log-bimbingan', 'id');
