@@ -12,9 +12,11 @@
                         </h3>
                         <div class="card-tools">
                             @if ($allowAccess->create)
-                                <button type="button" data-block="body"
-                                    class="btn btn-sm btn-{{ $theme->button }} mt-1 ajax_modal"
-                                    data-url="{{ $page->url }}/create"><i class="fas fa-plus"></i> Tambah</button>
+                                @if (!empty($instrukturLapangan_id) && !empty($pembimbingdosen_id))
+                                    <button type="button" data-block="body"
+                                        class="btn btn-sm btn-{{ $theme->button }} mt-1 ajax_modal"
+                                        data-url="{{ $page->url }}/create"><i class="fas fa-plus"></i> Tambah</button>
+                                @endif
                             @endif
                         </div>
                         <div class="card-tools mr-2">

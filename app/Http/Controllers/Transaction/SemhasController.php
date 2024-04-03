@@ -56,27 +56,6 @@ class SemhasController extends Controller
     {
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-        // $prodi_id = auth()->user()->prodi_id;
-        // $data = SemhasModel::leftJoin('m_prodi', 'm_semhas.prodi_id', '=', 'm_prodi.prodi_id')
-        //     ->selectRaw('m_semhas.semhas_id, m_semhas.judul_semhas, m_semhas.gelombang, m_semhas.kuota_bimbingan, 
-        //          m_semhas.tanggal_mulai_pendaftaran, m_semhas.tanggal_akhir_pendaftaran,
-        //          m_prodi.prodi_name')
-        //     ->get();
-        // $prodi_id = auth()->user()->prodi_id;
-        // dd($prodi_id);
-        // // $dataall = SemhasModel::all();
-        // // dd($dataall);
-        // $data = SemhasModel::leftJoin('m_prodi', 'm_semhas.prodi_id', '=', 'm_prodi.prodi_id')
-        //     ->selectRaw('m_semhas.semhas_id, m_semhas.judul_semhas, m_semhas.gelombang, m_semhas.kuota_bimbingan, 
-        //      m_semhas.tanggal_mulai_pendaftaran, m_semhas.tanggal_akhir_pendaftaran,
-        //      m_prodi.prodi_name')
-        //     ->where(function ($query) use ($prodi_id) {
-        //         $query->where('m_semhas.prodi_id', $prodi_id)
-        //             ->orWhereNull('m_semhas.prodi_id');
-        //     })
-        //     ->get();
-        // $dataall = SemhasModel::all();
-        // dd($dataall);
         $prodi_id = auth()->user()->prodi_id;
 
         $data = SemhasModel::select(
@@ -101,23 +80,6 @@ class SemhasController extends Controller
 
         $data = $data->get();
 
-        // dd($data);
-
-        // $data = SemhasModel::leftJoin('m_prodi', function ($join) use ($prodi_id) {
-        //     $join->on('m_semhas.prodi_id', '=', 'm_prodi.prodi_id')
-        //         ->where(function ($query) use ($prodi_id) {
-        //             $query->where('m_semhas.prodi_id', $prodi_id)
-        //                 ->orWhereNull('m_semhas.prodi_id');
-        //         });
-        // })
-        //     ->selectRaw('m_semhas.semhas_id, m_semhas.judul_semhas, m_semhas.gelombang, m_semhas.kuota_bimbingan, 
-        //  m_semhas.tanggal_mulai_pendaftaran, m_semhas.tanggal_akhir_pendaftaran,
-        //  m_prodi.prodi_name')
-        //     ->get();
-
-
-
-
         return DataTables::of($data)
             ->addIndexColumn()
             ->make(true);
@@ -132,7 +94,7 @@ class SemhasController extends Controller
             'url' => $this->menuUrl,
             'title' => 'Tambah ' . $this->menuTitle
         ];
-
+        $prodi_id = auth()->user()->prodi_id;
         $prodis = ProdiModel::selectRaw("prodi_id, prodi_name, prodi_code")->get();
 
         return view($this->viewPath . 'action')

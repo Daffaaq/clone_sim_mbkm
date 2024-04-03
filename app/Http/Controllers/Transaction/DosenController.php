@@ -110,14 +110,33 @@ class DosenController extends Controller
                 ]);
             }
 
-            // Generate random username
-            $random_username = 'dos_' . rand(100000, 999999);
+            $username = null;
+            if (!empty($request->input('dosen_nip'))) {
+                $username = $request->input('dosen_nip');
+            } elseif (!empty($request->input('dosen_nidn'))) {
+                $username = $request->input('dosen_nidn');
+            }
+
+            // If neither nip nor nidn is empty, use nip as the default username
+            if (!empty($request->input('dosen_nip')) && !empty($request->input('dosen_nidn'))) {
+                $username = $request->input('dosen_nip');
+            }
+
+            // If both nip and nidn are empty, do not assign any username
+            if (empty($username)) {
+                // Handle the case where neither nip nor nidn is provided
+                return response()->json([
+                    'stat' => false,
+                    'mc' => false,
+                    'msg' => 'NIP atau NIDN Tidak Boleh Kosong',
+                ]);
+            }
 
             // Create user
             $user = [
-                'username' => $random_username,
+                'username' => $username,
                 'name' => $request->input('dosen_name'),
-                'password' => Hash::make($random_username),
+                'password' => Hash::make($username),
                 'group_id' => 3,
                 'is_active' => 1,
                 'email' => $request->input('dosen_email'),
@@ -287,109 +306,6 @@ class DosenController extends Controller
         return redirect('/');
     }
 
-    // public function import_action(Request $request)
-    // {
-    //     if ($request->ajax() || $request->wantsJson()) {
-
-    //         $rules = [
-    //             'file' => 'required|mimes:xls,xlsx'
-    //         ];
-
-    //         $validator = Validator::make($request->all(), $rules);
-
-    //         if ($validator->fails()) {
-    //             return response()->json([
-    //                 'stat'     => false,
-    //                 'mc'       => false,
-    //                 'msg'      => 'Terjadi kesalahan.',
-    //                 'msgField' => $validator->errors()
-    //             ]);
-    //         }
-
-    //         $file = $request->file('file');
-
-    //         $nama_file = rand() . '.' . $file->getClientOriginalExtension();
-
-    //         $file->move(public_path('assets/temp_import'), $nama_file);
-
-    //         $collection = Excel::toCollection(new MahasiswaImport, public_path('assets/temp_import/' . $nama_file));
-    //         $collection = $collection[0];
-    //         //remove 0,1,2 index
-    //         $datas = $collection->splice(3);
-
-    //         // $datas = $collection->first(); 
-    //         // dd($datas);
-
-    //         $datas->map(function ($item) {
-    //             // Inisialisasi username dan password
-    //             $username = null;
-    //             $password = null;
-
-    //             // Periksa apakah ada data di kolom yang dapat digunakan sebagai username atau password
-    //             if (!empty($item[0]) || !empty($item[1])) {
-    //                 // Jika kolom pertama berisi "-", ubah menjadi null
-    //                 if ($item[0] === '-') {
-    //                     $item[0] = null;
-    //                 }
-
-    //                 // Jika kolom kedua berisi "-", ubah menjadi null
-    //                 if ($item[1] === '-') {
-    //                     $item[1] = null;
-    //                 }
-
-    //                 // Tentukan nilai untuk username
-    //                 $username = $item[1] ?? $item[0];
-
-    //                 // Tentukan nilai untuk password
-    //                 $password = $item[1] ?? $item[0];
-
-    //                 // Memeriksa apakah ada data yang valid untuk digunakan sebagai username dan password
-    //                 if ($username && $password) {
-    //                     $user = UserModel::insertGetId([
-    //                         'username' => $username,
-    //                         'name' => $item[2], // Misalkan indeks 2 adalah nama pengguna
-    //                         'password' => Hash::make($password),
-    //                         'group_id' => 3,
-    //                         'is_active' => 1,
-    //                         'email' => $item[3],
-    //                     ]);
-
-    //                     DosenModel::insert([
-    //                         'user_id' => $user,
-    //                         'dosen_nip' => !empty($item[0]) ? $item[0] : null,
-    //                         'dosen_nidn' => !empty($item[1]) ? $item[1] : null,
-    //                         'dosen_name' => $item[2],
-    //                         'dosen_email' => $item[3],
-    //                         'dosen_phone' => $item[4],
-    //                         'dosen_gender' => $item[5],
-    //                         'dosen_tahun' => $item[6],
-    //                         'kuota' => $item[7],
-    //                     ]);
-    //                 } else {
-    //                     // Jika tidak ada data yang valid untuk digunakan sebagai username atau password, lakukan penanganan kesalahan di sini
-    //                     return response()->json([
-    //                         'stat' => false,
-    //                         'mc' => false,
-    //                         'msg' => 'Gagal mengimpor data: Tidak ada data yang valid untuk digunakan sebagai username atau password.'
-    //                     ]);
-    //                 }
-    //             }
-    //         });
-
-
-
-
-
-    //         //remove file
-    //         unlink(public_path('assets/temp_import/' . $nama_file));
-
-    //         return response()->json([
-    //             'stat' => true,
-    //             'mc' => true, // close modal
-    //             'msg' => 'Dosen berhasil diimport'
-    //         ]);
-    //     }
-    // }
     public function import_action(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {

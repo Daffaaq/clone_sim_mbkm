@@ -16,7 +16,7 @@
                                     class="btn btn-sm btn-{{ $theme->button }} mt-1 ajax_modal"
                                     data-url="{{ $page->url }}/create"><i class="fas fa-plus"></i> Tambah</button>
                             @endif
-                            <button type="button" class="btn btn-sm btn-info mt-1" id="btnImport"><i
+                            <button type="button" class="btn btn-sm btn-success mt-1" id="btnImport"><i
                                     class="fas fa-file-import"></i> Import</button>
                         </div>
                     </div>

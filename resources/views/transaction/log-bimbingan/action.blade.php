@@ -73,11 +73,9 @@ $is_edit = isset($data);
                     <div class="col-sm-9">
                         @if (isset($data->foto))
                             <input type="hidden" name="existing_foto" value="{{ $data->foto }}">
-                            <p>Foto saat ini: {{ $data->foto }}</p>
                         @endif
                         <input type="file" class="form-control-file" id="foto" name="foto">
-
-
+                        <small id="fotoHelp" class="form-text text-muted">Max file size: 2048KB (2MB).</small>
                     </div>
                 </div>
             </div>

@@ -68,7 +68,14 @@ class LogBimbinganController extends Controller
             ];
 
             $userId = Auth::id();
+            $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
+            $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
+            // Gunakan mahasiswa_id untuk mencari data magang
+            $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->first();
+            $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->first();
+            $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
+            $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
             // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
             //     ->where('created_by', $userId);
             $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
@@ -79,6 +86,8 @@ class LogBimbinganController extends Controller
                 ->with('breadcrumb', (object) $breadcrumb)
                 ->with('activeMenu', (object) $activeMenu)
                 ->with('page', (object) $page)
+                ->with('instrukturLapangan_id', $instrukturLapangan_id)
+                ->with('pembimbingdosen_id', $pembimbingdosen_id)
                 ->with('data', $data)
                 ->with('allowAccess', $this->authAccessKey());
         } else {
@@ -199,7 +208,7 @@ class LogBimbinganController extends Controller
                 'jam_mulai' => 'required',
                 'jam_selesai' => 'required',
                 'topik_bimbingan' => 'required|string',
-                'foto' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Menggunakan aturan image untuk validasi file gambar
+                'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048', // Menggunakan aturan image untuk validasi file gambar
                 // Tambahkan aturan validasi lainnya untuk field DosenModel
             ];
             $validator = Validator::make($request->all(), $rules);

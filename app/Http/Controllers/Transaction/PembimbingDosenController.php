@@ -85,15 +85,17 @@ class PembimbingDosenController extends Controller
             ->leftJoin('m_mahasiswa', 't_pembimbing_dosen.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
             ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
             ->leftJoin('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
-            ->leftJoin('m_prodi', function ($join) use ($prodi_id) {
-                $join->on('t_magang.prodi_id', '=', 'm_prodi.prodi_id')
-                    ->where(function ($query) use ($prodi_id) {
-                        $query->where('m_prodi.prodi_id', $prodi_id) // Filter berdasarkan prodi_id pengguna
-                            ->orWhereNull('m_prodi.prodi_id'); // Jika pengguna tidak memiliki prodi_id
-                    });
-            })
-            ->where('t_magang.status', 1) // Pastikan status magang adalah 1 (diterima)
-            ->get();
+        ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id');
+        if ($prodi_id !== null) {
+            // Ketika user_id tidak null
+            $data->where(function ($query) use ($prodi_id) {
+                // Filter data yang sesuai dengan prodi_id pengguna atau yang prodi_id-nya null
+                $query->where('m_prodi.prodi_id', $prodi_id)
+                    ->orWhereNull('m_prodi.prodi_id');
+            });
+        }
+        $data->where('t_magang.status', 1); // Pastikan status magang adalah 1 (diterima)
+        $data = $data->get();
 
 
 

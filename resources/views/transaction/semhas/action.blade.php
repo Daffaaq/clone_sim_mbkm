@@ -21,12 +21,22 @@ $is_edit = isset($data);
                     <div class="col-sm-9">
                         <select id="prodi_id" name="prodi_id" class="form-control form-control-sm select2_combobox">
                             <option disabled selected value="">Pilih opsi</option>
-                            @foreach ($prodis as $prodi)
-                                <option value="{{ $prodi->prodi_id }}"
-                                    {{ isset($data->prodi_id) && $data->prodi_id == $prodi->prodi_id ? 'selected' : '' }}>
-                                    {{ $prodi->prodi_code }} - {{ $prodi->prodi_name }}
-                                </option>
-                            @endforeach
+                            @if (auth()->user()->prodi_id)
+                                @foreach ($prodis as $prodi)
+                                    @if (auth()->user()->prodi_id == $prodi->prodi_id)
+                                        <option value="{{ $prodi->prodi_id }}" selected>
+                                            {{ $prodi->prodi_code }} - {{ $prodi->prodi_name }}
+                                        </option>
+                                    @endif
+                                @endforeach
+                            @else
+                                @foreach ($prodis as $prodi)
+                                    <option value="{{ $prodi->prodi_id }}">
+                                        {{ $prodi->prodi_code }} - {{ $prodi->prodi_name }}
+                                    </option>
+                                @endforeach
+                            @endif
+
                         </select>
                     </div>
                 </div>
