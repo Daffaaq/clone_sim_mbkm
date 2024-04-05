@@ -85,7 +85,7 @@ class PembimbingDosenController extends Controller
             ->leftJoin('m_mahasiswa', 't_pembimbing_dosen.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
             ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
             ->leftJoin('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
-        ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id');
+            ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id');
         if ($prodi_id !== null) {
             // Ketika user_id tidak null
             $data->where(function ($query) use ($prodi_id) {
@@ -190,7 +190,7 @@ class PembimbingDosenController extends Controller
                 return response()->json([
                     'stat' => false,
                     'mc' => false,
-                    'msg' => 'Kuota dosen sudah habis. Tidak bisa menambahkan pembimbing baru.'
+                    'msg' => 'Kuota dosen ' . $dosen->nama . ' sudah habis (' . $dosen->kuota . ' mahasiswa). Tidak bisa menambahkan pembimbing baru.'
                 ]);
             }
             $mahasiswa_ids = $request->input('mahasiswa_id');
@@ -198,7 +198,7 @@ class PembimbingDosenController extends Controller
             if ($dosen->kuota < count($mahasiswa_ids)) {
                 return response()->json([
                     'stat' => false,
-                    'msg' => 'Kuota dosen tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
+                    'msg' => 'Kuota dosen ' . $dosen->nama . ' hanya tersisa ' . $dosen->kuota . ' mahasiswa, tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
                 ]);
             }
             $magang_ids = Magang::whereIn('mahasiswa_id', $mahasiswa_ids)

@@ -87,8 +87,7 @@ $is_edit = isset($data);
                                 @foreach ($dosen as $r)
                                     <option value="{{ $r->dosen_id }}"
                                         {{ isset($data) && $data->dosen_id == $r->dosen_id ? 'selected' : '' }}>
-                                        {{ $r->dosen_name }} <span class="sisa-kuota">Sisa Kuota:
-                                            {{ $r->kuota }}</span>
+                                        {{ $r->dosen_name }}
                                     </option>
                                 @endforeach
                             </select>
