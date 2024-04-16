@@ -173,7 +173,7 @@ class PembimbingDosenController extends Controller
                 // Add other rules for DosenModel fields
             ];
             $validator = Validator::make($request->all(), $rules);
-            // dd($validator);
+
             if ($validator->fails()) {
                 return response()->json([
                     'stat' => false,
@@ -182,112 +182,62 @@ class PembimbingDosenController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
-            $dosen = DosenModel::findOrFail($request->input('dosen_id'));
-            // dd($dosen);
 
-            // Periksa apakah kuota dosen sudah mencapai 0
-            if ($dosen->kuota <= 0) {
+            $dosen = DosenModel::findOrFail($request->input('dosen_id'));
+
+            // Periksa apakah kuota dosen telah tercapai
+            if ($dosen->kuota <= $dosen->pembimbingDosen()->count()) {
                 return response()->json([
                     'stat' => false,
                     'mc' => false,
-                    'msg' => 'Kuota dosen ' . $dosen->nama . ' sudah habis (' . $dosen->kuota . ' mahasiswa). Tidak bisa menambahkan pembimbing baru.'
+                    'msg' => 'Kuota dosen ' . $dosen->nama . ' sudah tercapai. Tidak bisa menambahkan pembimbing baru.'
                 ]);
             }
-            $mahasiswa_ids = $request->input('mahasiswa_id');
-            // Periksa apakah kuota dosen masih mencukupi sebelum menambahkan mahasiswa
-            if ($dosen->kuota < count($mahasiswa_ids)) {
+
+            // Sekarang Anda dapat melanjutkan untuk menambahkan mahasiswa
+
+            // Hitung jumlah mahasiswa yang dipilih
+            $jumlahMahasiswaBaru = count($request->input('mahasiswa_id'));
+
+            // Periksa apakah jumlah mahasiswa yang akan ditambahkan melebihi kuota yang tersedia
+            if (($dosen->kuota - $dosen->pembimbingDosen()->count()) < $jumlahMahasiswaBaru) {
                 return response()->json([
                     'stat' => false,
-                    'msg' => 'Kuota dosen ' . $dosen->nama . ' hanya tersisa ' . $dosen->kuota . ' mahasiswa, tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
+                    'mc' => false,
+                    'msg' => 'Kuota dosen ' . $dosen->nama . ' tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
                 ]);
             }
-            $magang_ids = Magang::whereIn('mahasiswa_id', $mahasiswa_ids)
+
+            // Sekarang Anda dapat menambahkan mahasiswa tanpa mengurangi kuota dosen
+
+            $magang_ids = Magang::whereIn('mahasiswa_id', $request->input('mahasiswa_id'))
                 ->where('status', 1)
                 ->pluck('magang_id')
                 ->toArray();
-            // dd($mahasiswa_ids);
-            $pembimbingDosen = null;
-            if (!empty($mahasiswa_ids)) {
-                foreach ($magang_ids as $magang_id) {
-                    if (empty($mahasiswa_ids)) {
-                        break; // Keluar dari perulangan jika tidak ada mahasiswa lagi
-                    }
-                    // Loop untuk setiap mahasiswa yang dipilih
-                    $mahasiswa_id = array_shift($mahasiswa_ids);
-                    // Pastikan mahasiswa_id tidak null sebelum menyimpan data
-                    if ($mahasiswa_id) {
-                        // Simpan data ke dalam InstrukturLapanganModel
-                        $pembimbingDosen = PembimbingDosenModel::create([
-                            'magang_id' => $magang_id,
-                            'mahasiswa_id' => $mahasiswa_id,
-                            'dosen_id' => $request->input('dosen_id') // Gunakan id instruktur yang baru saja dibuat
-                            // Isi kolom-kolom lainnya sesuai kebutuhan
-                        ]);
-                        // Mengurangi nilai kuota dosen terkait
-                        $dosen->kuota -= 1; // Kurangi kuota dengan 1, karena menambahkan 1 mahasiswa
-                        $dosen->save();
-                    }
+
+            $pembimbingDosen = [];
+            foreach ($magang_ids as $magang_id) {
+                foreach ($request->input('mahasiswa_id') as $mahasiswa_id) {
+                    // Simpan data ke dalam PembimbingDosenModel
+                    $pembimbingDosen[] = PembimbingDosenModel::create([
+                        'magang_id' => $magang_id,
+                        'mahasiswa_id' => $mahasiswa_id,
+                        'dosen_id' => $request->input('dosen_id')
+                        // Isi kolom-kolom lainnya sesuai kebutuhan
+                    ]);
                 }
-                // dd($magang_ids);
-            } else {
-                // Jika tidak ada mahasiswa yang dipilih, berikan pesan kesalahan
-                return response()->json([
-                    'msg' => 'Tidak ada mahasiswa yang dipilih.'
-                ]);
             }
+
             return response()->json([
-                'stat' => $pembimbingDosen,
-                'mc' => $pembimbingDosen,
-                'msg' => $pembimbingDosen ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
+                'stat' => !empty($pembimbingDosen),
+                'mc' => !empty($pembimbingDosen),
+                'msg' => !empty($pembimbingDosen) ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
             ]);
         }
 
         return redirect('/');
     }
 
-
-
-    // public function edit($id)
-    // {
-    //     $this->authAction('update', 'modal');
-    //     if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-    //     $page = [
-    //         'url' => $this->menuUrl . '/' . $id,
-    //         'title' => 'Edit ' . $this->menuTitle
-    //     ];
-
-    //     $mahasiswaWithMagang = MahasiswaModel::selectRaw("m_mahasiswa.mahasiswa_id, m_mahasiswa.nama_mahasiswa, t_magang.magang_id")
-    //         ->join('t_magang', 't_magang.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
-    //         ->where('t_magang.status', 1)
-    //         ->get();
-
-    //     $data = PembimbingDosenModel::find($id);
-
-    //     $dosen = DosenModel::selectRaw("dosen_id, dosen_name")->get();
-
-    //     $selectedMahasiswaId = $data->mahasiswa_id;
-
-    //     $mahasiswa = [];
-
-    //     foreach ($mahasiswaWithMagang as $data) {
-    //         if ($data->mahasiswa_id == $selectedMahasiswaId) {
-    //             $mahasiswa[$data->mahasiswa_id] = [
-    //                 'nama_mahasiswa' => $data->nama_mahasiswa,
-    //                 'magang_id' => $data->magang_id
-    //             ];
-    //             break; // Keluar dari loop setelah menemukan mahasiswa yang dipilih sebelumnya
-    //         }
-    //     }
-
-    //     return (!$data) ? $this->showModalError() :
-    //         view($this->viewPath . 'action')
-    //         ->with('page', (object) $page)
-    //         ->with('id', $id)
-    //         ->with('data', $data)
-    //         ->with('mahasiswa', $mahasiswa)
-    //         ->with('dosen', $dosen);;
-    // }
 
     public function edit($id)
     {
@@ -356,6 +306,31 @@ class PembimbingDosenController extends Controller
                 ]);
             }
 
+            $dosen = DosenModel::findOrFail($request->input('dosen_id'));
+
+            // Periksa apakah kuota dosen telah tercapai
+            if ($dosen->kuota <= $dosen->pembimbingDosen()->count()) {
+                return response()->json([
+                    'stat' => false,
+                    'mc' => false,
+                    'msg' => 'Kuota dosen ' . $dosen->nama . ' sudah tercapai. Tidak bisa menambahkan pembimbing baru.'
+                ]);
+            }
+
+            // Sekarang Anda dapat melanjutkan untuk menambahkan mahasiswa
+
+            // Hitung jumlah mahasiswa yang dipilih
+            $jumlahMahasiswaBaru = count($request->input('mahasiswa_id'));
+
+            // Periksa apakah jumlah mahasiswa yang akan ditambahkan melebihi kuota yang tersedia
+            if (($dosen->kuota - $dosen->pembimbingDosen()->count()) < $jumlahMahasiswaBaru) {
+                return response()->json([
+                    'stat' => false,
+                    'mc' => false,
+                    'msg' => 'Kuota dosen ' . $dosen->nama . ' tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
+                ]);
+            }
+
             $mahasiswa_ids = $request->input('mahasiswa_id');
             $pembimbingDosen = null;
             $magang_ids = [];
@@ -373,28 +348,6 @@ class PembimbingDosenController extends Controller
                     // Temukan model PembimbingDosen berdasarkan ID
                     $pembimbingDosen = PembimbingDosenModel::find($id);
                     if ($pembimbingDosen) {
-                        // Ambil data dosen yang akan diubah
-                        $dosen = DosenModel::findOrFail($request->input('dosen_id'));
-
-                        // Periksa apakah kuota dosen sudah mencapai 0
-                        if ($dosen->kuota <= 0) {
-                            return response()->json([
-                                'stat' => false,
-                                'mc' => false,
-                                'msg' => 'Kuota dosen sudah habis. Tidak bisa mengubah pembimbing.'
-                            ]);
-                        }
-
-                        // Mengembalikan kuota untuk dosen sebelumnya
-                        $previousDosen = PembimbingDosenModel::findOrFail($id)->dosen_id;
-                        $previousDosenModel = DosenModel::findOrFail($previousDosen);
-                        $previousDosenModel->kuota += 1;
-                        $previousDosenModel->save();
-
-                        // Mengurangi kuota untuk dosen baru
-                        $dosen->kuota -= 1;
-                        $dosen->save();
-
                         // Perbarui atribut model dan simpan perubahan
                         $pembimbingDosen->magang_id = $magang_id;
                         $pembimbingDosen->mahasiswa_id = $mahasiswa_id;

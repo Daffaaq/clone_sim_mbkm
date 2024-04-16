@@ -58,7 +58,9 @@ class DosenController extends Controller
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data  = DosenModel::selectRaw("dosen_id, dosen_name, dosen_email, kuota");
+        // $data  = DosenModel::selectRaw("dosen_id, dosen_name, dosen_email, kuota");
+        $data  = DosenModel::withCount('pembimbingDosen')->selectRaw("dosen_id, dosen_name, dosen_email, kuota");
+        // dd($data);
 
         return DataTables::of($data)
             ->addIndexColumn()

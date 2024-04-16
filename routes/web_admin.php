@@ -23,6 +23,7 @@ use App\Http\Controllers\Proposal\AdminProposalMahasiswaBermasalahController;
 use App\Http\Controllers\Proposal\AdminProposalMahasiswaController;
 use App\Http\Controllers\Proposal\AdminUsulanTopikController;
 use App\Http\Controllers\Report\DaftarMahasiswaDiterimaController;
+use App\Http\Controllers\Report\DaftarMitraController;
 use App\Http\Controllers\Report\LogActivityController;
 use App\Http\Controllers\Setting\AccountController;
 use App\Http\Controllers\Setting\GroupController;
@@ -39,10 +40,12 @@ use App\Http\Controllers\Transaction\LihatStatusPengajuanController;
 use App\Http\Controllers\Transaction\LogBimbinganController;
 use App\Http\Controllers\Transaction\LogBimbinganDosenController;
 use App\Http\Controllers\Transaction\LogBimbinganInstrukturController;
+use App\Http\Controllers\Transaction\MyMagangController;
 use App\Http\Controllers\Transaction\PembimbingDosenController;
 use App\Http\Controllers\Transaction\PersetujuanKelompokController;
 use App\Http\Controllers\Transaction\QuotaDosenController;
 use App\Http\Controllers\Transaction\SemhasController;
+use App\Http\Controllers\Transaction\SemhasDaftarController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'master', 'middleware' => ['auth']], function () {
@@ -126,9 +129,18 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::get('dosen/{id}/delete', [DosenController::class, 'confirm']);
     Route::post('dosen/import', [DosenController::class, 'import_action'])->name('dosen.import');
 
+    Route::resource('my-magang', MyMagangController::class)->parameter('my-magang', 'id');
+    Route::post('my-magang/list', [MyMagangController::class, 'list']);
+    Route::get('my-magang/{id}/delete', [MyMagangController::class, 'confirm']);
+
     Route::resource('seminar-hasil', SemhasController::class)->parameter('semhas', 'id');
     Route::post('seminar-hasil/list', [SemhasController::class, 'list']);
     Route::get('seminar-hasil/{id}/delete', [SemhasController::class, 'confirm']);
+
+    Route::resource('seminarhasil-daftar', SemhasDaftarController::class)->parameter('semhas', 'id');
+    Route::post('seminarhasil-daftar/list', [SemhasDaftarController::class, 'list']);
+    Route::get('seminarhasil-daftar/{id}/delete', [SemhasDaftarController::class, 'confirm']);
+    Route::post('log-seminarhasil/daftar', [SemhasDaftarController::class, 'daftarSemhas'])->name('daftar.semhas');
 
     //log bimbingan
     Route::resource('log-bimbingan', LogBimbinganController::class)->parameter('log-bimbingan', 'id');

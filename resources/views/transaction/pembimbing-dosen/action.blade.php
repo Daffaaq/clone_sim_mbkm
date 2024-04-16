@@ -37,47 +37,8 @@ $is_edit = isset($data);
                             mahasiswa.</span>
                     </div>
                 </div>
-                {{-- <div class="modal-body">
-                    <div class="form-message text-center"></div>
-                    <div class="form-group required row mb-2">
-                        <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing</label>
-                        <div class="col-sm-9">
-                            <select id="dosen_id" name="dosen_id"
-                                class="form-control form-control-sm select2_combobox">
-                                <option value="">- Pilih -</option>
-                                @foreach ($dosen as $r)
-                                    <option value="{{ $r->dosen_id }}"
-                                        {{ isset($data) && $data->dosen_id == $r->dosen_id ? 'selected' : '' }}>
-                                        {{ $r->dosen_name }} - Sisa Kuota: {{ $r->kuota }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div> --}}
-                {{-- <div class="modal-body">
-                    <div class="form-message text-center"></div>
-                    <div class="form-group required row mb-2">
-                        <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing</label>
-                        <div class="col-sm-9">
-                            <select id="dosen_id" name="dosen_id"
-                                class="form-control form-control-sm select2_combobox">
-                                <option value="">- Pilih -</option>
-                                @foreach ($dosen as $r)
-                                    <option value="{{ $r->dosen_id }}">{{ $r->dosen_name }}</option>
-                                @endforeach
-                                @foreach ($dosen as $r)
-                                    <option value="{{ $r->dosen_id }}"
-                                        {{ isset($data) && $data->dosen_id == $r->dosen_id ? 'selected' : '' }}>
-                                        {{ $r->dosen_name }} (Sisa Kuota: {{ $r->kuota }})
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </div> --}}
                 <div class="modal-body">
-                    <div class="form-message text-center"></div>
+                    {{-- <div class="form-message text-center"></div> --}}
                     <div class="form-group required row mb-2">
                         <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing</label>
                         <div class="col-sm-9">

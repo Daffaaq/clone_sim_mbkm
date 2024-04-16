@@ -19,27 +19,33 @@ $is_edit = isset($data);
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Prodi</label>
                     <div class="col-sm-9">
-                        <select id="prodi_id" name="prodi_id" class="form-control form-control-sm select2_combobox">
-                            <option disabled selected value="">Pilih opsi</option>
-                            @if (auth()->user()->prodi_id)
+                        @if (auth()->user()->prodi_id)
+                            <!-- Menampilkan nilai prodi_id dan prodi_name langsung jika tersedia -->
+                            @php
+                                $selectedProdi = $prodis->where('prodi_id', auth()->user()->prodi_id)->first();
+                            @endphp
+                            <input type="hidden" name="prodi_id" value="{{ $selectedProdi->prodi_id }}">
+                            <input type="text" class="form-control" value="{{ $selectedProdi->prodi_name }}"
+                                readonly>
+                        @else
+                            <!-- Menampilkan dropdown jika prodi_id tidak tersedia -->
+                            <select id="prodi_id" name="prodi_id"
+                                class="form-control form-control-sm select2_combobox">
+                                <option disabled selected value="">Pilih opsi</option>
                                 @foreach ($prodis as $prodi)
-                                    @if (auth()->user()->prodi_id == $prodi->prodi_id)
-                                        <option value="{{ $prodi->prodi_id }}" selected>
-                                            {{ $prodi->prodi_code }} - {{ $prodi->prodi_name }}
-                                        </option>
-                                    @endif
-                                @endforeach
-                            @else
-                                @foreach ($prodis as $prodi)
-                                    <option value="{{ $prodi->prodi_id }}">
+                                    {{-- <option value="{{ $prodi->prodi_id }}">
+                                        {{ $prodi->prodi_code }} - {{ $prodi->prodi_name }}
+                                    </option> --}}
+                                    <option value="{{ $prodi->prodi_id }}"
+                                        {{ isset($data) && $data->prodi_id == $prodi->prodi_id ? 'selected' : '' }}>
                                         {{ $prodi->prodi_code }} - {{ $prodi->prodi_name }}
                                     </option>
                                 @endforeach
-                            @endif
-
-                        </select>
+                            </select>
+                        @endif
                     </div>
                 </div>
+
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Judul Seminar Hasil</label>
                     <div class="col-sm-9">

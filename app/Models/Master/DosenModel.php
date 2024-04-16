@@ -40,4 +40,9 @@ class DosenModel extends AppModel
         //  Model => columnFK
         // 'App\Models\Master\DosenModel' => 'jurusan_id'
     ];
+
+    public function pembimbingDosen()
+    {
+        return $this->hasMany('App\Models\Transaction\PembimbingDosenModel', 'dosen_id', 'dosen_id');
+    }
 }

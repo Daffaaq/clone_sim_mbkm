@@ -74,20 +74,23 @@ class LogBimbinganController extends Controller
             // Gunakan mahasiswa_id untuk mencari data magang
             $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->first();
             $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->first();
+            // dd($instrukturLapangan, $pembimbingdosen);
             $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
             $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
+            // dd($instrukturLapangan_id, $pembimbingdosen_id);
             // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
             //     ->where('created_by', $userId);
             $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
                 ->where('created_by', $userId)
                 ->get();
+            // dd($data);
 
             return view($this->viewPath . 'index')
                 ->with('breadcrumb', (object) $breadcrumb)
                 ->with('activeMenu', (object) $activeMenu)
                 ->with('page', (object) $page)
-                ->with('instrukturLapangan_id', $instrukturLapangan_id)
-                ->with('pembimbingdosen_id', $pembimbingdosen_id)
+                ->with('instrukturLapangan', $instrukturLapangan)
+                ->with('pembimbingdosen', $pembimbingdosen)
                 ->with('data', $data)
                 ->with('allowAccess', $this->authAccessKey());
         } else {

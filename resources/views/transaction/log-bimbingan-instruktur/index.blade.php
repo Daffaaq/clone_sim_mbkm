@@ -106,7 +106,8 @@
                     },
                     success: function(response) {
                         if (response.success) {
-                            location.reload();
+                            dataMaster.ajax.reload(null, false);
+                            // location.reload();
                         } else {
                             // Tampilkan pesan validasi di dalam form
                             var errorDiv = $('.nilai_instruktur_lapangan[data-id="' +

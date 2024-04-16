@@ -134,7 +134,15 @@
                         "sClass": "",
                         "sWidth": "10%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
+                        "mRender": function(data, type, row, meta) {
+                            const jumlah = row.pembimbing_dosen_count + '/' + data;
+                            if (data == 0 || data == row.pembimbing_dosen_count) {
+                                return '<span class="badge badge-danger">' + jumlah + '</span>'
+                            } else {
+                                return jumlah
+                            }
+                        }
                     },
                     {
                         "mData": "dosen_id",
