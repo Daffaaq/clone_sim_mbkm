@@ -214,20 +214,22 @@ class PembimbingDosenController extends Controller
                 ->where('status', 1)
                 ->pluck('magang_id')
                 ->toArray();
-
             $pembimbingDosen = [];
+            $mahasiswa_ids = $request->input('mahasiswa_id');
             foreach ($magang_ids as $magang_id) {
-                foreach ($request->input('mahasiswa_id') as $mahasiswa_id) {
-                    // Simpan data ke dalam PembimbingDosenModel
+                // Ambil satu mahasiswa dari input
+                $mahasiswa_id = array_shift($mahasiswa_ids);
+                // Simpan data ke dalam PembimbingDosenModel
+                if ($mahasiswa_id) {
+                    // Simpan data ke dalam InstrukturLapanganModel
                     $pembimbingDosen[] = PembimbingDosenModel::create([
                         'magang_id' => $magang_id,
                         'mahasiswa_id' => $mahasiswa_id,
-                        'dosen_id' => $request->input('dosen_id')
+                        'dosen_id' => $request->input('dosen_id') // Gunakan id instruktur yang baru saja dibuat
                         // Isi kolom-kolom lainnya sesuai kebutuhan
                     ]);
                 }
             }
-
             return response()->json([
                 'stat' => !empty($pembimbingDosen),
                 'mc' => !empty($pembimbingDosen),
