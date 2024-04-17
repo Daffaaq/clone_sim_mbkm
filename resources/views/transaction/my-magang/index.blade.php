@@ -83,27 +83,28 @@
                                     </td>
                                 </tr>
 
-                                @if (!$instrukturLapangan || (!$instrukturLapangan->instruktur && !$pembimbingDosen) || !$pembimbingDosen->dosen)
+                                @if (!$instrukturLapangan && !$pembimbingDosen)
+                                    {{-- @dd($instrukturLapangan, $pembimbingDosen); --}}
                                     <tr>
                                         <td class="text-center text-danger" colspan="4">
-                                            Segera menghubungi admin / koordinator jurusan untuk pembagian Dosen Pembimbing
-                                            Institusi dan terus silahkan menuju link <a
+                                            Segera menghubungi admin / koordinator jurusan untuk pembagian Dosen
+                                            Pembimbing Institusi dan terus silahkan menuju link <a
                                                 href="{{ url('transaksi/instruktur') }}">Disini</a> untuk mengisi akun
                                             pembimbing lapangan
                                         </td>
                                     </tr>
-                                @elseif (!$instrukturLapangan || !$instrukturLapangan->instruktur)
+                                @elseif (!$instrukturLapangan)
                                     <tr>
                                         <td class="text-center text-danger" colspan="4">
-                                            Silahkan menuju link <a href="{{ url('transaksi/instruktur') }}">Disini</a>
-                                            untuk mengisi akun pembimbing lapangan
+                                            <a href="{{ url('transaksi/instruktur') }}">Disini</a> untuk mengisi akun
+                                            pembimbing lapangan
                                         </td>
                                     </tr>
-                                @elseif (!$pembimbingDosen || !$pembimbingDosen->dosen)
+                                @elseif (!$pembimbingDosen)
                                     <tr>
                                         <td class="text-center text-danger" colspan="4">
-                                            Segera menghubungi admin / koordinator jurusan untuk pembagian Dosen Pembimbing
-                                            Institusi
+                                            Segera menghubungi admin / koordinator jurusan untuk pembagian Dosen
+                                            Pembimbing Institusi
                                         </td>
                                     </tr>
                                 @else
