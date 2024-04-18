@@ -321,6 +321,7 @@ class SemhasDaftarController extends Controller
 
         // dd($semhas, $instrukturLapangan, $pembimbingdosen, $magang_id);
         $request->validate([
+            'Judul'=>'required',
             'link_github' => 'required|url',
             'link_laporan' => 'required|url',
         ]);

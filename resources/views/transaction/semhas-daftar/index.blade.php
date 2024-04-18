@@ -241,6 +241,7 @@
                             if (data.stat) {
                                 resetForm('#form-master');
                                 dataMaster.draw(false);
+                                window.location.href = window.location.href;
                             }
                             closeModal($modal, data);
                         }

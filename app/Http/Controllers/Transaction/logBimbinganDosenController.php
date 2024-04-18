@@ -141,7 +141,7 @@ class LogBimbinganDosenController extends Controller
         if (
             $statusDosen == 1 && $nilaiPembimbingDosen > 100
         ) {
-            return response()->json(['success' => false, 'message' => 'Nilai pembimbing harus minimal 100']);
+            return response()->json(['success' => false, 'message' => 'Nilai pembimbing harus maksimal 100']);
         }
         // Lakukan proses pembaruan status dosen pembimbing di sini
         $logBimbingan = LogBimbinganModel::find($logBimbinganId);
