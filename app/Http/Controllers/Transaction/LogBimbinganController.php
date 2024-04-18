@@ -81,6 +81,8 @@ class LogBimbinganController extends Controller
             // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
             //     ->where('created_by', $userId);
             $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
+                ->where('status1', 1) // Menambahkan pengecekan status1 == 1
+                ->where('status2', 1) // Menambahkan pengecekan status2 == 1
                 ->where('created_by', $userId)
                 ->get();
             // dd($data);

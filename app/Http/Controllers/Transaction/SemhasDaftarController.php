@@ -175,6 +175,7 @@ class SemhasDaftarController extends Controller
                         ->first();
                     // dd($total_bimbingan >= $semhas->kuota_bimbingan);
                     $success = "anda sudah Eligible untuk mendaftar pada Tahap ini.";
+                    $successDaftar1 = "anda sudah Mendaftar untuk Tahap ini.";
                     $semhasData = $semhas;
                     $semhas_id = SemhasModel::where('prodi_id', $prodi_id)
                         ->where('tanggal_mulai_pendaftaran', '<=', now())
@@ -190,26 +191,25 @@ class SemhasDaftarController extends Controller
                     $jurusanName = $jurusan->jurusan_name;
                     $dataSemhasDaftar = SemhasDaftarModel::where('created_by', $user_id)->first();
                     // dd($dataSemhasDaftar);
-                    if($dataSemhasDaftar == null){
+                    if ($dataSemhasDaftar == null) {
                         return view($this->viewPath . 'index')
-                        ->with('breadcrumb', (object) $breadcrumb)
-                        ->with('activeMenu', (object) $activeMenu)
-                        ->with('success', $success)
-                        ->with('nama_instruktur', $nama_instruktur)
-                        ->with('nama_dosen', $nama_dosen)
-                        ->with('magang', $magang)
-                        ->with('dataSemhasDaftar', $dataSemhasDaftar)
-                        ->with('success', $success)
-                        ->with('semhasData', $semhasData)
-                        ->with('semhas_id', $semhas_id)
-                        ->with('instrukturLapangan', $instrukturLapangan)
-                        ->with('pembimbingdosen', $pembimbingdosen)
-                        ->with('magang_id', $magang_id)
-                        ->with('jurusanName', $jurusanName)
-                        ->with('page', (object) $page)
-                        ->with('allowAccess', $this->authAccessKey());
-                    }
-                    else{
+                            ->with('breadcrumb', (object) $breadcrumb)
+                            ->with('activeMenu', (object) $activeMenu)
+                            ->with('nama_instruktur', $nama_instruktur)
+                            ->with('nama_dosen', $nama_dosen)
+                            ->with('magang', $magang)
+                            ->with('dataSemhasDaftar', $dataSemhasDaftar)
+                            ->with('success', $success)
+                            ->with('successDaftar1', $successDaftar1)
+                            ->with('semhasData', $semhasData)
+                            ->with('semhas_id', $semhas_id)
+                            ->with('instrukturLapangan', $instrukturLapangan)
+                            ->with('pembimbingdosen', $pembimbingdosen)
+                            ->with('magang_id', $magang_id)
+                            ->with('jurusanName', $jurusanName)
+                            ->with('page', (object) $page)
+                            ->with('allowAccess', $this->authAccessKey());
+                    } else {
                         $this->authAction('read');
                         $this->authCheckDetailAccess();
 
@@ -225,26 +225,26 @@ class SemhasDaftarController extends Controller
                         ];
 
                         $page = [
-                                'url' => $this->menuUrl,
-                                'title' => 'Detail Proposal yang telah didaftarkan pada Tahap ini  '
-                            ];
-                            return view($this->viewPath . 'index')
-                                ->with('breadcrumb', (object) $breadcrumb)
-                                ->with('activeMenu', (object) $activeMenu)
-                                ->with('success', $success)
-                                ->with('nama_instruktur', $nama_instruktur)
-                                ->with('nama_dosen', $nama_dosen)
-                                ->with('magang', $magang)
-                                ->with('dataSemhasDaftar', $dataSemhasDaftar)
-                                ->with('success', $success)
-                                ->with('semhasData', $semhasData)
-                                ->with('semhas_id', $semhas_id)
-                                ->with('instrukturLapangan', $instrukturLapangan)
-                                ->with('pembimbingdosen', $pembimbingdosen)
-                                ->with('magang_id', $magang_id)
-                                ->with('jurusanName', $jurusanName)
-                                ->with('page', (object) $page)
-                                ->with('allowAccess', $this->authAccessKey());
+                            'url' => $this->menuUrl,
+                            'title' => 'Detail Proposal yang telah didaftarkan pada Tahap ini  '
+                        ];
+                        return view($this->viewPath . 'index')
+                            ->with('breadcrumb', (object) $breadcrumb)
+                            ->with('activeMenu', (object) $activeMenu)
+                            ->with('successDaftar1', $successDaftar1)
+                            ->with('nama_instruktur', $nama_instruktur)
+                            ->with('nama_dosen', $nama_dosen)
+                            ->with('magang', $magang)
+                            ->with('dataSemhasDaftar', $dataSemhasDaftar)
+                            ->with('success', $success)
+                            ->with('semhasData', $semhasData)
+                            ->with('semhas_id', $semhas_id)
+                            ->with('instrukturLapangan', $instrukturLapangan)
+                            ->with('pembimbingdosen', $pembimbingdosen)
+                            ->with('magang_id', $magang_id)
+                            ->with('jurusanName', $jurusanName)
+                            ->with('page', (object) $page)
+                            ->with('allowAccess', $this->authAccessKey());
                     }
                 }
             }
@@ -321,7 +321,7 @@ class SemhasDaftarController extends Controller
 
         // dd($semhas, $instrukturLapangan, $pembimbingdosen, $magang_id);
         $request->validate([
-            'Judul'=>'required',
+            'Judul' => 'required',
             'link_github' => 'required|url',
             'link_laporan' => 'required|url',
         ]);

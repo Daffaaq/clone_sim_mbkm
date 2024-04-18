@@ -50,13 +50,30 @@
                                             {{ $semhasData->judul_semhas }} Jurusan {{ $jurusanName }}
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <th class="col-2">Keterangan</th>
-                                        <th>:</th>
-                                        <td class="col-10 bg-success-opacity">
-                                            {{ $success }}
-                                        </td>
-                                    </tr>
+                                    @if (!$dataSemhasDaftar == null)
+                                        <tr>
+                                            <th class="col-2">Keterangan</th>
+                                            <th>:</th>
+                                            <td class="col-10 bg-success-opacity">
+                                                <div>{{ $success }}</div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th></th>
+                                            <th></th>
+                                            <td class="col-10 bg-success-opacity">
+                                                <div>{{ $successDaftar1 }}</div>
+                                            </td>
+                                        </tr>
+                                    @else
+                                        <tr>
+                                            <th class="col-2">Keterangan</th>
+                                            <th>:</th>
+                                            <td class="col-10 bg-success-opacity">
+                                                <div>{{ $success }}</div>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 </tbody>
                             </table>
                             {{-- Form Anda bisa ditambahkan di sini --}}
