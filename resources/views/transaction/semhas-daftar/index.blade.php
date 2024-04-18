@@ -250,7 +250,12 @@
                 submitHandler: function(form) {
                     $('.form-message').html('');
                     blockUI(form);
-                    $(form).ajaxSubmit({
+                    var formData = $(form).serialize();
+                    console.log(formData);
+                    $.ajax({
+                        type: 'POST',
+                        url: $(form).attr('action'),
+                        data: formData,
                         dataType: 'json',
                         success: function(data) {
                             unblockUI(form);
@@ -260,7 +265,10 @@
                                 dataMaster.draw(false);
                                 window.location.href = window.location.href;
                             }
-                            closeModal($modal, data);
+                        },
+                        error: function(xhr, status, error) {
+                            unblockUI(form);
+                            console.error(xhr.responseText);
                         }
                     });
                 },

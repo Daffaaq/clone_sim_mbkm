@@ -124,7 +124,11 @@ class LogBimbinganInstrukturController extends Controller
 
         // Ambil data yang difilter
         $filteredData = $data->get();
-
+        foreach ($filteredData as $data) {
+            $data->jam_mulai = substr($data->jam_mulai, 0, 5); // Ambil jam dan menit dari jam_mulai
+            $data->jam_selesai = substr($data->jam_selesai, 0, 5); // Ambil jam dan menit dari jam_selesai
+        }
+        // dd($filteredData);
         return DataTables::of($filteredData)
             ->addIndexColumn()
             ->make(true);
@@ -393,6 +397,11 @@ class LogBimbinganInstrukturController extends Controller
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         $data = LogBimbinganModel::find($id);
+        // dd($data);
+        if ($data) {
+            $data->jam_mulai = substr($data->jam_mulai, 0, 5); // Ambil jam dan menit dari jam_mulai
+            $data->jam_selesai = substr($data->jam_selesai, 0, 5); // Ambil jam dan menit dari jam_selesai
+        }
         $page = [
             'title' => 'Detail ' . $this->menuTitle
         ];

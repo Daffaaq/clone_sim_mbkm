@@ -119,7 +119,10 @@ class LogBimbinganDosenController extends Controller
 
         // Ambil data yang difilter
         $filteredData = $data->get();
-
+        foreach ($filteredData as $data) {
+            $data->jam_mulai = substr($data->jam_mulai, 0, 5); // Ambil jam dan menit dari jam_mulai
+            $data->jam_selesai = substr($data->jam_selesai, 0, 5); // Ambil jam dan menit dari jam_selesai
+        }
 
         return DataTables::of($filteredData)
             ->addIndexColumn()
@@ -396,6 +399,10 @@ class LogBimbinganDosenController extends Controller
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         $data = LogBimbinganModel::find($id);
+        if ($data) {
+            $data->jam_mulai = substr($data->jam_mulai, 0, 5); // Ambil jam dan menit dari jam_mulai
+            $data->jam_selesai = substr($data->jam_selesai, 0, 5); // Ambil jam dan menit dari jam_selesai
+        }
         $page = [
             'title' => 'Detail ' . $this->menuTitle
         ];

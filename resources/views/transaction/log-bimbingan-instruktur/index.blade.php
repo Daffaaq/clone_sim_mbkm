@@ -44,8 +44,8 @@
                                     <th>Jam Mulai</th>
                                     <th>Jam Selesai</th>
                                     <th>Penjelasan Kegiatan</th>
-                                    <th>Status Dosen Pembimbing</th>
-                                    <th>Nilai Pembimbing Dosen</th>
+                                    <th>Status Instruktur Lapangan</th>
+                                    <th>Nilai Instruktur Lapangan</th>
                                     <th>Action</th>
                                     <th>#</th>
                                 </tr>
