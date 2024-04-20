@@ -67,4 +67,8 @@ class MitraModel extends AppModel
     {
         return $this->belongsTo('App\Models\KabupatenModel', 'kota_id', 'id');
     }
+    // public function mitra()
+    // {
+    //     return $this->belongsTo(MitraModel::class, 'mitra_id');
+    // }
 }

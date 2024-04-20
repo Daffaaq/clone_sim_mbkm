@@ -413,6 +413,53 @@ class LogBimbinganInstrukturController extends Controller
             ->with('data', $data);
     }
 
+    public function updateStatusInstrukturFromModal(Request $request, $id)
+    {
+        // Validasi data yang diterima dari permintaan
+        $request->validate([
+            'status2' => 'required|in:0,1,2',
+            'nilai_instruktur_lapangan' => 'required|numeric'
+        ]);
+
+        // Ambil data yang dikirimkan melalui permintaan AJAX
+        $statusInstrukturLapangan = $request->input('status2');
+        $nilaiInstrukturLapangan = $request->input('nilai_instruktur_lapangan');
+
+        // Lakukan proses pembaruan status dosen pembimbing di sini
+        $logBimbingan = LogBimbinganModel::find($id);
+
+        if (!$logBimbingan) {
+            // Jika log bimbingan tidak ditemukan, kembalikan respons dengan pesan error
+            return response()->json(['success' => false, 'message' => 'Log bimbingan tidak ditemukan']);
+        }
+
+        // Proses update status dosen pembimbing
+        $logBimbingan->status2 = $statusInstrukturLapangan;
+
+        // Set tanggal_status_dosen berdasarkan status yang diubah
+        if ($statusInstrukturLapangan == 1) {
+            // Jika status diubah menjadi 'diterima', atur tanggal_status_dosen menjadi tanggal saat ini
+            $logBimbingan->tanggal_status_instruktur = now();
+        } else if ($statusInstrukturLapangan == 2) {
+            // Jika status diubah menjadi 'ditolak', atur nilai_pembimbing_dosen menjadi 0
+            $logBimbingan->nilai_pembimbing_dosen = 0;
+            // Atur tanggal_status_dosen menjadi null atau kosong
+            $logBimbingan->tanggal_status_instruktur = now(); // Sesuaikan dengan preferensi Anda
+        } else {
+            // Jika status diubah menjadi 'pending', atur tanggal_status_dosen menjadi null atau kosong
+            $logBimbingan->tanggal_status_instruktur = null; // Sesuaikan dengan preferensi Anda
+        }
+
+        // Set nilai_pembimbing_dosen berdasarkan input pengguna
+        $logBimbingan->nilai_instruktur_lapangan = $nilaiInstrukturLapangan; // Gunakan nilai yang diambil dari input pengguna
+
+        // Simpan perubahan
+        $logBimbingan->save();
+
+        // Kemudian kembalikan respons
+        return response()->json(['success' => true]);
+    }
+
     public function confirm($id)
     {
         $this->authAction('delete', 'modal');

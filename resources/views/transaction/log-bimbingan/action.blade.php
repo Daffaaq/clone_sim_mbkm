@@ -17,26 +17,20 @@ $is_edit = isset($data);
             <div class="modal-body">
                 <div class="form-message text-center"></div>
                 <div class="form-group required row mb-2">
-                    <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing</label>
-                    <div class="col-sm-9">
-                        <select id="pembimbing_dosen_id" name="pembimbing_dosen_id"
-                            class="form-control form-control-sm select2_combobox">
-                            <option value="{{ isset($pembimbingdosen_id) ? $pembimbingdosen_id : '' }}" selected>
-                                {{ $dosen_name }}</option>
-
-                        </select>
+                    <label for="pembimbing_dosen_id" class="col-sm-3 control-label col-form-label">Dosen
+                        Pembimbing</label>
+                    <div class="col-sm-9 d-flex align-items-center">
+                        <span id="pembimbing_dosen_name">{{ $dosen_name }}</span>
+                        <input type="hidden" id="pembimbing_dosen_id" name="pembimbing_dosen_id"
+                            value="{{ $pembimbingdosen_id }}">
                     </div>
                 </div>
                 <div class="form-group required row mb-2">
-                    <label class="col-sm-3 control-label col-form-label">Instruktur</label>
-                    <div class="col-sm-9">
-                        <select id="instruktur_lapangan_id" name="instruktur_lapangan_id"
-                            class="form-control form-control-sm select2_combobox">
-                            <option value="{{ isset($instrukturLapangan_id) ? $instrukturLapangan_id : '' }}" selected>
-                                {{ $instruktur_name }}</option>
-
-                        </select>
-
+                    <label for="instruktur_lapangan_id" class="col-sm-3 control-label col-form-label">Instruktur</label>
+                    <div class="col-sm-9 d-flex align-items-center">
+                        <span id="instruktur_name">{{ $instruktur_name }}</span>
+                        <input type="hidden" id="instruktur_lapangan_id" name="instruktur_lapangan_id"
+                            value="{{ $instrukturLapangan_id }}">
                     </div>
                 </div>
                 <div class="form-group required row mb-2">

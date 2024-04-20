@@ -61,20 +61,19 @@
     <script>
         $(document).ready(function() {
             var logBimbinganId, statusDosen, nilaiPembimbing;
-            $('body').on('change', '.toggle_status_dosen, .nilai_pembimbing_dosen', function(e) {
+            $('body').on('change', '.toggle_status_dosen, .nilai_instruktur_lapangan', function(e) {
                 e.preventDefault();
                 logBimbinganId = $(this).data('id');
                 statusDosen = $('.toggle_status_dosen[data-id="' + logBimbinganId + '"]').prop('checked') ?
                     1 : 2;
-                nilaiPembimbing = $('.nilai_pembimbing_dosen[data-id="' + logBimbinganId + '"]').val();
-                if (statusDosen == 2) {
+                var nilaiPembimbing = null; // Defaultnya null
+                if (statusDosen == 1) {
+                        nilaiPembimbing = $('.nilai_instruktur_lapangan[data-id="' + logBimbinganId + '"]').val();
+                } else if (statusDosen == 2) {
                     nilaiPembimbing = 0.00; // Atau bisa juga diatur ke null
                 }
-                var isChecked = $(this).prop('checked');
-                console.log("logBimbinganId:", logBimbinganId);
-                console.log("statusDosen:", statusDosen);
-                console.log("nilaiPembimbing:", nilaiPembimbing);
-                console.log("isChecked:", isChecked);
+                var isChecked = $('.toggle_status_dosen[data-id="' + logBimbinganId + '"]').prop('checked');
+
                 var label = $(this).siblings('.custom-control-label');
                 if (statusDosen == 1) {
                     label.removeClass('text-danger').addClass('text-success').text('Menerima');
@@ -184,7 +183,6 @@
                         "bSortable": true,
                         "bSearchable": true,
                         "mRender": function(data, type, row, meta) {
-                            console.log("Nilai data: ", data);
                             var toggleSwitch = '<div class="custom-control custom-switch">';
                             toggleSwitch +=
                                 '<input type="checkbox" class="custom-control-input toggle_status_dosen" id="toggle_' +

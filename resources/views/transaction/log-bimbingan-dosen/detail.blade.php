@@ -6,6 +6,7 @@
                     aria-hidden="true">&times;</span></button>
         </div>
         <div class="modal-body">
+            <div id="success-message" class="alert alert-success" style="display: none; text-align: center;"></div>
             <table class="table table-sm mb-0">
                 <tr>
                     <th class="w-25 text-right">Tanggal</th>
@@ -86,13 +87,12 @@
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Nilai Dosen</label>
                     <div class="col-sm-9">
-                        <input type="number" name="nilai_pembimbing_dosen" class="form-control"
+                        <input type="number" name="nilai_pembimbing_dosen" class="form-control" inputmode="numeric"
                             value="{{ $data->nilai_pembimbing_dosen }}">
                     </div>
                 </div>
             </form>
             <div id="error-message" class="alert alert-warning" style="display: none;"></div>
-            <div id="success-message" class="alert alert-success" style="display: none;"></div>
         </div>
         <div class="modal-footer">
             <button type="button" data-dismiss="modal" class="btn btn-warning">Keluar</button>
@@ -130,15 +130,24 @@
                     'status1': $('select[name=status1]').val(),
                     'nilai_pembimbing_dosen': $('input[name=nilai_pembimbing_dosen]').val()
                 };
-
-                console.log(formData);
                 // Periksa apakah status dosen pembimbing adalah 'Menolak'
                 if (formData.status1 == 2) {
                     // Jika status ditolak, atur nilai_pembimbing_dosen menjadi 0.00
                     formData.nilai_pembimbing_dosen = '0.00';
                     // $('input[name=nilai_pembimbing_dosen]').val('0');
                     $('input[name=nilai_pembimbing_dosen]').val('0').trigger('change');
-                    console.log($('input[name=nilai_pembimbing_dosen]').val());
+                }
+                var regex =
+                /^(0(\.00?)?|[1-9]\d*(\.\d{1,2})?)$/; // Angka yang dimulai dengan 0.00 atau angka lain tanpa awalan 0
+                if (!regex.test(formData.nilai_pembimbing_dosen)) {
+                    // Tampilkan pesan kesalahan
+                    $('#error-message').text(
+                        'Masukkan nilai dosen dengan benar. Awalan 0 hanya diperbolehkan untuk nilai tunggal.'
+                        ).show();
+                    setTimeout(function() {
+                        $('#error-message').fadeOut('slow');
+                    }, 5000);
+                    return false;
                 }
 
                 // Validasi nilai_pembimbing_dosen jika status1 adalah 'Menolak'

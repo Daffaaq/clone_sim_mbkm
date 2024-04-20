@@ -47,4 +47,8 @@ class MahasiswaModel extends AppModel
     {
         return $this->belongsTo(ProdiModel::class, 'prodi_id', 'prodi_id');
     }
+    // public function magang()
+    // {
+    //     return $this->hasMany('App\Models\Transaction\Magang', 'mahasiswa_id', 'mahasiswa_id');
+    // }
 }

@@ -261,10 +261,13 @@ class InstrukturController extends Controller
         $anggota = Magang::where('magang_kode', $kode_magang)
             ->with('mahasiswa')
             ->get();
-        $anggotas = Magang::where('magang_kode', $kode_magang)
+        $id_mitra = $data->magang_id;
+        // dd($id_mitra);
+        $anggotas = Magang::where('mitra_id', $id_mitra)
             ->whereDoesntHave('instrukturLapangan') // Pastikan setiap Magang memiliki InstrukturLapanganModel
             ->with('mahasiswa') // Sertakan relasi mahasiswa dalam hasil
             ->get();
+
         // dd($anggotas);
         $dateString = $data->mitra_batas_pendaftaran;
         $currentDate = date('Y-m-d');
