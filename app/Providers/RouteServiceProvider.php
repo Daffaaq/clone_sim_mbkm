@@ -55,7 +55,7 @@ class RouteServiceProvider extends ServiceProvider
                 require base_path('routes/web_admin.php');
                 require base_path('routes/web_dosen.php');
                 require base_path('routes/web_mahasiswa.php');
-                require base_path('routes/web_perusahaan.php');
+                require base_path('routes/web_instruktur.php');
             });
         });
     }
