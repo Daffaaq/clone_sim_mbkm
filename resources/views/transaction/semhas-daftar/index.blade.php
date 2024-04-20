@@ -182,15 +182,51 @@
                                 </div>
                                 <form action="{{ route('daftar.semhas') }}" method="POST" id="form-daftar">
                                     @csrf
-                                    <div class="form-group required row mb-2">
-                                        <label class="col-sm-3 control-label col-form-label">Judul Seminar Hasil</label>
-                                        <div class="col-sm-9">
-                                            <input type="text" class="form-control form-control-sm" id="Judul"
-                                                name="Judul">
-                                            <small id="judul" class="form-text text-muted">Masukkan Judul
-                                                Magang.</small>
+                                    @if ($dataSemhasDaftar1->isNotEmpty())
+                                        <div class="form-group required row mb-2">
+                                            <label class="col-sm-3 control-label col-form-label">Pilih Judul
+                                                Seminar</label>
+                                            <div class="col-sm-9">
+                                                <select class="form-control form-control-sm" id="Judul"
+                                                    name="Judul">
+                                                    <option value="" selected disabled>Pilih Judul Seminar Hasil
+                                                    </option>
+                                                    @foreach ($dataSemhasDaftar1 as $item)
+                                                        <option value="{{ $item->semhas_daftar_id }}">{{ $item->Judul }}
+                                                        </option>
+                                                    @endforeach
+                                                    <option value="manual">Masukkan Manual</option>
+                                                </select>
+                                                <small id="judul" class="form-text text-muted">Pilih Judul Seminar
+                                                    Hasil dari yang teman anda inputkan atau masukkan manual jika tidak ada
+                                                    dalam
+                                                    daftar.</small>
+                                            </div>
                                         </div>
-                                    </div>
+                                        <div class="form-group required row mb-2" id="manualJudulInput"
+                                            style="display: none;">
+                                            <label class="col-sm-3 control-label col-form-label">Judul Seminar
+                                                Hasil</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control form-control-sm"
+                                                    id="manualJudul" name="Judul">
+                                                <small id="manualJudulText" class="form-text text-muted">Masukkan Judul
+                                                    Seminar Hasil</small>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="form-group required row mb-2">
+                                            <label class="col-sm-3 control-label col-form-label">Judul Seminar
+                                                Hasil</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control form-control-sm" id="Judul"
+                                                    name="Judul">
+                                                <small id="judul" class="form-text text-muted">Masukkan Judul
+                                                    Magang.</small>
+                                            </div>
+                                        </div>
+                                    @endif
+
                                     <div class="form-group required row mb-2">
                                         <label class="col-sm-3 control-label col-form-label">Link github/project</label>
                                         <div class="col-sm-9">
@@ -235,6 +271,13 @@
     <script>
         $(document).ready(function() {
             unblockUI();
+            $('#Judul').change(function() {
+                if ($(this).val() == 'manual') {
+                    $('#manualJudulInput').show();
+                } else {
+                    $('#manualJudulInput').hide();
+                }
+            });
             $("#form-daftar").validate({
                 rules: {
                     Judul: {
@@ -258,12 +301,11 @@
                         data: formData,
                         dataType: 'json',
                         success: function(data) {
+                            console.log("Submit berhasil!");
                             unblockUI(form);
                             setFormMessage('.form-message', data);
-                            if (data.stat) {
-                                resetForm('#form-master');
-                                dataMaster.draw(false);
-                                window.location.href = window.location.href;
+                            if (data.success) {
+                                window.location.href = '/transaksi/seminarhasil-daftar';
                             }
                         },
                         error: function(xhr, status, error) {

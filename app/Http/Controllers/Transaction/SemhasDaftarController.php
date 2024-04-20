@@ -173,6 +173,8 @@ class SemhasDaftarController extends Controller
                         ->with('mitra.kegiatan')
                         ->with('periode')
                         ->first();
+
+                    $kode_magang = $magang->magang_kode;
                     // dd($total_bimbingan >= $semhas->kuota_bimbingan);
                     $success = "anda sudah Eligible untuk mendaftar pada Tahap ini.";
                     $successDaftar1 = "anda sudah Mendaftar untuk Tahap ini.";
@@ -190,7 +192,9 @@ class SemhasDaftarController extends Controller
                     $jurusan = JurusanModel::all()->first();
                     $jurusanName = $jurusan->jurusan_name;
                     $dataSemhasDaftar = SemhasDaftarModel::where('created_by', $user_id)->first();
-                    // dd($dataSemhasDaftar);
+                    $dataSemhasDaftar1 = SemhasDaftarModel::whereHas('magang', function ($query) use ($kode_magang) {
+                        $query->where('magang_kode', $kode_magang);
+                    })->get();
                     if ($dataSemhasDaftar == null) {
                         return view($this->viewPath . 'index')
                             ->with('breadcrumb', (object) $breadcrumb)
@@ -199,6 +203,7 @@ class SemhasDaftarController extends Controller
                             ->with('nama_dosen', $nama_dosen)
                             ->with('magang', $magang)
                             ->with('dataSemhasDaftar', $dataSemhasDaftar)
+                            ->with('dataSemhasDaftar1', $dataSemhasDaftar1)
                             ->with('success', $success)
                             ->with('successDaftar1', $successDaftar1)
                             ->with('semhasData', $semhasData)
