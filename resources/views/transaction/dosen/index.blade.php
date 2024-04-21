@@ -56,6 +56,7 @@
                             <input type="file" class="form-control-file" id="file" name="file"
                                 accept=".xls,.xlsx">
                         </div>
+                        <div class="alert alert-danger" id="importErrorAlert" style="display: none;"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
@@ -72,6 +73,7 @@
             $('#btnImport').click(function() {
                 // Tampilkan modal untuk memilih file
                 $('#importFileModal').modal('show');
+                $('#importErrorAlert').hide();
             });
             $('#importFileForm').submit(function(e) {
                 e.preventDefault();
@@ -84,12 +86,34 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        // Tutup modal setelah berhasil mengimpor
-                        $('#importFileModal').modal('hide');
-                        // Tampilkan pesan sukses
-                        alert('Dosen berhasil diimpor');
-                        // Refresh tabel data
-                        dataMaster.ajax.reload();
+                        // // Tutup modal setelah berhasil mengimpor
+                        // $('#importFileModal').modal('hide');
+                        // // Tampilkan pesan sukses
+                        // alert('Dosen berhasil diimpor');
+                        // // Refresh tabel data
+                        // dataMaster.ajax.reload();
+                        if (response.stat) {
+                            // Tutup modal setelah berhasil mengimpor
+                            $('#importFileModal').modal('hide');
+                            // Tampilkan pesan sukses
+                            alert('Dosen berhasil diimpor');
+                            // Refresh tabel data
+                            dataMaster.ajax.reload();
+                        } else {
+                            var errorMsg = response.msg +
+                            '\n'; // Tambahkan pesan kesalahan utama
+                            $.each(response.errors, function(index, value) {
+                                errorMsg += value +
+                                '\n'; // Tambahkan pesan-pesan kesalahan dari array errors
+                            });
+                            $('#importErrorAlert').text(errorMsg)
+                        .show(); // Tampilkan pesan kesalahan
+
+                            // Sembunyikan pesan kesalahan setelah 5 detik
+                            setTimeout(function() {
+                                $('#importErrorAlert').hide();
+                            }, 5000);
+                        }
                     },
                     error: function(xhr, status, error) {
                         // Tangani kesalahan

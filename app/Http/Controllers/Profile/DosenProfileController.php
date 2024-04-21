@@ -21,14 +21,16 @@ use Illuminate\Validation\Rule;
 class DosenProfileController extends Controller
 {
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->menuCode  = 'LECTURER.PROFILE';
         $this->menuUrl   = url('lecturer/profile');     // set URL untuk menu ini
         $this->menuTitle = 'Profil Dosen';                       // set nama menu
         $this->viewPath  = 'profile.dosen.';         // untuk menunjukkan direktori view. Diakhiri dengan tanda titik
     }
 
-    public function index(){
+    public function index()
+    {
         $this->authAction('read');
         $this->authCheckDetailAccess();
 
@@ -50,52 +52,35 @@ class DosenProfileController extends Controller
             'url' => $this->menuUrl,
             'title' => $this->menuTitle
         ];
+        $dosen = DosenModel::where('dosen_id', getDosenID())->first();
+        // dd($dosen);
 
-        $dosen = DosenView::find(getDosenID());
-        $jabatan = JabatanModel::selectRaw('jabatan_id, jabatan_name')->get();
-        $pangkat = PangkatModel::selectRaw('pangkat_id, pangkat_code, pangkat_name')->get();
-        $bidang  = BidangModel::selectRaw('bidang_id, bidang_name')
-                        ->where('jurusan_id', getJurusanID())
-                        ->get();
-
-        return (!$dosen)? $this->showPageNotFound() :
+        return (!$dosen) ? $this->showPageNotFound() :
             view($this->viewPath . 'index')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
             ->with('page', (object) $page)
             ->with('allowAccess', $this->authAccessKey())
-            ->with('dosen', $dosen)
-            ->with('jabatan', $jabatan)
-            ->with('pangkat', $pangkat)
-            ->with('bidang', $bidang);
+            ->with('dosen', $dosen);
     }
 
 
-    public function update(Request $request){
+    public function update(Request $request)
+    {
         $this->authAction('update', 'json');
-        if($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         if ($request->ajax() || $request->wantsJson()) {
 
             $user = Auth::user();
             $rules = [
-                'dosen_nip' => ['nullable', 'digits:18', Rule::unique('d_dosen', 'dosen_nip')->ignore(getDosenID(), 'dosen_id')],
-                'dosen_nidn' => ['nullable', 'digits:10', Rule::unique('d_dosen', 'dosen_nidn')->ignore(getDosenID(), 'dosen_id')],
+                'dosen_nip' => ['nullable', 'digits:18', Rule::unique('m_dosen', 'dosen_nip')->ignore(getDosenID(), 'dosen_id')],
+                'dosen_nidn' => ['nullable', 'digits:10', Rule::unique('m_dosen', 'dosen_nidn')->ignore(getDosenID(), 'dosen_id')],
                 'dosen_name' => 'required|string|max:50',
-                'dosen_email' => ['required', 'email:rfc,dns,filter', 'max:50', Rule::unique('d_dosen', 'dosen_email')->ignore(getDosenID(), 'dosen_id')],
-                'dosen_phone' => ['required', 'numeric', 'digits_between:8,15', Rule::unique('d_dosen', 'dosen_phone')->ignore(getDosenID(), 'dosen_id')],
+                'dosen_email' => ['required', 'email:rfc,dns,filter', 'max:50', Rule::unique('m_dosen', 'dosen_email')->ignore(getDosenID(), 'dosen_id')],
+                'dosen_phone' => ['required', 'numeric', 'digits_between:8,15', Rule::unique('m_dosen', 'dosen_phone')->ignore(getDosenID(), 'dosen_id')],
                 'dosen_gender' => 'required|in:L,P',
-                'dosen_jenis' => 'required|in:P,T,K,L,X',
-                'jabatan_id' => 'nullable|integer',
-                'pangkat_id' => 'nullable|integer',
-                'dosen_status' => 'required|in:AK,IB,TB,CT,NA',
                 'dosen_tahun' => 'required|digits:4',
-                'sinta_id' => 'nullable|url|max:255',
-                'scholar_id' => 'nullable|url|max:255',
-                'scopus_id' => 'nullable|url|max:255',
-                'researchgate_id' => 'nullable|url|max:255',
-                'orcid_id' => 'nullable|url|max:255',
-                'bidang_id.*' => 'required|integer',
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -114,9 +99,11 @@ class DosenProfileController extends Controller
 
                     $user->name = $request->dosen_name;
                     $user->email = $request->dosen_email;
+                    $user->updated_by = $user->user_id;
+                    $user->updated_at = date('Y-m-d H:i:s');
                     $user->save();
 
-                    DosenModel::updateData(getDosenID(), $request, ['_token', '_method', 'bidang_id']);
+                    DosenModel::updateData(getDosenID(), $request);
 
                     return response()->json([
                         'stat'     => true,
@@ -142,16 +129,17 @@ class DosenProfileController extends Controller
         return redirect('/');
     }
 
-    public function update_password(Request $request){
+    public function update_password(Request $request)
+    {
         $this->authAction('update', 'json');
-        if($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         if ($request->ajax() || $request->wantsJson()) {
 
             $user = Auth::user();
 
             $rules = [
-                'password_old' => ['required', function ($attribute, $value, $fail) use ($user){
+                'password_old' => ['required', function ($attribute, $value, $fail) use ($user) {
                     if (!Hash::check($value, $user->password))
                         $fail('The ' . $attribute . ' is invalid.');
                 }],
@@ -201,9 +189,10 @@ class DosenProfileController extends Controller
     }
 
 
-    public function update_avatar(Request $request){
+    public function update_avatar(Request $request)
+    {
         $this->authAction('update', 'json');
-        if($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
@@ -225,7 +214,7 @@ class DosenProfileController extends Controller
             if ($user) {
                 try {
 
-                    if (!empty($user->avatar_dir)){
+                    if (!empty($user->avatar_dir)) {
                         Storage::disk('public')->delete($user->avatar_dir);
                     }
 

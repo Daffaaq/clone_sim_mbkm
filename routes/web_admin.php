@@ -41,6 +41,9 @@ use App\Http\Controllers\Transaction\LogBimbinganController;
 use App\Http\Controllers\Transaction\LogBimbinganDosenController;
 use App\Http\Controllers\Transaction\LogBimbinganInstrukturController;
 use App\Http\Controllers\Transaction\MyMagangController;
+use App\Http\Controllers\Transaction\NilaiInstrukturLapanganController;
+use App\Http\Controllers\Transaction\NilaiPembahasDosenController;
+use App\Http\Controllers\Transaction\NilaiPembimbingDosenController;
 use App\Http\Controllers\Transaction\PembimbingDosenController;
 use App\Http\Controllers\Transaction\PersetujuanKelompokController;
 use App\Http\Controllers\Transaction\QuotaDosenController;
@@ -262,6 +265,29 @@ Route::prefix('mitra/{id}')->group(function () {
     Route::get('kuota/{kuota}/delete', [MitraKuotaController::class, 'confirm']);
 });
 
+Route::group(['prefix' => 'category', 'middleware' => ['auth']], function () {
+    //group
+    Route::resource('nilai-pembimbing-dosen', NilaiPembimbingDosenController::class)->parameter('nilai-pembimbing-dosen', 'id');
+    Route::post('nilai-pembimbing-dosen/list', [NilaiPembimbingDosenController::class, 'list']);
+    Route::get('nilai-pembimbing-dosen/{id}/subcategory', [NilaiPembimbingDosenController::class, 'tambah_subcategory']);
+    Route::get('nilai-pembimbing-dosen/{id}/subcategory/detail', [NilaiPembimbingDosenController::class, 'showsub']);
+    Route::post('nilai-pembimbing-dosen/{id}/subcategory', [NilaiPembimbingDosenController::class, 'tambah_sub_category'])->name('nilai-pembimbing-dosen.tambah_sub_category');
+    Route::get('nilai-pembimbing-dosen/{id}/delete', [NilaiPembimbingDosenController::class, 'confirm']);
+
+    Route::resource('nilai-pembahas-dosen', NilaiPembahasDosenController::class)->parameter('nilai-pembahas-dosen', 'id');
+    Route::post('nilai-pembahas-dosen/list', [NilaiPembahasDosenController::class, 'list']);
+    Route::get('nilai-pembahas-dosen/{id}/subcategory', [NilaiPembahasDosenController::class, 'tambah_subcategory']);
+    Route::get('nilai-pembahas-dosen/{id}/subcategory/detail', [NilaiPembahasDosenController::class, 'showsub']);
+    Route::post('nilai-pembahas-dosen/{id}/subcategory', [NilaiPembahasDosenController::class, 'tambah_sub_category'])->name('nilai-pembahas-dosen.tambah_sub_category');
+    Route::get('nilai-pembahas-dosen/{id}/delete', [NilaiPembahasDosenController::class, 'confirm']);
+    
+    Route::resource('nilai-instruktur-lapangan', NilaiInstrukturLapanganController::class)->parameter('nilai-instruktur-lapangan', 'id');
+    Route::post('nilai-instruktur-lapangan/list', [NilaiInstrukturLapanganController::class, 'list']);
+    Route::get('nilai-instruktur-lapangan/{id}/subcategory', [NilaiInstrukturLapanganController::class, 'tambah_subcategory']);
+    Route::get('nilai-instruktur-lapangan/{id}/subcategory/detail', [NilaiInstrukturLapanganController::class, 'showsub']);
+    Route::post('nilai-instruktur-lapangan/{id}/subcategory', [NilaiInstrukturLapanganController::class, 'tambah_sub_category'])->name('nilai-instruktur-lapangan.tambah_sub_category');
+    Route::get('nilai-instruktur-lapangan/{id}/delete', [NilaiInstrukturLapanganController::class, 'confirm']);
+});
 Route::group(['prefix' => 'setting', 'middleware' => ['auth']], function () {
     //group
     Route::resource('group', GroupController::class)->parameter('group', 'id');
