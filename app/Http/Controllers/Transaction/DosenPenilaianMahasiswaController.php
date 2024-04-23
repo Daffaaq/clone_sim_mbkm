@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
@@ -25,8 +26,8 @@ class DosenPenilaianMahasiswaController extends Controller
 {
     public function __construct()
     {
-        $this->menuCode  = 'TRANSACTION.PENILAIAN.MAHASISWA.DOSEN';
-        $this->menuUrl   = url('transaksi/penilaian-mahasiswa-dosen');
+        $this->menuCode  = 'DOSEN.PEMBIMBING.PENILAIAN.MAHASISWA.DOSEN';
+        $this->menuUrl   = url('dosen-pembimbing/penilaian-mahasiswa-dosen');
         $this->menuTitle = 'Penilaian Mahasiswa Dosen';
         $this->viewPath  = 'transaction.penilaian-mahasiswa-dosen.';
     }
@@ -38,12 +39,12 @@ class DosenPenilaianMahasiswaController extends Controller
 
         $breadcrumb = [
             'title' => $this->menuTitle,
-            'list'  => ['Transaksi', 'Penilaian Mahasiswa Dosen']
+            'list'  => ['Dosen Pembimbing', 'Penilaian Mahasiswa Dosen']
         ];
 
         $activeMenu = [
             'l1' => 'transaction',
-            'l2' => 'transaksi-penmados',
+            'l2' => 'dosenpem-penmados',
             'l3' => null
         ];
 
@@ -71,13 +72,26 @@ class DosenPenilaianMahasiswaController extends Controller
             return response()->json(['error' => 'dosen not found'], 404);
         }
 
-        $mahasiswa_ids = PembimbingDosenModel::where('dosen_id', $dosen->dosen_id)->pluck('mahasiswa_id')->toArray();
+        // Dapatkan ID periode yang aktif
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+
+        // Dapatkan ID mahasiswa yang terhubung dengan dosen
+        $mahasiswa_ids = PembimbingDosenModel::where('dosen_id', $dosen->dosen_id)
+            ->whereIn('magang_id', function ($query) use ($activePeriods) {
+                $query->select('magang_id')
+                    ->from('t_magang')
+                    ->whereIn('periode_id', $activePeriods);
+            })
+            ->pluck('mahasiswa_id')
+            ->toArray();
+        // dd($mahasiswa_ids);
 
         // Dapatkan nama mahasiswa berdasarkan ID dari MahasiswaModel
         $mahasiswa_names = MahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->pluck('nama_mahasiswa', 'mahasiswa_id');
 
         // Dapatkan nilai dan komentar instruktur lapangan berdasarkan ID mahasiswa
         $penilaian_mahasiswa = PenilaianMahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->get();
+
 
         // Buat data untuk ditampilkan dalam DataTables
         $data = [];

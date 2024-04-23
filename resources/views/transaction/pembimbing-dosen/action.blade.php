@@ -21,7 +21,7 @@ $is_edit = isset($data);
                     <div class="col-sm-9">
                         <select id="mahasiswa_id" name="mahasiswa_id[]"
                             class="form-control form-control-sm select2_combobox" multiple>
-                            <option value="">- Pilih -</option>
+                            <option value="" disabled>- Pilih -</option>
                             @if (count($mahasiswa) > 0)
                                 @foreach ($mahasiswa as $mahasiswa_id => $r)
                                     <option value="{{ $mahasiswa_id }}" data-magang-id="{{ $r['magang_id'] }}">

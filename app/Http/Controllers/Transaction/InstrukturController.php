@@ -263,10 +263,14 @@ class InstrukturController extends Controller
             ->get();
         $id_mitra = $data->magang_id;
         // dd($id_mitra);
-        $anggotas = Magang::where('mitra_id', $id_mitra)
+        $anggotas = Magang::where(function ($query) use ($id_mitra, $kode_magang) {
+            $query->where('mitra_id', $id_mitra)
+                ->orWhere('magang_kode', $kode_magang);
+        })
             ->whereDoesntHave('instrukturLapangan') // Pastikan setiap Magang memiliki InstrukturLapanganModel
             ->with('mahasiswa') // Sertakan relasi mahasiswa dalam hasil
             ->get();
+
 
         // dd($anggotas);
         $dateString = $data->mitra_batas_pendaftaran;
@@ -345,7 +349,7 @@ class InstrukturController extends Controller
             'nama_instruktur' => 'required',
             'instruktur_email' => 'required|email',
             'instruktur_phone' => 'required',
-            'password' => 'required', // Misalnya, panjang minimal password 6 karakter
+            'password' => 'required|string|min:8', // Misalnya, panjang minimal password 6 karakter
             'mahasiswa_id' => 'required|array|min:1' // Misalnya, harus berupa array
         ]);
 

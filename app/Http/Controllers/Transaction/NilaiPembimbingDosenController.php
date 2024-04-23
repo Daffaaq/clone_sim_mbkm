@@ -202,10 +202,19 @@ class NilaiPembimbingDosenController extends Controller
             // Menyimpan data subkategori baru
             $res = NilaiPembimbingDosenModel::insert($newData);
 
+            $firstTimeAddition = false;
+
+            // Jika data berhasil ditambahkan
+            if ($res) {
+                // Cek apakah data ditambahkan untuk pertama kalinya
+                $firstTimeAddition = (NilaiPembimbingDosenModel::where('parent_id', $id)->count() == count($newData));
+            }
+
             return response()->json([
                 'stat' => $res,
                 'mc' => $res, // Menutup modal jika berhasil
-                'msg' => ($res) ? $this->getMessage('update.success') : $this->getMessage('update.failed')
+                'msg' => ($res) ? $this->getMessage('update.success') : $this->getMessage('update.failed'),
+                'firstTimeAddition' => $firstTimeAddition // Sertakan status apakah data ditambahkan untuk pertama kali atau tidak
             ]);
         }
 

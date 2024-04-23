@@ -35,6 +35,7 @@ use App\Http\Controllers\Transaction\BeritaController as TransactionBeritaContro
 use App\Http\Controllers\Transaction\DaftarMagangController;
 use App\Http\Controllers\Transaction\DosenPenilaianMahasiswaController;
 use App\Http\Controllers\Transaction\InstrukturPenilaianMahasiswaController;
+use App\Http\Controllers\Transaction\JadwalSidangMagangController;
 use App\Http\Controllers\Transaction\LihatStatusPendaftaranController;
 use App\Http\Controllers\Transaction\LihatStatusPengajuanController;
 use App\Http\Controllers\Transaction\LogBimbinganController;
@@ -151,13 +152,7 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::get('log-bimbingan/{id}/delete', [LogBimbinganController::class, 'confirm']);
     Route::get('log-bimbingan/cetak_pdf', [LogBimbinganController::class, 'reportLogBimbingan'])->name('cetak.logbimbingan');
 
-    //log bimbingan dosen
-    Route::resource('log-bimbingan-dosen', LogBimbinganDosenController::class)->parameter('log-bimbingan', 'id');
-    Route::post('log-bimbingan-dosen/list', [LogBimbinganDosenController::class, 'list']);
-    Route::get('log-bimbingan-dosen/{id}/delete', [LogBimbinganDosenController::class, 'confirm']);
 
-    Route::post('log-bimbingan-dosen/updatedosen', [LogBimbinganDosenController::class, 'updateStatusDosen'])->name('update.logbimbingan.dosen');
-    Route::post('log-bimbingan-dosen/updatedosen{id}', [LogBimbinganDosenController::class, 'updateStatusDosenFromModal'])->name('update.logbimbingan.dosen.modal');
 
     //log bimbingan instrukur
     Route::resource('log-bimbingan-instruktur', LogBimbinganInstrukturController::class)->parameter('log-bimbingan', 'id');
@@ -173,10 +168,7 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::get('penilaian-mahasiswa-instruktur/{id}/delete', [InstrukturPenilaianMahasiswaController::class, 'confirm']);
     Route::post('penilaian-mahasiswa-instruktur/updatedataPenilaianMahasiswa', [InstrukturPenilaianMahasiswaController::class, 'updatedataPenilaianMahasiswa'])->name('update.penilaian.mahasiswa');
     //penilaian Mahasiswa instrukur
-    Route::resource('penilaian-mahasiswa-dosen', DosenPenilaianMahasiswaController::class)->parameter('log-bimbingan', 'id');
-    Route::post('penilaian-mahasiswa-dosen/list', [DosenPenilaianMahasiswaController::class, 'list']);
-    Route::get('penilaian-mahasiswa-dosen/{id}/delete', [DosenPenilaianMahasiswaController::class, 'confirm']);
-    Route::post('penilaian-mahasiswa-dosen/updatedataPenilaianMahasiswa', [DosenPenilaianMahasiswaController::class, 'updatedataPenilaianMahasiswa'])->name('update.penilaian.mahasiswa.dosen');
+
 
 
     //daftar magang
@@ -234,6 +226,9 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::resource('pembimbing-dosen', PembimbingDosenController::class)->parameter('pembimbing-dosen', 'id');
     Route::post('pembimbing-dosen/list', [PembimbingDosenController::class, 'list']);
 
+    Route::resource('jadwal-semhas', JadwalSidangMagangController::class)->parameter('jadwal-semhas', 'id');
+    Route::post('jadwal-semhas/list', [JadwalSidangMagangController::class, 'list'])->name('jadwal-semhas.list');
+
 
 
     //berita
@@ -265,6 +260,21 @@ Route::prefix('mitra/{id}')->group(function () {
     Route::get('kuota/{kuota}/delete', [MitraKuotaController::class, 'confirm']);
 });
 
+Route::group(['prefix' => 'dosen-pembimbing', 'middleware' => ['auth']], function () {
+    //log bimbingan dosen
+    Route::resource('log-bimbingan-dosen', LogBimbinganDosenController::class)->parameter('log-bimbingan', 'id');
+    Route::post('log-bimbingan-dosen/list', [LogBimbinganDosenController::class, 'list']);
+    Route::get('log-bimbingan-dosen/{id}/delete', [LogBimbinganDosenController::class, 'confirm']);
+
+    Route::post('log-bimbingan-dosen/updatedosen', [LogBimbinganDosenController::class, 'updateStatusDosen'])->name('update.logbimbingan.dosen');
+    Route::post('log-bimbingan-dosen/updatedosen{id}', [LogBimbinganDosenController::class, 'updateStatusDosenFromModal'])->name('update.logbimbingan.dosen.modal');
+
+    //penilaian dosen pembimbing
+    Route::resource('penilaian-mahasiswa-dosen', DosenPenilaianMahasiswaController::class)->parameter('log-bimbingan', 'id');
+    Route::post('penilaian-mahasiswa-dosen/list', [DosenPenilaianMahasiswaController::class, 'list']);
+    Route::get('penilaian-mahasiswa-dosen/{id}/delete', [DosenPenilaianMahasiswaController::class, 'confirm']);
+    Route::post('penilaian-mahasiswa-dosen/updatedataPenilaianMahasiswa', [DosenPenilaianMahasiswaController::class, 'updatedataPenilaianMahasiswa'])->name('update.penilaian.mahasiswa.dosen');
+});
 Route::group(['prefix' => 'category', 'middleware' => ['auth']], function () {
     //group
     Route::resource('nilai-pembimbing-dosen', NilaiPembimbingDosenController::class)->parameter('nilai-pembimbing-dosen', 'id');
@@ -280,7 +290,7 @@ Route::group(['prefix' => 'category', 'middleware' => ['auth']], function () {
     Route::get('nilai-pembahas-dosen/{id}/subcategory/detail', [NilaiPembahasDosenController::class, 'showsub']);
     Route::post('nilai-pembahas-dosen/{id}/subcategory', [NilaiPembahasDosenController::class, 'tambah_sub_category'])->name('nilai-pembahas-dosen.tambah_sub_category');
     Route::get('nilai-pembahas-dosen/{id}/delete', [NilaiPembahasDosenController::class, 'confirm']);
-    
+
     Route::resource('nilai-instruktur-lapangan', NilaiInstrukturLapanganController::class)->parameter('nilai-instruktur-lapangan', 'id');
     Route::post('nilai-instruktur-lapangan/list', [NilaiInstrukturLapanganController::class, 'list']);
     Route::get('nilai-instruktur-lapangan/{id}/subcategory', [NilaiInstrukturLapanganController::class, 'tambah_subcategory']);

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
@@ -72,14 +73,24 @@ class InstrukturPenilaianMahasiswaController extends Controller
             return response()->json(['error' => 'Instruktur not found'], 404);
         }
 
-        $mahasiswa_ids = InstrukturLapanganModel::where('instruktur_id', $instruktur->instruktur_id)->pluck('mahasiswa_id')->toArray();
+        // Dapatkan ID periode yang aktif
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $mahasiswa_ids = InstrukturLapanganModel::where('instruktur_id', $instruktur->instruktur_id)
+            ->whereIn('magang_id', function ($query) use ($activePeriods) {
+                $query->select('magang_id')
+                    ->from('t_magang')
+                    ->whereIn('periode_id', $activePeriods);
+            })
+            ->pluck('mahasiswa_id')
+            ->toArray();
+        // $mahasiswa_ids = InstrukturLapanganModel::where('instruktur_id', $instruktur->instruktur_id)->pluck('mahasiswa_id')->toArray();
 
         // Dapatkan nama mahasiswa berdasarkan ID dari MahasiswaModel
         $mahasiswa_names = MahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->pluck('nama_mahasiswa', 'mahasiswa_id');
 
         // Dapatkan nilai dan komentar instruktur lapangan berdasarkan ID mahasiswa
         $penilaian_mahasiswa = PenilaianMahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->get();
-        
+
 
         // Buat data untuk ditampilkan dalam DataTables
         $data = [];

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class TJadwalSemhas extends Migration
+class TJadwalSidangMagang extends Migration
 {
     /**
      * Run the migrations.
@@ -20,7 +20,9 @@ class TJadwalSemhas extends Migration
             $table->date('tanggal_sidang');
             $table->time('jam_sidang_mulai');
             $table->time('jam_sidang_selesai');
-            $table->string('lokasi')->nullable(); // Misalnya untuk link Zoom
+            $table->enum('jenis_sidang', ['online', 'offline']);
+            $table->string('tempat')->nullable(); // Misalnya untuk link Zoom
+            $table->string('gedung')->nullable(); // Misalnya untuk link Zoom
             $table->dateTime('created_at')->nullable()->useCurrent();
             $table->integer('created_by')->nullable()->index();
             $table->dateTime('updated_at')->nullable();

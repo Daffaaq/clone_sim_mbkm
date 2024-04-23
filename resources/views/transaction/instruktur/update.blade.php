@@ -141,6 +141,8 @@
                                                         Instruktur</label>
                                                     <input type="text" class="form-control" id="nama_instruktur"
                                                         name="nama_instruktur">
+                                                    <small id="excel" class="form-text" style="margin-left: 0px;">Nama
+                                                        Pembimbing Lapangan</small>
                                                     <span id="valid-message-nama_instruktur" class="text-danger"
                                                         style="display: none;">Kolom ini harus diisi.</span>
                                                 </div>
@@ -149,6 +151,8 @@
                                                         Instruktur</label>
                                                     <input type="email" class="form-control" id="instruktur_email"
                                                         name="instruktur_email">
+                                                    <small id="excel" class="form-text" style="margin-left: 0px;">email
+                                                        Pembimbing Lapangan harus valid</small>
                                                     <span id="valid-message-instruktur_email" class="text-danger"
                                                         style="display: none;">Kolom ini harus diisi.</span>
                                                 </div>
@@ -157,6 +161,10 @@
                                                         Instruktur</label>
                                                     <input type="text" class="form-control" id="instruktur_phone"
                                                         name="instruktur_phone">
+                                                    <small id="excel" class="form-text"
+                                                        style="margin-left: 0px;">Format nomor telepon pembimbing Lapangan
+                                                        tidak valid harus dimulai dengan 62 dan memiliki panjang 8-13 digit
+                                                        angka</small>
                                                     <span id="valid-message-instruktur_phone" class="text-danger"
                                                         style="display: none;">Kolom ini harus diisi.</span>
                                                 </div>
@@ -164,6 +172,8 @@
                                                     <label for="password" class="control-label">Password</label>
                                                     <input type="password" class="form-control" id="password"
                                                         name="password">
+                                                    <small id="excel" class="form-text"
+                                                        style="margin-left: 0px;">Password minimal 8</small>
                                                     <span id="valid-message-password" class="text-danger"
                                                         style="display: none;">Kolom ini harus diisi.</span>
                                                 </div>
@@ -193,6 +203,18 @@
                     return true; // Lanjutkan pengiriman formulir
                 }
             }
+
+            function validatePhoneNumber(phoneNumber) {
+                var phoneRegex =
+                    /^62\d{8,13}$/; // regex untuk nomor telepon, harus dimulai dengan 62 dan memiliki panjang 8-13 digit angka
+                return phoneRegex.test(phoneNumber);
+            }
+
+            // Validasi password minimal 8 karakter
+            function validatePassword(password) {
+                return password.length >= 8;
+            }
+
             // Submit form
             $('#form-sb').submit(function(event) {
                 event.preventDefault(); // Prevent default form submission
@@ -210,6 +232,29 @@
                         $('#' + messageId).hide(); // Sembunyikan pesan validasi jika valid
                     }
                 });
+
+                // Validasi nomor telepon
+                var phoneNumberInput = $('#instruktur_phone');
+                var phoneNumber = phoneNumberInput.val();
+                if (!validatePhoneNumber(phoneNumber)) {
+                    $('#valid-message-instruktur_phone').text('Format nomor telepon tidak valid');
+                    $('#valid-message-instruktur_phone').show();
+                    valid = false;
+                } else {
+                    $('#valid-message-instruktur_phone').hide();
+                }
+
+                // Validasi password
+                var passwordInput = $('#password');
+                var password = passwordInput.val();
+                if (!validatePassword(password)) {
+                    $('#valid-message-password').text('Password minimal 8 karakter');
+                    $('#valid-message-password').show();
+                    valid = false;
+                } else {
+                    $('#valid-message-password').hide();
+                }
+
                 if (!valid) {
                     return; // Batalkan pengiriman formulir jika validasi gagal
                 }

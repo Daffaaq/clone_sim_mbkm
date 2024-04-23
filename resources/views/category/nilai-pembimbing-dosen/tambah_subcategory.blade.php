@@ -6,7 +6,8 @@
                     aria-hidden="true">&times;</span></button>
         </div>
         <div class="modal-body p-0">
-            <div id="success-message" class="alert alert-success" style="display: none;"></div>
+            <div id="success-message" class="alert alert-success text-center" style="display: none;"></div>
+            <div id="error-message" class="alert alert-danger text-center" style="display: none;"></div>
             <div class="form-group required row mb-2">
                 <label class="col-sm-3 control-label col-form-label">Judul</label>
                 <div class="col-sm-8">
@@ -22,11 +23,34 @@
                         value="{{ isset($data->bobot) ? $data->bobot : '' }}" readonly />
                 </div>
             </div>
+            @if ($data->subKriteria->isNotEmpty())
+                <div class="form-group required row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Sub Kriteria</label>
+                    <div class="colom-sub" style="width: 605px;">
+                        @foreach ($data->subKriteria as $subKriteria)
+                            <div class="col-sm-8" style="margin-bottom: 8px;"> <!-- Atur spasi langsung di sini -->
+                                <input type="text" class="form-control form-control-sm" style="width: 136%;"
+                                    value="{{ $subKriteria->name_kriteria_pembimbing_dosen }}" disabled>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
             <form id="update-status-form">
                 @csrf
                 <input type="hidden" name="parent_id" value="{{ $id }}">
+                {{-- <div class="form-group required row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Sub Kriteria</label>
+                    <div class="col-sm-8 d-flex align-items-center">
+                        <input type="text" class="form-control form-control-sm mr-2"
+                            name="name_kriteria_pembimbing_dosen[]" />
+                        <a class="ml-2 cursor-pointer remove-btn"><i class="text-danger fa fa-trash"></i></a>
+                    </div>
+                    <div class="text-success mt-2 cursor-pointer" id="tambah_skema" style="margin-left: 210px">+ Tambah
+                        Skema</div>
+                </div> --}}
                 <div class="form-group required row mb-2">
-                    <label class="col-sm-3 control-label col-form-label">Sub Kategori</label>
+                    <label class="col-sm-3 control-label col-form-label">Sub Kriteria</label>
                     <div class="col-sm-8 d-flex flex-column text-left pr-0 justify-content-center">
                         <div id="skema_form">
                             <div class="form-group required row mb-2">
@@ -54,6 +78,7 @@
 
 <script>
     $(document).ready(function() {
+        // console.log(formGroups.length);
         // Handler untuk tombol tambah sub kategori
         $('#tambah_skema').click(function() {
             let form = $('#skema_form') // Ambil elemen terakhir
@@ -70,7 +95,17 @@
 
         // Handler untuk tombol hapus sub kategori
         $(document).on('click', '.remove-btn', function() {
-            $(this).closest('.form-group').remove();
+            // Menghitung jumlah form-group dalam kelompok yang sama dengan tombol yang diklik
+            var formGroups = $(this).closest('.col-sm-8').find('.form-group');
+            // Memastikan bahwa ada lebih dari satu form-group sebelum menghapusnya
+            if (formGroups.length > 1) {
+                // Jika lebih dari satu, hapus form-group yang terkait dengan tombol yang diklik
+                $(this).closest('.form-group').remove();
+            } else {
+                // Jika hanya ada satu, tampilkan pesan bahwa elemen tidak bisa dihapus
+                $('#error-message').text(
+                    'Tidak bisa menghapus form sub Kriteria karena hanya ada satu form Kriteria').show();
+            }
         });
         // Atur aturan validasi pada form
         $('#update-status-form').validate({
@@ -100,6 +135,14 @@
                         if (response.stat) {
                             $('#success-message').text('Data berhasil ditambahkan')
                                 .show();
+                            // Jika data ditambahkan untuk pertama kalinya, lakukan location.reload()
+                            if (response.firstTimeAddition) {
+                                closeModal($modal, response);
+                                location.reload();
+                            } else {
+                                closeModal($modal,
+                                    response); // Jika tidak, cukup tutup modal saja
+                            }
                             // Jika berhasil, tambahkan kode di sini untuk menangani respons yang diterima
                         } else {
                             alert('Gagal menambahkan data: ' + response.msg);

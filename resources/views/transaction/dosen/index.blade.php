@@ -44,7 +44,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="importFileModalLabel">Import File</h5>
+                    <h5 class="modal-title" id="importFileModalLabel">Import Data Dosen</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -52,11 +52,23 @@
                 <form id="importFileForm" enctype="multipart/form-data">
                     <div class="modal-body">
                         <div class="form-group">
-                            <label for="file">Pilih File:</label>
+                            {{-- <label for="file">Import Data Dosen:</label> --}}
+                            <div class="custom-file">
+                                <input type="file" class="form-control-sm custom-file-input" id="file"
+                                    name="file" data-rule-filesize="1"data-rule-accept=".xls,.xlsx" accept=".xls,.xlsx">
+                                <label class="form-control-sm custom-file-label" for="file">Choose file</label>
+                                <small id="excel" class="form-text" style="margin-left: 0px; color: red;">File type:
+                                    .xls/.xlsx</small>
+                            </div>
+                            {{-- <label for="file">Pilih File:</label>
                             <input type="file" class="form-control-file" id="file" name="file"
                                 accept=".xls,.xlsx">
+                            <small id="excel" class="form-text text-muted">Max file size: 2048KB (2MB).</small> --}}
                         </div>
-                        <div class="alert alert-danger" id="importErrorAlert" style="display: none;"></div>
+                        <div class="alert
+                                    alert-danger" id="importErrorAlert"
+                            style="display: none;">
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
@@ -69,7 +81,18 @@
 @endsection
 @push('content-js')
     <script>
+        var loadFile = function(event) {
+            $('input.custom-file-input').on('change', function() {
+                // Get the file name
+                var fileName = $(this).val().split('\\').pop();
+
+                // Set the label text to the file name
+                $(this).next('.custom-file-label').html(fileName);
+            });
+
+        };
         $(document).ready(function() {
+            loadFile()
             $('#btnImport').click(function() {
                 // Tampilkan modal untuk memilih file
                 $('#importFileModal').modal('show');
@@ -101,13 +124,13 @@
                             dataMaster.ajax.reload();
                         } else {
                             var errorMsg = response.msg +
-                            '\n'; // Tambahkan pesan kesalahan utama
+                                '\n'; // Tambahkan pesan kesalahan utama
                             $.each(response.errors, function(index, value) {
                                 errorMsg += value +
-                                '\n'; // Tambahkan pesan-pesan kesalahan dari array errors
+                                    '\n'; // Tambahkan pesan-pesan kesalahan dari array errors
                             });
                             $('#importErrorAlert').text(errorMsg)
-                        .show(); // Tampilkan pesan kesalahan
+                                .show(); // Tampilkan pesan kesalahan
 
                             // Sembunyikan pesan kesalahan setelah 5 detik
                             setTimeout(function() {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
@@ -24,8 +25,8 @@ class LogBimbinganDosenController extends Controller
 {
     public function __construct()
     {
-        $this->menuCode  = 'TRANSACTION.LOG.BIMBINGAN.DOSEN';
-        $this->menuUrl   = url('transaksi/log-bimbingan-dosen');
+        $this->menuCode  = 'DOSEN.PEMBIMBING.LOG.BIMBINGAN.DOSEN';
+        $this->menuUrl   = url('dosen-pembimbing/log-bimbingan-dosen');
         $this->menuTitle = 'Log Bimbingan Dosen';
         $this->viewPath  = 'transaction.log-bimbingan-dosen.';
     }
@@ -37,12 +38,12 @@ class LogBimbinganDosenController extends Controller
 
         $breadcrumb = [
             'title' => $this->menuTitle,
-            'list'  => ['Transaksi', 'Log Bimbingan Dosen']
+            'list'  => ['Dosen Pembimbing', 'Log Bimbingan Dosen']
         ];
 
         $activeMenu = [
-            'l1' => 'transaction',
-            'l2' => 'transaksi-log-bimbingan-dosen',
+            'l1' => 'dosen-pembimbing',
+            'l2' => 'dosenpem-logdosen',
             'l3' => null
         ];
 
@@ -111,14 +112,24 @@ class LogBimbinganDosenController extends Controller
 
         // Gunakan instruktur_lapangan_id untuk mengambil data LogBimbinganModel
         // $data = LogBimbinganModel::where('pembimbing_dosen_id', $pembimbing_dosen_id);
-        $data = LogBimbinganModel::whereIn('pembimbing_dosen_id', $pembimbing_dosen_ids);
-        // Filter data log bimbingan berdasarkan mahasiswa jika filter mahasiswa dipilih
-        if ($request->filled('filter_mahasiswa')) {
-            $data->where('created_by', $request->filter_mahasiswa);
-        }
+        // $data = LogBimbinganModel::whereIn('pembimbing_dosen_id', $pembimbing_dosen_ids);
+        // // Filter data log bimbingan berdasarkan mahasiswa jika filter mahasiswa dipilih
+        // if ($request->filled('filter_mahasiswa')) {
+        //     $data->where('created_by', $request->filter_mahasiswa);
+        // }
+        // Filter berdasarkan is_active yang bernilai 1 di PeriodeModel
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+
+        $data = LogBimbinganModel::whereIn('pembimbing_dosen_id', $pembimbing_dosen_ids)
+            ->whereIn('created_by', function ($query) use ($activePeriods) {
+                $query->select('magang_id')
+                    ->from('t_magang')
+                    ->whereIn('periode_id', $activePeriods);
+            });
 
         // Ambil data yang difilter
         $filteredData = $data->get();
+        // dd($filteredData);
         foreach ($filteredData as $data) {
             $data->jam_mulai = substr($data->jam_mulai, 0, 5); // Ambil jam dan menit dari jam_mulai
             $data->jam_selesai = substr($data->jam_selesai, 0, 5); // Ambil jam dan menit dari jam_selesai

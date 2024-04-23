@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
@@ -113,14 +114,21 @@ class LogBimbinganInstrukturController extends Controller
         // $dataall = InstrukturLapanganModel::all();
         // dd($dataall);
         // Gunakan instruktur_lapangan_id untuk mengambil data LogBimbinganModel
-        $data = LogBimbinganModel::whereIn('instruktur_lapangan_id', $instruktur_lapangan_ids);
-        // $data = LogBimbinganModel::where('instruktur_lapangan_id', $instruktur_lapangan);
-        // dd($data);
+        // $data = LogBimbinganModel::whereIn('instruktur_lapangan_id', $instruktur_lapangan_ids);
+        // // $data = LogBimbinganModel::where('instruktur_lapangan_id', $instruktur_lapangan);
+        // // dd($data);
 
-        // Filter data log bimbingan berdasarkan mahasiswa jika filter mahasiswa dipilih
-        if ($request->filled('filter_mahasiswa')) {
-            $data->where('created_by', $request->filter_mahasiswa);
-        }
+        // // Filter data log bimbingan berdasarkan mahasiswa jika filter mahasiswa dipilih
+        // if ($request->filled('filter_mahasiswa')) {
+        //     $data->where('created_by', $request->filter_mahasiswa);
+        // }
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $data = LogBimbinganModel::whereIn('instruktur_lapangan_id', $instruktur_lapangan_ids)
+            ->whereIn('created_by', function ($query) use ($activePeriods) {
+                $query->select('magang_id')
+                    ->from('t_magang')
+                    ->whereIn('periode_id', $activePeriods);
+            });
 
         // Ambil data yang difilter
         $filteredData = $data->get();

@@ -51,7 +51,7 @@
                                     @else
                                         <th class="">NIP/NIDN</th>
                                         <td class=""> <b>:</b>
-                                            Belum ada instruktur lapangan
+                                            Belum ada pembimbing dosen
                                         </td>
                                     @endif
 

@@ -6,7 +6,7 @@ $is_edit = isset($data);
 <form method="post" action="{{ $page->url }}" role="form" class="form-horizontal" id="form-master">
     @csrf
     {!! $is_edit ? method_field('PUT') : '' !!}
-    <div id="modal-master" class="modal-dialog modal-md" role="document">
+    <div id="modal-master" class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">{!! $page->title !!}</h5>
@@ -14,11 +14,11 @@ $is_edit = isset($data);
                         aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-0">
                 <div class="form-message text-center"></div>
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Judul</label>
-                    <div class="col-sm-9">
+                    <div class="col-sm-8">
                         <input type="text" class="form-control form-control-sm" id="name_kriteria_pembimbing_dosen"
                             name="name_kriteria_pembimbing_dosen"
                             value="{{ isset($data->name_kriteria_pembimbing_dosen) ? $data->name_kriteria_pembimbing_dosen : '' }}" />
@@ -26,7 +26,7 @@ $is_edit = isset($data);
                 </div>
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Bobot Kriteria</label>
-                    <div class="col-sm-9">
+                    <div class="col-sm-8">
                         <input type="number" class="form-control form-control-sm" id="bobot" name="bobot"
                             value="{{ isset($data->bobot) ? $data->bobot : '' }}" />
                     </div>
@@ -34,11 +34,12 @@ $is_edit = isset($data);
                 @if ($is_edit && $data->subKriteria->isNotEmpty())
                     <div class="form-group required row mb-2">
                         <label class="col-sm-3 control-label col-form-label">Sub Kriteria</label>
-                        <div class="col-sm-9">
+                        <div class="colom-sub" style="width: 605px;">
                             @foreach ($data->subKriteria as $subKriteria)
-                                <div class="col-sm-9">
+                                <div class="col-sm-8" style="margin-bottom: 8px;">
                                     <input type="text" class="form-control form-control-sm" name="sub_kriteria[]"
-                                        id="sub_kriteria[]" value="{{ $subKriteria->name_kriteria_pembimbing_dosen }}">
+                                        id="sub_kriteria[]" style="width: 136%;"
+                                        value="{{ $subKriteria->name_kriteria_pembimbing_dosen }}">
                                 </div>
                                 <input type="hidden" name="sub_kriteria_ids[]"
                                     value="{{ $subKriteria->nilai_pembimbing_dosen_id }}">
