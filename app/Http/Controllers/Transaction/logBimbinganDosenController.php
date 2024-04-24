@@ -107,9 +107,22 @@ class LogBimbinganDosenController extends Controller
 
         // $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)->first();
         // $pembimbing_dosen_id = $pembimbing_dosen->pembimbing_dosen_id;
-        $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)->get();
-        $pembimbing_dosen_ids = $pembimbing_dosen->pluck('pembimbing_dosen_id')->toArray();
+        // $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)->get();
+        // $pembimbing_dosen_id = $pembimbing_dosen->pluck('pembimbing_dosen_id')->toArray();
+        // // dd($pembimbing_dosen_ids);
+        // $pembimbing_dosen_ids = array_unique($pembimbing_dosen_id);
+        $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)
+            ->pluck('pembimbing_dosen_id') // Ambil hanya kolom pembimbing_dosen_id
+            ->unique() // Hanya nilai unik
+            ->sort() // Urutkan nilai
+            ->values() // Reset index array
+            ->toArray(); // Konversi ke array
 
+        $pembimbing_dosen_ids = $pembimbing_dosen;
+        // dd($pembimbing_dosen_ids);
+
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        // dd($activePeriods);
         // Gunakan instruktur_lapangan_id untuk mengambil data LogBimbinganModel
         // $data = LogBimbinganModel::where('pembimbing_dosen_id', $pembimbing_dosen_id);
         // $data = LogBimbinganModel::whereIn('pembimbing_dosen_id', $pembimbing_dosen_ids);
@@ -117,17 +130,42 @@ class LogBimbinganDosenController extends Controller
         // if ($request->filled('filter_mahasiswa')) {
         //     $data->where('created_by', $request->filter_mahasiswa);
         // }
-        // Filter berdasarkan is_active yang bernilai 1 di PeriodeModel
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
-
         $data = LogBimbinganModel::whereIn('pembimbing_dosen_id', $pembimbing_dosen_ids)
-            ->whereIn('created_by', function ($query) use ($activePeriods) {
-                $query->select('magang_id')
-                    ->from('t_magang')
-                    ->whereIn('periode_id', $activePeriods);
+            ->whereIn('t_log_bimbingan.pembimbing_dosen_id', function ($query) use ($activePeriods) {
+                $query->select('pembimbing_dosen_id')
+                    ->from('t_pembimbing_dosen')
+                    ->whereIn(
+                        'magang_id',
+                        function ($innerQuery) use ($activePeriods) {
+                            $innerQuery->select('magang_id')
+                                ->from('t_magang')
+                                ->where('periode_id', $activePeriods->toArray());
+                        }
+                    );
             });
+        // Filter data log bimbingan berdasarkan mahasiswa jika filter mahasiswa dipilih
+        if ($request->filled('filter_mahasiswa')) {
+            $data->where('created_by', $request->filter_mahasiswa);
+        }
+        // Filter berdasarkan is_active yang bernilai 1 di PeriodeModel
 
-        // Ambil data yang difilter
+        // $data = LogBimbinganModel::whereIn('pembimbing_dosen_id', $pembimbing_dosen_ids)
+        //     ->whereIn('created_by', function ($query) use ($activePeriods) {
+        //         $query->select('magang_id')
+        //             ->from('t_magang')
+        //             ->whereIn('periode_id', $activePeriods);
+        //     });
+        // $data = LogBimbinganModel::join('t_pembimbing_dosen', 't_log_bimbingan.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
+        //     ->join('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
+        //     ->whereIn('t_log_bimbingan.pembimbing_dosen_id', $pembimbing_dosen_ids)
+        //     ->where('t_magang.periode_id', $activePeriods); // Pengecekan periode
+        // dd($request->filter_mahasiswa);
+        // $createdBy = (int) $request->filter_mahasiswa;
+        if ($request->filled('filter_mahasiswa')) {
+            $createdBy = (int) $request->filter_mahasiswa;
+            $data->where('created_by', $createdBy);
+        }
+
         $filteredData = $data->get();
         // dd($filteredData);
         foreach ($filteredData as $data) {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
@@ -149,6 +150,7 @@ class LogBimbinganController extends Controller
         // $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
         //     ->where('created_by', $userId)
         //     ->get();
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
         $data = LogBimbinganModel::select(
             'log_bimbingan_id',
             'tanggal',
@@ -158,6 +160,15 @@ class LogBimbinganController extends Controller
             'status1',
             'status2'
         )
+            ->whereIn('pembimbing_dosen_id', function ($query) use ($activePeriods) {
+                $query->select('pembimbing_dosen_id')
+                    ->from('t_pembimbing_dosen')
+                    ->whereIn('magang_id', function ($innerQuery) use ($activePeriods) {
+                        $innerQuery->select('magang_id')
+                            ->from('t_magang')
+                            ->where('periode_id', $activePeriods->toArray());
+                    });
+            })
             ->where('created_by', $userId)
             ->get();
 
@@ -434,6 +445,7 @@ class LogBimbinganController extends Controller
 
     public function reportLogBimbingan()
     {
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
@@ -446,11 +458,19 @@ class LogBimbinganController extends Controller
         // $dosen = $PembimbingDosenModel->first(); // Ambil objek pertama dari koleksi
         // $nama_dosen = optional($dosen->dosen)->dosen_name; // Akses atribut instruktur dari objek pertama
         // Mengambil instruktur lapangan untuk mahasiswa tertentu dengan relasi 'instruktur'
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->with('instruktur')->first();
+        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
+            ->whereHas('magang', function ($query) use ($activePeriods) {
+                $query->where('periode_id', $activePeriods->toArray());
+            })
+        ->with('instruktur')->first();
         $nama_instruktur = optional($instrukturLapangan->instruktur)->nama_instruktur;
 
         // Mengambil pembimbing dosen untuk mahasiswa tertentu dengan relasi 'dosen'
-        $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->with('dosen')->first();
+        $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)
+            ->whereHas('magang', function ($query) use ($activePeriods) {
+                $query->where('periode_id', $activePeriods->toArray());
+            })
+        ->with('dosen')->first();
         $nama_dosen = optional($pembimbingDosen->dosen)->dosen_name;
 
         // dd($nama_instruktur);
@@ -465,6 +485,7 @@ class LogBimbinganController extends Controller
             ->with('mitra')
             ->with('mitra.kegiatan')
             ->with('periode')
+            ->where('periode_id', $activePeriods->toArray())
             ->first();
 
         $data = LogBimbinganModel::select(
@@ -476,6 +497,15 @@ class LogBimbinganController extends Controller
             'status1',
             'status2'
         )
+            ->whereIn('pembimbing_dosen_id', function ($query) use ($activePeriods) {
+                $query->select('pembimbing_dosen_id')
+                    ->from('t_pembimbing_dosen')
+                    ->whereIn('magang_id', function ($innerQuery) use ($activePeriods) {
+                        $innerQuery->select('magang_id')
+                            ->from('t_magang')
+                            ->where('periode_id', $activePeriods->toArray());
+                    });
+            })
             ->where('created_by', $user_id)
             ->where('status1', 1) // Menambahkan pengecekan status1 == 1
             ->where('status2', 1) // Menambahkan pengecekan status2 == 1

@@ -123,13 +123,28 @@ class LogBimbinganInstrukturController extends Controller
         //     $data->where('created_by', $request->filter_mahasiswa);
         // }
         $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        // $data = LogBimbinganModel::whereIn('instruktur_lapangan_id', $instruktur_lapangan_ids)
+        //     ->whereIn('created_by', function ($query) use ($activePeriods) {
+        //         $query->select('magang_id')
+        //             ->from('t_magang')
+        //             ->whereIn('periode_id', $activePeriods);
+        //     });
         $data = LogBimbinganModel::whereIn('instruktur_lapangan_id', $instruktur_lapangan_ids)
-            ->whereIn('created_by', function ($query) use ($activePeriods) {
-                $query->select('magang_id')
-                    ->from('t_magang')
-                    ->whereIn('periode_id', $activePeriods);
+            ->whereIn('t_log_bimbingan.instruktur_lapangan_id', function ($query) use ($activePeriods) {
+                $query->select('instruktur_lapangan_id')
+                    ->from('t_pembimbing_dosen')
+                    ->whereIn(
+                        'magang_id',
+                        function ($innerQuery) use ($activePeriods) {
+                            $innerQuery->select('magang_id')
+                                ->from('t_magang')
+                                ->where('periode_id', $activePeriods->toArray());
+                        }
+                    );
             });
-
+        if ($request->filled('filter_mahasiswa')) {
+            $data->where('created_by', $request->filter_mahasiswa);
+        }
         // Ambil data yang difilter
         $filteredData = $data->get();
         foreach ($filteredData as $data) {

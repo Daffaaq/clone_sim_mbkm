@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Transaction;
 use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Master\SemhasModel;
@@ -78,6 +79,7 @@ class JadwalSidangMagangController extends Controller
         //         'm_instruktur.nama_instruktur AS nama_instruktur',
         //     )
         //     ->get();
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
         $data = SemhasDaftarModel::leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
             ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
             ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
@@ -91,6 +93,9 @@ class JadwalSidangMagangController extends Controller
                 'm_dosen.dosen_name AS nama_dosen',
                 'm_instruktur.nama_instruktur AS nama_instruktur'
             )
+            ->whereHas('magang', function ($query) use ($activePeriods) {
+                $query->whereIn('periode_id', $activePeriods);
+            })
             ->get();
 
         // $dataall = SemhasDaftarModel::all();
@@ -255,7 +260,8 @@ class JadwalSidangMagangController extends Controller
         $this->authAction('read', 'modal');
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data = SemhasModel::find($id);
+        $data = SemhasDaftarModel::find($id);
+        $datajadwal = JadwalSidangMagangModel::where($data, 'semhas_daftar_id')->first();
         $page = [
             'title' => 'Detail ' . $this->menuTitle
         ];
@@ -264,6 +270,7 @@ class JadwalSidangMagangController extends Controller
             view($this->viewPath . 'detail')
             ->with('page', (object) $page)
             ->with('id', $id)
+            ->with('datajadwal', $datajadwal)
             ->with('data', $data);
     }
 

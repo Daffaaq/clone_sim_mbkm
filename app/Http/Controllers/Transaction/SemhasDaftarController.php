@@ -7,6 +7,7 @@ use App\Models\Master\DosenModel;
 use App\Models\Master\InstrukturModel;
 use App\Models\Master\JurusanModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Master\SemhasModel;
@@ -155,11 +156,21 @@ class SemhasDaftarController extends Controller
                         'url' => $this->menuUrl,
                         'title' => 'Pendaftaran ' . $this->menuTitle
                     ];
-                    $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->with('instruktur')->first();
+                    $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+                    $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
+                        ->whereHas('magang', function ($query) use ($activePeriods) {
+                            $query->where('periode_id', $activePeriods->toArray());
+                        })
+                        ->with('instruktur')
+                        ->first();
                     $nama_instruktur = optional($instrukturLapangan->instruktur)->nama_instruktur;
 
                     // Mengambil pembimbing dosen untuk mahasiswa tertentu dengan relasi 'dosen'
-                    $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->with('dosen')->first();
+                    $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)
+                        ->whereHas('magang', function ($query) use ($activePeriods) {
+                            $query->where('periode_id', $activePeriods->toArray());
+                        })
+                        ->with('dosen')->first();
                     $nama_dosen = optional($pembimbingDosen->dosen)->dosen_name;
 
                     $magang_ids = Magang::whereIn('mahasiswa_id', [$mahasiswa_id]) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
@@ -172,8 +183,9 @@ class SemhasDaftarController extends Controller
                         ->with('mitra')
                         ->with('mitra.kegiatan')
                         ->with('periode')
+                        ->where('periode_id', $activePeriods->toArray())
                         ->first();
-
+                    // dd($magang);
                     $kode_magang = $magang->magang_kode;
                     // dd($total_bimbingan >= $semhas->kuota_bimbingan);
                     $success = "anda sudah Eligible untuk mendaftar pada Tahap ini.";
@@ -191,9 +203,14 @@ class SemhasDaftarController extends Controller
                         ->value('magang_id');
                     $jurusan = JurusanModel::all()->first();
                     $jurusanName = $jurusan->jurusan_name;
-                    $dataSemhasDaftar = SemhasDaftarModel::where('created_by', $user_id)->first();
-                    $dataSemhasDaftar1 = SemhasDaftarModel::whereHas('magang', function ($query) use ($kode_magang) {
-                        $query->where('magang_kode', $kode_magang);
+                    $dataSemhasDaftar = SemhasDaftarModel::where('created_by', $user_id)
+                        ->whereHas('magang', function ($query) use ($activePeriods) {
+                            $query->where('periode_id', $activePeriods->toArray());
+                        })
+                        ->first();
+                    $dataSemhasDaftar1 = SemhasDaftarModel::whereHas('magang', function ($query) use ($kode_magang, $activePeriods) {
+                        $query->where('magang_kode', $kode_magang)
+                            ->where('periode_id', $activePeriods->toArray());
                     })->get();
                     if ($dataSemhasDaftar == null) {
                         return view($this->viewPath . 'index')

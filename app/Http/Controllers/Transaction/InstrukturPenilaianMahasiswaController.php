@@ -79,7 +79,7 @@ class InstrukturPenilaianMahasiswaController extends Controller
             ->whereIn('magang_id', function ($query) use ($activePeriods) {
                 $query->select('magang_id')
                     ->from('t_magang')
-                    ->whereIn('periode_id', $activePeriods);
+                    ->where('periode_id', $activePeriods->toArray());
             })
             ->pluck('mahasiswa_id')
             ->toArray();

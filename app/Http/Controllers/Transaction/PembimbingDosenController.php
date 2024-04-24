@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\Magang;
 use App\Models\Transaction\PembimbingDosenModel;
@@ -75,6 +76,7 @@ class PembimbingDosenController extends Controller
         //     ->get();
 
         $prodi_id = auth()->user()->prodi_id;
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
 
         $data = PembimbingDosenModel::select(
             't_pembimbing_dosen.pembimbing_dosen_id',
@@ -85,17 +87,23 @@ class PembimbingDosenController extends Controller
             ->leftJoin('m_mahasiswa', 't_pembimbing_dosen.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
             ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
             ->leftJoin('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
-            ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id');
+            ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id')
+            ->where('t_magang.status', 1); // Pastikan status magang adalah 1 (diterima)
+
         if ($prodi_id !== null) {
-            // Ketika user_id tidak null
+            // Ketika prodi_id tidak null
             $data->where(function ($query) use ($prodi_id) {
-                // Filter data yang sesuai dengan prodi_id pengguna atau yang prodi_id-nya null
+                // Filter data yang sesuai dengan prodi_id atau yang prodi_id-nya null
                 $query->where('m_prodi.prodi_id', $prodi_id)
                     ->orWhereNull('m_prodi.prodi_id');
             });
         }
-        $data->where('t_magang.status', 1); // Pastikan status magang adalah 1 (diterima)
-        $data = $data->get();
+
+        $data = $data->whereHas('magang', function ($query) use ($activePeriods) {
+            $query->whereIn('periode_id', $activePeriods);
+        })
+            ->get();
+
 
 
 
