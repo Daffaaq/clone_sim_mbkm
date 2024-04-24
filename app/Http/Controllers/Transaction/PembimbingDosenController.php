@@ -132,9 +132,11 @@ class PembimbingDosenController extends Controller
         //             ->whereRaw('t_magang.magang_id = t_pembimbing_dosen.magang_id');
         //     })
         //     ->get();
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
         $mahasiswaWithMagang = MahasiswaModel::selectRaw("m_mahasiswa.mahasiswa_id, m_mahasiswa.nama_mahasiswa, t_magang.magang_id")
             ->join('t_magang', 't_magang.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
             ->where('t_magang.status', 1)
+            ->where('t_magang.periode_id', $activePeriods->toArray())
             ->whereNotExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('t_pembimbing_dosen')
@@ -215,10 +217,11 @@ class PembimbingDosenController extends Controller
                     'msg' => 'Kuota dosen ' . $dosen->nama . ' tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
                 ]);
             }
-
+            $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
             // Sekarang Anda dapat menambahkan mahasiswa tanpa mengurangi kuota dosen
 
             $magang_ids = Magang::whereIn('mahasiswa_id', $request->input('mahasiswa_id'))
+                ->where('periode_id', $activePeriods->toArray())
                 ->where('status', 1)
                 ->pluck('magang_id')
                 ->toArray();
@@ -340,7 +343,7 @@ class PembimbingDosenController extends Controller
                     'msg' => 'Kuota dosen ' . $dosen->nama . ' tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
                 ]);
             }
-
+            $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
             $mahasiswa_ids = $request->input('mahasiswa_id');
             $pembimbingDosen = null;
             $magang_ids = [];
@@ -352,7 +355,9 @@ class PembimbingDosenController extends Controller
                 // Pastikan mahasiswa_id tidak null sebelum menyimpan data
                 if (!is_null($mahasiswa_id)) {
                     // Cari nilai magang_id
-                    $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)->value('magang_id');
+                    $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)
+                        ->where('periode_id', $activePeriods->toArray())
+                        ->value('magang_id');
                     // dd($magang_id);
                     $magang_ids[] = $magang_id;
                     // Temukan model PembimbingDosen berdasarkan ID

@@ -41,12 +41,13 @@ class LogBimbinganController extends Controller
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
-
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
         // Gunakan mahasiswa_id untuk mencari data magang
         $magang_data = Magang::where('mahasiswa_id', $mahasiswa_id)->get();
 
         $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
-            ->where('status', 1) // Status 1 menunjukkan 'Diterima'
+            ->where('status', 1)
+            ->where('periode_id', $activePeriods->toArray()) // Status 1 menunjukkan 'Diterima'
             ->exists();
         if ($magang_status) {
             $this->authAction('read');

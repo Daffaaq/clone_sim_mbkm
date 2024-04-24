@@ -46,8 +46,12 @@ class SemhasDaftarController extends Controller
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
         $prodi_id = $mahasiswa->prodi_id;
 
+        // dd($prodi_name);
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
         $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
-            ->where('status', 1) // Status 1 menunjukkan 'Diterima'
+            ->where('status', 1)
+            ->where('periode_id', $activePeriods->toArray())
+            // Status 1 menunjukkan 'Diterima'
             ->exists();
 
         if ($magang_status) {
@@ -109,6 +113,8 @@ class SemhasDaftarController extends Controller
                     $semhasData = $semhas;
                     $jurusan = JurusanModel::all()->first();
                     $jurusanName = $jurusan->jurusan_name;
+                    $prodi_name = ProdiModel::find($prodi_id)->prodi_name;
+                    dd($prodi_name);
                     $this->authAction('read');
                     $this->authCheckDetailAccess();
 
@@ -136,6 +142,7 @@ class SemhasDaftarController extends Controller
                         ->with('message', $message)
                         ->with('semhasData', $semhasData)
                         ->with('jurusanName', $jurusanName)
+                        ->with('prodi_name', $prodi_name)
                         ->with('allowAccess', $this->authAccessKey());
                 } else {
                     $this->authAction('read');
@@ -203,6 +210,7 @@ class SemhasDaftarController extends Controller
                         ->value('magang_id');
                     $jurusan = JurusanModel::all()->first();
                     $jurusanName = $jurusan->jurusan_name;
+                    $prodi_name = ProdiModel::find($prodi_id)->prodi_name;
                     $dataSemhasDaftar = SemhasDaftarModel::where('created_by', $user_id)
                         ->whereHas('magang', function ($query) use ($activePeriods) {
                             $query->where('periode_id', $activePeriods->toArray());
@@ -229,6 +237,7 @@ class SemhasDaftarController extends Controller
                             ->with('pembimbingdosen', $pembimbingdosen)
                             ->with('magang_id', $magang_id)
                             ->with('jurusanName', $jurusanName)
+                            ->with('prodi_name', $prodi_name)
                             ->with('page', (object) $page)
                             ->with('allowAccess', $this->authAccessKey());
                     } else {
@@ -257,6 +266,7 @@ class SemhasDaftarController extends Controller
                             ->with('nama_instruktur', $nama_instruktur)
                             ->with('nama_dosen', $nama_dosen)
                             ->with('magang', $magang)
+                            ->with('$prodi_name', $prodi_name)
                             ->with('dataSemhasDaftar', $dataSemhasDaftar)
                             ->with('success', $success)
                             ->with('semhasData', $semhasData)
@@ -334,11 +344,12 @@ class SemhasDaftarController extends Controller
             ->value('semhas_id');
 
         // dd($semhas);
-
+        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
         $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
         $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
         $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)
             ->where('status', 1)
+            ->where('periode_id', $activePeriods->toArray())
             ->value('magang_id');
 
         // dd($semhas, $instrukturLapangan, $pembimbingdosen, $magang_id);

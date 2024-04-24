@@ -50,27 +50,40 @@
                                             {{ $semhasData->judul_semhas }} Jurusan {{ $jurusanName }}
                                         </td>
                                     </tr>
-                                    @if (!$dataSemhasDaftar == null)
+                                    @if (now() >= \Carbon\Carbon::parse($semhasData['tanggal_mulai_pendaftaran']) &&
+                                            now() <= \Carbon\Carbon::parse($semhasData['tanggal_akhir_pendaftaran']))
+                                        @if (!$dataSemhasDaftar == null)
+                                            <tr>
+                                                <th class="col-2">Keterangan</th>
+                                                <th>:</th>
+                                                <td class="col-10 bg-success-opacity">
+                                                    <div>{{ $success }}</div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th></th>
+                                                <th></th>
+                                                <td class="col-10 bg-success-opacity">
+                                                    <div>{{ $successDaftar1 }}</div>
+                                                </td>
+                                            </tr>
+                                        @else
+                                            <tr>
+                                                <th class="col-2">Keterangan</th>
+                                                <th>:</th>
+                                                <td class="col-10 bg-success-opacity">
+                                                    <div>{{ $success }}</div>
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @elseif(now() > \Carbon\Carbon::parse($semhasData['tanggal_akhir_pendaftaran']))
                                         <tr>
                                             <th class="col-2">Keterangan</th>
                                             <th>:</th>
-                                            <td class="col-10 bg-success-opacity">
-                                                <div>{{ $success }}</div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <th></th>
-                                            <th></th>
-                                            <td class="col-10 bg-success-opacity">
-                                                <div>{{ $successDaftar1 }}</div>
-                                            </td>
-                                        </tr>
-                                    @else
-                                        <tr>
-                                            <th class="col-2">Keterangan</th>
-                                            <th>:</th>
-                                            <td class="col-10 bg-success-opacity">
-                                                <div>{{ $success }}</div>
+                                            <td class="col-10 bg-danger-opacity">
+                                                <div>Mohon Maaf Pendaftaran ditutup mohon hubungi admin Jurusan
+                                                    {{ $jurusanName }} atau koordinator
+                                                    prodi {{ $prodi_name }} </div>
                                             </td>
                                         </tr>
                                     @endif
@@ -80,188 +93,204 @@
                         </div>
                     </div>
                 </section>
-                @if (!$dataSemhasDaftar == null)
-                    <section class="col-lg-12">
-                        <div class="card card-outline card-{{ $theme->card_outline }}">
-                            <div class="card-header">
-                                <h3 class="card-title mt-1">
-                                    <i class="fas fa-angle-double-right text-md text-{{ $theme->card_outline }} mr-1"></i>
-                                    {!! $page->title !!}
-                                </h3>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Jenis Magang</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $magang->mitra->kegiatan->kegiatan_nama }}" readonly>
-                                    </div>
+                @if (now() >= \Carbon\Carbon::parse($semhasData['tanggal_mulai_pendaftaran']) &&
+                        now() <= \Carbon\Carbon::parse($semhasData['tanggal_akhir_pendaftaran']))
+                    @if (!$dataSemhasDaftar == null)
+                        <section class="col-lg-12">
+                            <div class="card card-outline card-{{ $theme->card_outline }}">
+                                <div class="card-header">
+                                    <h3 class="card-title mt-1">
+                                        <i
+                                            class="fas fa-angle-double-right text-md text-{{ $theme->card_outline }} mr-1"></i>
+                                        {!! $page->title !!}
+                                    </h3>
                                 </div>
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Mitra Kegiatan</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $magang->mitra->mitra_nama }}" readonly>
-                                    </div>
-                                </div>
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing Institusi</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $nama_dosen }}" readonly>
-                                    </div>
-                                </div>
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Instruktur Lapangan</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $nama_instruktur }}" readonly>
-                                    </div>
-                                </div>
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Judul Seminar Hasil</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $dataSemhasDaftar->Judul }}" readonly>
-                                    </div>
-                                </div>
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Link github/project</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $dataSemhasDaftar->link_github }}" readonly>
-                                    </div>
-                                </div>
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Repo Dokumen</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $dataSemhasDaftar->link_laporan }}" readonly>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                @else
-                    <section class="col-lg-12">
-                        <div class="card card-outline card-{{ $theme->card_outline }}">
-                            <div class="card-header">
-                                <h3 class="card-title mt-1">
-                                    <i class="fas fa-angle-double-right text-md text-{{ $theme->card_outline }} mr-1"></i>
-                                    {!! $page->title !!}
-                                </h3>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Jenis Magang</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $magang->mitra->kegiatan->kegiatan_nama }}" readonly>
-                                    </div>
-                                </div>
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Mitra Kegiatan</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $magang->mitra->mitra_nama }}" readonly>
-                                    </div>
-                                </div>
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing Institusi</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $nama_dosen }}" readonly>
-                                    </div>
-                                </div>
-                                <div class="form-group  row mb-2">
-                                    <label class="col-sm-3 control-label col-form-label">Instruktur Lapangan</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control form-control-sm"
-                                            value="{{ $nama_instruktur }}" readonly>
-                                    </div>
-                                </div>
-                                <form action="{{ route('daftar.semhas') }}" method="POST" id="form-daftar">
-                                    @csrf
-                                    @if ($dataSemhasDaftar1->isNotEmpty())
-                                        <div class="form-group required row mb-2">
-                                            <label class="col-sm-3 control-label col-form-label">Pilih Judul
-                                                Seminar</label>
-                                            <div class="col-sm-9">
-                                                <select class="form-control form-control-sm" id="Judul"
-                                                    name="Judul">
-                                                    <option value="" selected disabled>Pilih Judul Seminar Hasil
-                                                    </option>
-                                                    @foreach ($dataSemhasDaftar1 as $item)
-                                                        <option value="{{ $item->semhas_daftar_id }}">{{ $item->Judul }}
-                                                        </option>
-                                                    @endforeach
-                                                    <option value="manual">Masukkan Manual</option>
-                                                </select>
-                                                <small id="judul" class="form-text text-muted">Pilih Judul Seminar
-                                                    Hasil dari yang teman anda inputkan atau masukkan manual jika tidak ada
-                                                    dalam
-                                                    daftar.</small>
-                                            </div>
+                                <div class="card-body p-0">
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Jenis Magang</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $magang->mitra->kegiatan->kegiatan_nama }}" readonly>
                                         </div>
-                                        <div class="form-group required row mb-2" id="manualJudulInput"
-                                            style="display: none;">
-                                            <label class="col-sm-3 control-label col-form-label">Judul Seminar
-                                                Hasil</label>
-                                            <div class="col-sm-9">
-                                                <input type="text" class="form-control form-control-sm"
-                                                    id="manualJudul" name="Judul">
-                                                <small id="manualJudulText" class="form-text text-muted">Masukkan Judul
-                                                    Seminar Hasil</small>
-                                            </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Mitra Kegiatan</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $magang->mitra->mitra_nama }}" readonly>
                                         </div>
-                                    @else
-                                        <div class="form-group required row mb-2">
-                                            <label class="col-sm-3 control-label col-form-label">Judul Seminar
-                                                Hasil</label>
-                                            <div class="col-sm-9">
-                                                <input type="text" class="form-control form-control-sm" id="Judul"
-                                                    name="Judul">
-                                                <small id="judul" class="form-text text-muted">Masukkan Judul
-                                                    Magang.</small>
-                                            </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing
+                                            Institusi</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $nama_dosen }}" readonly>
                                         </div>
-                                    @endif
-
-                                    <div class="form-group required row mb-2">
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Instruktur Lapangan</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $nama_instruktur }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Judul Seminar Hasil</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $dataSemhasDaftar->Judul }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
                                         <label class="col-sm-3 control-label col-form-label">Link github/project</label>
                                         <div class="col-sm-9">
-                                            <input type="text" class="form-control form-control-sm" id="link_github"
-                                                name="link_github">
-                                            <small id="judul" class="form-text text-muted">Buat link repository untuk
-                                                aplikasi yang sudah dikembangkan ditempat magang. Bisa link repository pada
-                                                Github </small>
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $dataSemhasDaftar->link_github }}" readonly>
                                         </div>
                                     </div>
-                                    <div class="form-group required row mb-2">
+                                    <div class="form-group  row mb-2">
                                         <label class="col-sm-3 control-label col-form-label">Repo Dokumen</label>
                                         <div class="col-sm-9">
-                                            <input type="text" class="form-control form-control-sm" id="link_laporan"
-                                                name="link_laporan">
-                                            <small id="judul" class="form-text text-muted">Buat link repository untuk
-                                                dokumen Proposal, Log Bimbingan. Bisa link share folder pada Google
-                                                Drive</small>
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $dataSemhasDaftar->link_laporan }}" readonly>
                                         </div>
                                     </div>
-                                    <input type="hidden" name="semhas" value="{{ $semhas_id }}">
-                                    <input type="hidden" name="instrukturLapangan" value="{{ $instrukturLapangan }}">
-                                    <input type="hidden" name="pembimbingdosen" value="{{ $pembimbingdosen }}">
-                                    <input type="hidden" name="magang_id" value="{{ $magang_id }}">
-
-                                    <div class="form-group row text-right mr-2 mb-3">
-                                        <div class="col-sm-12">
-                                            <button type="submit" class="btn btn-primary">Submit</button>
-                                        </div>
-                                    </div>
-                                </form>
-                                {{-- Form Anda bisa ditambahkan di sini --}}
+                                </div>
                             </div>
-                        </div>
-                    </section>
+                        </section>
+                    @else
+                        <section class="col-lg-12">
+                            <div class="card card-outline card-{{ $theme->card_outline }}">
+                                <div class="card-header">
+                                    <h3 class="card-title mt-1">
+                                        <i
+                                            class="fas fa-angle-double-right text-md text-{{ $theme->card_outline }} mr-1"></i>
+                                        {!! $page->title !!}
+                                    </h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Jenis Magang</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $magang->mitra->kegiatan->kegiatan_nama }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Mitra Kegiatan</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $magang->mitra->mitra_nama }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing
+                                            Institusi</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $nama_dosen }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Instruktur Lapangan</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $nama_instruktur }}" readonly>
+                                        </div>
+                                    </div>
+                                    <form action="{{ route('daftar.semhas') }}" method="POST" id="form-daftar">
+                                        @csrf
+                                        @if ($dataSemhasDaftar1->isNotEmpty())
+                                            <div class="form-group required row mb-2">
+                                                <label class="col-sm-3 control-label col-form-label">Pilih Judul
+                                                    Seminar</label>
+                                                <div class="col-sm-9">
+                                                    <select class="form-control form-control-sm" id="Judul"
+                                                        name="Judul">
+                                                        <option value="" selected disabled>Pilih Judul Seminar Hasil
+                                                        </option>
+                                                        @foreach ($dataSemhasDaftar1 as $item)
+                                                            <option value="{{ $item->semhas_daftar_id }}">
+                                                                {{ $item->Judul }}
+                                                            </option>
+                                                        @endforeach
+                                                        <option value="manual">Masukkan Manual</option>
+                                                    </select>
+                                                    <small id="judul" class="form-text text-muted">Pilih Judul Seminar
+                                                        Hasil dari yang teman anda inputkan atau masukkan manual jika tidak
+                                                        ada
+                                                        dalam
+                                                        daftar.</small>
+                                                </div>
+                                            </div>
+                                            <div class="form-group required row mb-2" id="manualJudulInput"
+                                                style="display: none;">
+                                                <label class="col-sm-3 control-label col-form-label">Judul Seminar
+                                                    Hasil</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" class="form-control form-control-sm"
+                                                        id="manualJudul" name="Judul">
+                                                    <small id="manualJudulText" class="form-text text-muted">Masukkan
+                                                        Judul
+                                                        Seminar Hasil</small>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="form-group required row mb-2">
+                                                <label class="col-sm-3 control-label col-form-label">Judul Seminar
+                                                    Hasil</label>
+                                                <div class="col-sm-9">
+                                                    <input type="text" class="form-control form-control-sm"
+                                                        id="Judul" name="Judul">
+                                                    <small id="judul" class="form-text text-muted">Masukkan Judul
+                                                        Magang.</small>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <div class="form-group required row mb-2">
+                                            <label class="col-sm-3 control-label col-form-label">Link
+                                                github/project</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control form-control-sm"
+                                                    id="link_github" name="link_github">
+                                                <small id="judul" class="form-text text-muted">Buat link repository
+                                                    untuk
+                                                    aplikasi yang sudah dikembangkan ditempat magang. Bisa link repository
+                                                    pada
+                                                    Github </small>
+                                            </div>
+                                        </div>
+                                        <div class="form-group required row mb-2">
+                                            <label class="col-sm-3 control-label col-form-label">Repo Dokumen</label>
+                                            <div class="col-sm-9">
+                                                <input type="text" class="form-control form-control-sm"
+                                                    id="link_laporan" name="link_laporan">
+                                                <small id="judul" class="form-text text-muted">Buat link repository
+                                                    untuk
+                                                    dokumen Proposal, Log Bimbingan. Bisa link share folder pada Google
+                                                    Drive</small>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="semhas" value="{{ $semhas_id }}">
+                                        <input type="hidden" name="instrukturLapangan"
+                                            value="{{ $instrukturLapangan }}">
+                                        <input type="hidden" name="pembimbingdosen" value="{{ $pembimbingdosen }}">
+                                        <input type="hidden" name="magang_id" value="{{ $magang_id }}">
+
+                                        <div class="form-group row text-right mr-2 mb-3">
+                                            <div class="col-sm-12">
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                    {{-- Form Anda bisa ditambahkan di sini --}}
+                                </div>
+                            </div>
+                        </section>
+                    @endif
+                @elseif(now() > \Carbon\Carbon::parse($semhasData['tanggal_akhir_pendaftaran']))
                 @endif
             @endif
         </div>
