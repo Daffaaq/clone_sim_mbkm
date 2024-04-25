@@ -18,14 +18,14 @@ $is_edit = isset($data);
                 <div class="form-message text-center"></div>
                 @if ($is_edit)
                     <div class="form-group required row mb-2">
-                        <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing</label>
+                        <label class="col-sm-3 control-label col-form-label">Dosen Pembahas</label>
                         <div class="col-sm-9">
                             <select id="dosen_pembahas_id" name="dosen_pembahas_id"
                                 class="form-control form-control-sm select2_combobox">
                                 <option value="">- Pilih -</option>
                                 @foreach ($dosen as $r)
                                     <option value="{{ $r->dosen_id }}"
-                                        {{ isset($data) && $data->dosen_id == $r->dosen_id ? 'selected' : '' }}>
+                                        {{ isset($data) && $data->dosen_pembahas_id == $r->dosen_id ? 'selected' : '' }}>
                                         {{ $r->dosen_name }}
                                     </option>
                                 @endforeach
@@ -37,7 +37,8 @@ $is_edit = isset($data);
                     <label class="col-sm-3 control-label col-form-label">Tanggal Sidang</label>
                     <div class="col-sm-9">
                         <input type="date" id="tanggal_sidang" name="tanggal_sidang"
-                            class="form-control form-control-sm" required>
+                            class="form-control form-control-sm"
+                            value="{{ isset($datajadwal) ? $datajadwal->tanggal_sidang : '' }}" required>
                     </div>
                 </div>
 
@@ -45,7 +46,8 @@ $is_edit = isset($data);
                     <label class="col-sm-3 control-label col-form-label">Jam Mulai Sidang</label>
                     <div class="col-sm-9">
                         <input type="time" id="jam_sidang_mulai" name="jam_sidang_mulai"
-                            class="form-control form-control-sm" required>
+                            class="form-control form-control-sm"
+                            value="{{ isset($datajadwal) ? $datajadwal->jam_sidang_mulai : '' }}" required>
                     </div>
                 </div>
 
@@ -53,7 +55,8 @@ $is_edit = isset($data);
                     <label class="col-sm-3 control-label col-form-label">Jam Selesai Sidang</label>
                     <div class="col-sm-9">
                         <input type="time" id="jam_sidang_selesai" name="jam_sidang_selesai"
-                            class="form-control form-control-sm" required>
+                            class="form-control form-control-sm"
+                            value="{{ isset($datajadwal) ? $datajadwal->jam_sidang_selesai : '' }}" required>
                     </div>
                 </div>
 
@@ -62,8 +65,13 @@ $is_edit = isset($data);
                     <div class="col-sm-9">
                         <select id="jenis_sidang" name="jenis_sidang" class="form-control form-control-sm">
                             <option value="" disabled selected>Pilih Jenis Sidang</option>
-                            <option value="online">Online</option>
-                            <option value="offline">Offline</option>
+                            <option value="online"
+                                {{ isset($datajadwal) && $datajadwal->jenis_sidang == 'online' ? 'selected' : '' }}>
+                                Online</option>
+                            <option value="offline"
+                                {{ isset($datajadwal) && $datajadwal->jenis_sidang == 'offline' ? 'selected' : '' }}>
+                                Offline
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -72,7 +80,7 @@ $is_edit = isset($data);
                     <label class="col-sm-3 control-label col-form-label">Tempat Sidang</label>
                     <div class="col-sm-9">
                         <input type="text" id="tempat" name="tempat" class="form-control form-control-sm"
-                            required>
+                            value="{{ isset($datajadwal) ? $datajadwal->tempat : '' }}" required>
                     </div>
                 </div>
 
@@ -80,7 +88,7 @@ $is_edit = isset($data);
                     <label class="col-sm-3 control-label col-form-label">Gedung Sidang</label>
                     <div class="col-sm-9">
                         <input type="text" id="gedung" name="gedung" class="form-control form-control-sm"
-                            required>
+                            value="{{ isset($datajadwal) ? $datajadwal->gedung : '' }}" required>
                     </div>
                 </div>
             </div>
@@ -125,7 +133,7 @@ $is_edit = isset($data);
                 jam_sidang_mulai: {
                     required: true
                 },
-                jam_sidang_mulai: {
+                jam_sidang_selesai: {
                     required: true
                 },
                 jenis_sidang: {
