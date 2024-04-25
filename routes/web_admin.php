@@ -41,6 +41,7 @@ use App\Http\Controllers\Transaction\LihatStatusPengajuanController;
 use App\Http\Controllers\Transaction\LogBimbinganController;
 use App\Http\Controllers\Transaction\LogBimbinganDosenController;
 use App\Http\Controllers\Transaction\LogBimbinganInstrukturController;
+use App\Http\Controllers\Transaction\MyBimbinganController;
 use App\Http\Controllers\Transaction\MyMagangController;
 use App\Http\Controllers\Transaction\NilaiInstrukturLapanganController;
 use App\Http\Controllers\Transaction\NilaiPembahasDosenController;
@@ -261,6 +262,9 @@ Route::prefix('mitra/{id}')->group(function () {
 });
 
 Route::group(['prefix' => 'dosen-pembimbing', 'middleware' => ['auth']], function () {
+    //my bimbingan
+    Route::resource('my-bimbingan', MyBimbinganController::class)->parameter('my-bimbingan', 'id');
+    Route::post('my-bimbingan/list', [MyBimbinganController::class, 'list']);
     //log bimbingan dosen
     Route::resource('log-bimbingan-dosen', LogBimbinganDosenController::class)->parameter('log-bimbingan', 'id');
     Route::post('log-bimbingan-dosen/list', [LogBimbinganDosenController::class, 'list']);
