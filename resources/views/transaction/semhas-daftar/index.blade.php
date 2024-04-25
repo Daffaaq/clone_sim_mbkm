@@ -77,15 +77,47 @@
                                             </tr>
                                         @endif
                                     @elseif(now() > \Carbon\Carbon::parse($semhasData['tanggal_akhir_pendaftaran']))
-                                        <tr>
-                                            <th class="col-2">Keterangan</th>
-                                            <th>:</th>
-                                            <td class="col-10 bg-danger-opacity">
-                                                <div>Mohon Maaf Pendaftaran ditutup mohon hubungi admin Jurusan
-                                                    {{ $jurusanName }} atau koordinator
-                                                    prodi {{ $prodi_name }} </div>
-                                            </td>
-                                        </tr>
+                                        @if (!$dataSemhasDaftar == null)
+                                            <tr>
+                                                <th class="col-2">Keterangan</th>
+                                                <th>:</th>
+                                                <td class="col-10 bg-success-opacity">
+                                                    <div>{{ $success }}</div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th></th>
+                                                <th></th>
+                                                <td class="col-10 bg-success-opacity">
+                                                    <div>{{ $successDaftar1 }}</div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th></th>
+                                                <th>:</th>
+                                                <td class="col-10 bg-danger-opacity">
+                                                    <div>Mohon Maaf Pendaftaran ditutup </div>
+                                                </td>
+                                            </tr>
+                                        @else
+                                            <tr>
+                                                <th class="col-2">Keterangan</th>
+                                                <th>:</th>
+                                                <td class="col-10 bg-success-opacity">
+                                                    <div>{{ $success }}</div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th></th>
+                                                <th></th>
+                                                <td class="col-10 bg-danger-opacity">
+                                                    <div>Mohon Maaf Pendaftaran ditutup mohon hubungi admin Jurusan
+                                                        {{ $jurusanName }} atau koordinator
+                                                        prodi {{ $prodi_name }} </div>
+
+                                                </td>
+                                            </tr>
+                                        @endif
                                     @endif
                                 </tbody>
                             </table>
@@ -290,7 +322,135 @@
                             </div>
                         </section>
                     @endif
+                    <section class="col-lg-12">
+                        <div class="card card-outline card-{{ $theme->card_outline }}">
+                            <div class="card-header">
+                                <h3 class="card-title mt-1">
+                                    <i class="fas fa-angle-double-right text-md text-{{ $theme->card_outline }} mr-1"></i>
+                                    {!! $page->title !!}
+                                </h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="form-group  row mb-2">
+                                    <label class="col-sm-3 control-label col-form-label">Jenis Magang</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm"
+                                            value="{{ $magang->mitra->kegiatan->kegiatan_nama }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group  row mb-2">
+                                    <label class="col-sm-3 control-label col-form-label">Mitra Kegiatan</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm"
+                                            value="{{ $magang->mitra->mitra_nama }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group  row mb-2">
+                                    <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing
+                                        Institusi</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm"
+                                            value="{{ $nama_dosen }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group  row mb-2">
+                                    <label class="col-sm-3 control-label col-form-label">Instruktur Lapangan</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm"
+                                            value="{{ $nama_instruktur }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group  row mb-2">
+                                    <label class="col-sm-3 control-label col-form-label">Judul Seminar Hasil</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm"
+                                            value="{{ $dataSemhasDaftar->Judul }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group  row mb-2">
+                                    <label class="col-sm-3 control-label col-form-label">Link github/project</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm"
+                                            value="{{ $dataSemhasDaftar->link_github }}" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group  row mb-2">
+                                    <label class="col-sm-3 control-label col-form-label">Repo Dokumen</label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control form-control-sm"
+                                            value="{{ $dataSemhasDaftar->link_laporan }}" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 @elseif(now() > \Carbon\Carbon::parse($semhasData['tanggal_akhir_pendaftaran']))
+                    @if (!$dataSemhasDaftar == null)
+                        <section class="col-lg-12">
+                            <div class="card card-outline card-{{ $theme->card_outline }}">
+                                <div class="card-header">
+                                    <h3 class="card-title mt-1">
+                                        <i
+                                            class="fas fa-angle-double-right text-md text-{{ $theme->card_outline }} mr-1"></i>
+                                        {!! $page->title !!}
+                                    </h3>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Jenis Magang</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $magang->mitra->kegiatan->kegiatan_nama }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Mitra Kegiatan</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $magang->mitra->mitra_nama }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Dosen Pembimbing
+                                            Institusi</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $nama_dosen }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Instruktur Lapangan</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $nama_instruktur }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Judul Seminar Hasil</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $dataSemhasDaftar->Judul }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Link github/project</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $dataSemhasDaftar->link_github }}" readonly>
+                                        </div>
+                                    </div>
+                                    <div class="form-group  row mb-2">
+                                        <label class="col-sm-3 control-label col-form-label">Repo Dokumen</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control form-control-sm"
+                                                value="{{ $dataSemhasDaftar->link_laporan }}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    @else
+                    @endif
                 @endif
             @endif
         </div>

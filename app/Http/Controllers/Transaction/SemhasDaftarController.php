@@ -266,7 +266,7 @@ class SemhasDaftarController extends Controller
                             ->with('nama_instruktur', $nama_instruktur)
                             ->with('nama_dosen', $nama_dosen)
                             ->with('magang', $magang)
-                            ->with('$prodi_name', $prodi_name)
+                            ->with('prodi_name', $prodi_name)
                             ->with('dataSemhasDaftar', $dataSemhasDaftar)
                             ->with('success', $success)
                             ->with('semhasData', $semhasData)
