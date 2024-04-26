@@ -51,6 +51,7 @@ use App\Http\Controllers\Transaction\PersetujuanKelompokController;
 use App\Http\Controllers\Transaction\QuotaDosenController;
 use App\Http\Controllers\Transaction\SemhasController;
 use App\Http\Controllers\Transaction\SemhasDaftarController;
+use App\Http\Controllers\Transaction\UjianSeminarHasilController;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'master', 'middleware' => ['auth']], function () {
@@ -230,8 +231,8 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::resource('jadwal-semhas', JadwalSidangMagangController::class)->parameter('jadwal-semhas', 'id');
     Route::post('jadwal-semhas/list', [JadwalSidangMagangController::class, 'list'])->name('jadwal-semhas.list');
 
-
-
+    //ujian-seminar-hasil
+    Route::resource('ujian-seminar-hasil', UjianSeminarHasilController::class)->parameter('ujian-seminar-hasil', 'id');
     //berita
     Route::resource('berita', TransactionBeritaController::class)->parameter('berita', 'id');
     Route::post('berita/list', [TransactionBeritaController::class, 'list']);

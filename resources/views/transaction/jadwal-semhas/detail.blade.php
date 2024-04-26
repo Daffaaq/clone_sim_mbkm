@@ -183,7 +183,7 @@
                 @endif
             </div>
             <button type="button" class="btn btn-primary mb-3" id="showTableBtn"
-                @if (!$datajadwal) disabled @endif>Tombol</button>
+                @if (!$datajadwal) disabled @endif>Jadwal</button>
         </div>
 
 

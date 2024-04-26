@@ -10,13 +10,13 @@
                             <i class="fas fa-angle-double-right text-md text-{{ $theme->card_outline }} mr-1"></i>
                             {!! $page->title !!}
                         </h3>
-                        <div class="card-tools">
+                        {{-- <div class="card-tools">
                             @if ($allowAccess->create)
                                 <button type="button" data-block="body"
                                     class="btn btn-sm btn-{{ $theme->button }} mt-1 ajax_modal"
                                     data-url="{{ $page->url }}/create"><i class="fas fa-plus"></i> Tambah</button>
                             @endif
-                        </div>
+                        </div> --}}
                     </div>
                     <div class="card-body p-0">
                         {{-- @if (Auth::user()->group_id == 1)
@@ -49,6 +49,7 @@
                                         <th>Prodi</th>
                                         <th>Nim</th>
                                         <th>Nama Mahasiswa</th>
+                                        <th>Nama Mitra</th>
                                         <th>Skema</th>
                                         <th>#</th>
                                     </tr>
@@ -108,6 +109,13 @@
                         "bSearchable": true
                     },
                     {
+                        "mData": "mitra_nama",
+                        "sClass": "",
+                        "sWidth": "15%",
+                        "bSortable": true,
+                        "bSearchable": true
+                    },
+                    {
                         "mData": "magang_skema",
                         "sClass": "",
                         "sWidth": "15%",
@@ -121,22 +129,25 @@
                         "bSortable": false,
                         "bSearchable": false,
                         "mRender": function(data, type, row, meta) {
-                            var buttons = '';
-                            @if ($allowAccess->update)
-                                // if (row.status == 0) {
-                                //     buttons +=
-                                //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
-                                //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_reject" class="ajax_modal btn btn-xs btn-danger tooltips text-white" data-placement="left" data-original-title="Reject" ><i class="fa fa-times"></i></a> `;
-                                // }
-                                buttons +=
-                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Edit Data" ><i class="fa fa-edit"></i></a> `;
-                            @endif
-                            @if ($allowAccess->delete)
-                                buttons +=
-                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/delete" class="ajax_modal btn btn-xs btn-danger tooltips text-light" data-placement="left" data-original-title="Hapus Data" ><i class="fa fa-trash"></i></a> `;
-                            @endif
+                            // var buttons = '';
+                            // @if ($allowAccess->update)
+                            //     // if (row.status == 0) {
+                            //     //     buttons +=
+                            //     //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
+                            //     //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_reject" class="ajax_modal btn btn-xs btn-danger tooltips text-white" data-placement="left" data-original-title="Reject" ><i class="fa fa-times"></i></a> `;
+                            //     // }
+                            //     buttons +=
+                            //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Edit Data" ><i class="fa fa-edit"></i></a> `;
+                            // @endif
+                            // @if ($allowAccess->delete)
+                            //     buttons +=
+                            //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/delete" class="ajax_modal btn btn-xs btn-danger tooltips text-light" data-placement="left" data-original-title="Hapus Data" ><i class="fa fa-trash"></i></a> `;
+                            // @endif
 
-                            return buttons;
+                            // return buttons;
+                            return '<a href="#" data-block="body" data-url="{{ $page->url }}/' +
+                                data +
+                                '" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="show Data" ><i class="fa fa-eye text-white"></i></a>';
                         }
                     }
                 ],

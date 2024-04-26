@@ -77,12 +77,14 @@ class MyBimbinganController extends Controller
             'm_mahasiswa.nim',
             'm_dosen.dosen_name',
             'm_prodi.prodi_name',
-            't_magang.magang_skema'
+            't_magang.magang_skema',
+            'd_mitra.mitra_nama'
         )
             ->leftJoin('m_mahasiswa', 't_pembimbing_dosen.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
             ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
             ->leftJoin('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
             ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id') // Alias mitra for joining mitra table
+            ->leftJoin('d_mitra', 't_magang.mitra_id', '=', 'd_mitra.mitra_id')
             ->where('t_magang.status', 1) // Pastikan status magang adalah 1 (diterima)
             ->where('t_pembimbing_dosen.dosen_id', $instruktur_id); // Filter berdasarkan instruktur_id
 
