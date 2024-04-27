@@ -221,6 +221,40 @@ class NilaiPembimbingDosenController extends Controller
         return redirect('/');
     }
 
+
+    public function destroy_sub_category(Request $request, $id)
+    {
+        // Cek apakah $id merupakan subkategori yang valid dengan parent_id yang sesuai
+        $subcategory = NilaiPembimbingDosenModel::with('subKriteria')->find($id);
+        // dd($subcategory);
+        if (!$subcategory) {
+            return response()->json([
+                'stat' => false,
+                'msg' => 'Subkategori tidak ditemukan atau tidak sesuai dengan parent_id yang diberikan.'
+            ]);
+        }
+
+        // Hapus subkategori
+        $res = $subcategory->delete();
+
+        $dataOut = false;
+
+        if ($res) {
+            // Cek apakah data ditambahkan untuk pertama kalinya
+            $dataOut = (NilaiPembimbingDosenModel::with('subKriteria')->count() == 0);
+            // dd($dataOut);
+        }
+
+        return response()->json([
+            'stat' => $res,
+            'mc' => $res, // Menutup modal jika berhasil
+            'msg' => ($res) ? 'Subkategori "' . $subcategory->name_kriteria_pembimbing_dosen . '" berhasil dihapus.' : 'Gagal menghapus subkategori.',
+            'dataOut' => $dataOut
+        ]);
+
+        return redirect('/');
+    }
+
     public function edit($id)
     {
         $this->authAction('update', 'modal');
@@ -319,6 +353,7 @@ class NilaiPembimbingDosenController extends Controller
 
         $data = NilaiPembimbingDosenModel::with('subKriteria')->find($id);
 
+        $datasub = $data->subKriteria->count();
         // Konversi bobot dari desimal ke persen sebelum mengirimkannya ke tampilan
         if ($data && isset($data->bobot)) {
             $data->bobot = $data->bobot * 100;
@@ -331,6 +366,7 @@ class NilaiPembimbingDosenController extends Controller
             view($this->viewPath . 'detail_subcategory')
             ->with('page', (object) $page)
             ->with('id', $id)
+            ->with('datasub', $datasub)
             ->with('data', $data);
     }
 

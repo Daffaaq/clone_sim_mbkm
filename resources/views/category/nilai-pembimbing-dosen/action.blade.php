@@ -2,7 +2,12 @@
 // jika $data ada ISI-nya maka actionnya adalah edit, jika KOSONG : insert
 $is_edit = isset($data);
 ?>
-
+<style>
+    #confirmDeleteModal {
+        z-index: 1050;
+        /* Atur ke nilai yang lebih tinggi dari modal utama */
+    }
+</style>
 <form method="post" action="{{ $page->url }}" role="form" class="form-horizontal" id="form-master">
     @csrf
     {!! $is_edit ? method_field('PUT') : '' !!}
@@ -32,6 +37,7 @@ $is_edit = isset($data);
                     </div>
                 </div>
                 @if ($is_edit && $data->subKriteria->isNotEmpty())
+                    {{-- @dd($data); --}}
                     <div class="form-group required row mb-2">
                         <label class="col-sm-3 control-label col-form-label">Sub Kriteria</label>
                         <div class="colom-sub" style="width: 605px;">
@@ -56,10 +62,10 @@ $is_edit = isset($data);
     </div>
 </form>
 
+
 <script>
     $(document).ready(function() {
         unblockUI();
-
         $("#form-master").validate({
             rules: {
                 name_kriteria_pembimbing_dosen: {

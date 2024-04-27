@@ -287,6 +287,7 @@ Route::group(['prefix' => 'category', 'middleware' => ['auth']], function () {
     Route::get('nilai-pembimbing-dosen/{id}/subcategory', [NilaiPembimbingDosenController::class, 'tambah_subcategory']);
     Route::get('nilai-pembimbing-dosen/{id}/subcategory/detail', [NilaiPembimbingDosenController::class, 'showsub']);
     Route::post('nilai-pembimbing-dosen/{id}/subcategory', [NilaiPembimbingDosenController::class, 'tambah_sub_category'])->name('nilai-pembimbing-dosen.tambah_sub_category');
+    Route::delete('nilai-pembimbing-dosen/{id}/subcategory/delete', [NilaiPembimbingDosenController::class, 'destroy_sub_category'])->name('delete_sub_category_dosen_pembimbing');
     Route::get('nilai-pembimbing-dosen/{id}/delete', [NilaiPembimbingDosenController::class, 'confirm']);
 
     Route::resource('nilai-pembahas-dosen', NilaiPembahasDosenController::class)->parameter('nilai-pembahas-dosen', 'id');

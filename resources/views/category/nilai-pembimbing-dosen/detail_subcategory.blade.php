@@ -6,7 +6,7 @@
                     aria-hidden="true">&times;</span></button>
         </div>
         <div class="modal-body p-0">
-            <div id="success-message" class="alert alert-success" style="display: none;"></div>
+            <div class="form-message text-center"></div>
             <div class="form-group required row mb-2">
                 <label class="col-sm-3 control-label col-form-label">Nama Kriteria Utama</label>
                 <div class="col-sm-8">
@@ -30,6 +30,15 @@
                             <div class="col-sm-8" style="margin-bottom: 8px;"> <!-- Atur spasi langsung di sini -->
                                 <input type="text" class="form-control form-control-sm" style="width: 136%;"
                                     value="{{ $subKriteria->name_kriteria_pembimbing_dosen }}" disabled>
+                                <div class="input-group-append">
+                                    <a href="#" class="ml-2 cursor-pointer remove-btn"
+                                        id="removeBtn_{{ $subKriteria->nilai_pembimbing_dosen_id }}"
+                                        id="id{{ $subKriteria->nilai_pembimbing_dosen_id }}"
+                                        data-subcategory-id="{{ $subKriteria->nilai_pembimbing_dosen_id }}"
+                                        data-parent-id="{{ $subKriteria->parent_id }}">
+                                        <i class="text-danger fa fa-trash"></i>
+                                    </a>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -41,3 +50,49 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        var baseUrl = "{{ url('category/nilai-pembimbing-dosen/') }}";
+        var datasub = {!! json_encode($datasub) !!};
+        console.log(datasub);
+        $('.remove-btn').on('click', function(event) {
+            event.preventDefault();
+            var subcategoryId = $(this).data('subcategory-id');
+            var parentId = $(this).data('parent-id');
+            // console.log(subcategoryId, parentId);
+
+            // Hapus item secara langsung
+            $.ajax({
+                // url: "{{ route('delete_sub_category_dosen_pembimbing', ['id' => $subKriteria->nilai_pembimbing_dosen_id]) }}",
+                url: baseUrl + '/' + subcategoryId + '/subcategory/delete',
+                //  url: subcategoryId + subcategoryIdValue,
+                type: "DELETE",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    id: parentId,
+                    subcategory_id: subcategoryId
+                },
+                success: function(response) {
+                    if (response.stat) {
+                        $('a[data-subcategory-id="' + subcategoryId + '"]')
+                            .closest('.col-sm-8').remove();
+                        $('.form-message').removeClass('text-danger').addClass(
+                            'text-success').text(response.msg).show();
+                        // Setelah menghapus, periksa apakah masih ada subkriteria yang tersisa
+                        if ($('.colom-sub').find('.col-sm-8').length === 0) {
+                            closeModal($modal, response);
+                            location.reload();
+                        }
+                    } else {
+                        $('.form-message').removeClass('text-success').addClass(
+                            'text-danger').text(response.msg).show();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    })
+</script>
