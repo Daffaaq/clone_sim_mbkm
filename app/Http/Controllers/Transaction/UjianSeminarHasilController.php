@@ -68,26 +68,59 @@ class UjianSeminarHasilController extends Controller
 
             $page = [
                 'url' => $this->menuUrl,
-                'title' => 'Daftar ' . $this->menuTitle
+                'title' => 'Jadwal ' . $this->menuTitle
             ];
-
-            $userId = Auth::id();
+            $user = auth()->user();
+            // dd($user);
+            // $user = auth()->user()->id;
+            $user_id = $user->user_id;
+            // $userId = Auth::id();
             $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
             $mahasiswa_id = $mahasiswa->mahasiswa_id;
-
             $data = SemhasDaftarModel::where('created_by', $user_id)
                 ->whereHas('magang', function ($query) use ($activePeriods) {
                     $query->where('periode_id', $activePeriods->toArray());
                 })
+                ->with('pembimbingDosen.dosen')
+                ->with('magang.mitra')
+                ->with('magang.mitra.kegiatan')
+                ->with('magang.periode')
+                ->with('magang.mahasiswa')
                 ->first();
-
+            if (!$data) {
+                $message = "halaman belum bisa diakses. Silahkan untuk mendaftar seminar magang terlebih dahulu";
+                return view($this->viewPath . 'index')
+                    ->with('breadcrumb', (object) $breadcrumb)
+                    ->with('activeMenu', (object) $activeMenu)
+                    ->with('page', (object) $page)
+                    ->with('data', $data)
+                    ->with('user', $user)
+                    ->with('message', $message)
+                    ->with('allowAccess', $this->authAccessKey());
+            }
+            // dd($data);
             $dataJadwalSeminar = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->first();
-
+            $dataJadwalSeminar->jam_sidang_mulai = substr($dataJadwalSeminar->jam_sidang_mulai, 0, 5); // Mengambil karakter pertama hingga karakter ke-4
+            $dataJadwalSeminar->jam_sidang_selesai = substr($dataJadwalSeminar->jam_sidang_selesai, 0, 5); // Mengambil karakter pertama hingga karakter ke-4
+            // dd($dataJadwalSeminar);
+            if (!$dataJadwalSeminar) {
+                $message = "halaman belum bisa diakses. Silahkan menunggu untuk pembagian jadwal sidang magang";
+                return view($this->viewPath . 'index')
+                    ->with('breadcrumb', (object) $breadcrumb)
+                    ->with('activeMenu', (object) $activeMenu)
+                    ->with('page', (object) $page)
+                    ->with('data', $data)
+                    ->with('user', $user)
+                    ->with('message', $message)
+                    ->with('allowAccess', $this->authAccessKey());
+            }
             return view($this->viewPath . 'index')
                 ->with('breadcrumb', (object) $breadcrumb)
                 ->with('activeMenu', (object) $activeMenu)
                 ->with('page', (object) $page)
                 ->with('data', $data)
+                ->with('user', $user)
+                ->with('dataJadwalSeminar', $dataJadwalSeminar)
                 ->with('allowAccess', $this->authAccessKey());
         } else {
             $this->authAction('read');

@@ -101,22 +101,22 @@ $is_edit = isset($data);
 </form>
 
 <script>
+    function toggleGedungInput() {
+        var jenisSidang = $('#jenis_sidang').val();
+        if (jenisSidang === 'offline') {
+            $('#gedung_div').show();
+            $('#tempat_div').show();
+            $('#gedung').prop('required', true);
+        } else if (jenisSidang === 'online') {
+            $('#gedung_div').hide();
+            $('#tempat_div').show();
+            $('#gedung').prop('required', false);
+        } 
+    }
     $(document).ready(function() {
         unblockUI();
 
         // Fungsi untuk menampilkan atau menyembunyikan input gedung sidang berdasarkan jenis sidang
-        function toggleGedungInput() {
-            var jenisSidang = $('#jenis_sidang').val();
-            if (jenisSidang === 'offline') {
-                $('#gedung_div').show();
-                $('#tempat_div').show();
-                $('#gedung').prop('required', true);
-            } else {
-                $('#gedung_div').hide();
-                $('#tempat_div').show();
-                $('#gedung').prop('required', false);
-            }
-        }
 
         // Panggil fungsi toggleGedungInput() saat halaman dimuat
         toggleGedungInput();

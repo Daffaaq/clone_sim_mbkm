@@ -41,7 +41,7 @@ $is_edit = isset($data);
                                         id="sub_kriteria[]" value="{{ $subKriteria->name_kriteria_pembahas_dosen }}">
                                 </div>
                                 <input type="hidden" name="sub_kriteria_ids[]"
-                                    value="{{ $subKriteria->nilai_pembimbing_dosen_id }}">
+                                    value="{{ $subKriteria->nilai_pembahas_dosen_id }}">
                             @endforeach
                         </div>
                     </div>

@@ -295,6 +295,7 @@ Route::group(['prefix' => 'category', 'middleware' => ['auth']], function () {
     Route::get('nilai-pembahas-dosen/{id}/subcategory', [NilaiPembahasDosenController::class, 'tambah_subcategory']);
     Route::get('nilai-pembahas-dosen/{id}/subcategory/detail', [NilaiPembahasDosenController::class, 'showsub']);
     Route::post('nilai-pembahas-dosen/{id}/subcategory', [NilaiPembahasDosenController::class, 'tambah_sub_category'])->name('nilai-pembahas-dosen.tambah_sub_category');
+    Route::delete('nilai-pembahas-dosen/{id}/subcategory/delete', [NilaiPembahasDosenController::class, 'destroy_sub_category'])->name('delete_sub_category_dosen_pembahas');
     Route::get('nilai-pembahas-dosen/{id}/delete', [NilaiPembahasDosenController::class, 'confirm']);
 
     Route::resource('nilai-instruktur-lapangan', NilaiInstrukturLapanganController::class)->parameter('nilai-instruktur-lapangan', 'id');
@@ -302,6 +303,7 @@ Route::group(['prefix' => 'category', 'middleware' => ['auth']], function () {
     Route::get('nilai-instruktur-lapangan/{id}/subcategory', [NilaiInstrukturLapanganController::class, 'tambah_subcategory']);
     Route::get('nilai-instruktur-lapangan/{id}/subcategory/detail', [NilaiInstrukturLapanganController::class, 'showsub']);
     Route::post('nilai-instruktur-lapangan/{id}/subcategory', [NilaiInstrukturLapanganController::class, 'tambah_sub_category'])->name('nilai-instruktur-lapangan.tambah_sub_category');
+    Route::delete('nilai-instruktur-lapangan/{id}/subcategory/delete', [NilaiInstrukturLapanganController::class, 'destroy_sub_category'])->name('delete_sub_category_instruktur-lapangan');
     Route::get('nilai-instruktur-lapangan/{id}/delete', [NilaiInstrukturLapanganController::class, 'confirm']);
 });
 Route::group(['prefix' => 'setting', 'middleware' => ['auth']], function () {

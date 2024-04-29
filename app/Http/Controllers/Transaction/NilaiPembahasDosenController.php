@@ -38,7 +38,7 @@ class NilaiPembahasDosenController extends Controller
         ];
 
         $activeMenu = [
-            'l1' => 'Category',
+            'l1' => 'category-nilai',
             'l2' => 'kategory-nilaipebdos',
             'l3' => null
         ];
@@ -172,7 +172,7 @@ class NilaiPembahasDosenController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
                 'name_kriteria_pembahas_dosen.*' => 'required|string|max:255',
-                'parent_id' => 'required|exists:m_nilai_pembimbing_dosen,nilai_pembimbing_dosen_id', // Pastikan parent_id valid
+                'parent_id' => 'required|exists:m_nilai_pembahas_dosen,nilai_pembahas_dosen_id', // Pastikan parent_id valid
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -188,6 +188,7 @@ class NilaiPembahasDosenController extends Controller
 
             // Menentukan kategori berdasarkan parent_id yang diterima dari permintaan
             $parent_id = $id;
+            // dd($parent_id);
 
             // Membuat array data baru untuk setiap subkategori yang ditambahkan
             $newData = [];
@@ -203,12 +204,54 @@ class NilaiPembahasDosenController extends Controller
             // Menyimpan data subkategori baru
             $res = NilaiPembahasDosenModel::insert($newData);
 
+            $firstTimeAddition = false;
+
+            // Jika data berhasil ditambahkan
+            if ($res) {
+                // Cek apakah data ditambahkan untuk pertama kalinya
+                $firstTimeAddition = (NilaiPembahasDosenModel::where('parent_id', $id)->count() == count($newData));
+            }
+
             return response()->json([
                 'stat' => $res,
                 'mc' => $res, // Menutup modal jika berhasil
-                'msg' => ($res) ? $this->getMessage('update.success') : $this->getMessage('update.failed')
+                'msg' => ($res) ? $this->getMessage('update.success') : $this->getMessage('update.failed'),
+                'firstTimeAddition' => $firstTimeAddition
             ]);
         }
+
+        return redirect('/');
+    }
+
+    public function destroy_sub_category(Request $request, $id)
+    {
+        // Cek apakah $id merupakan subkategori yang valid dengan parent_id yang sesuai
+        $subcategory = NilaiPembahasDosenModel::with('subKriteria')->find($id);
+        // dd($subcategory);
+        if (!$subcategory) {
+            return response()->json([
+                'stat' => false,
+                'msg' => 'Subkategori tidak ditemukan atau tidak sesuai dengan parent_id yang diberikan.'
+            ]);
+        }
+
+        // Hapus subkategori
+        $res = $subcategory->delete();
+
+        $dataOut = false;
+
+        if ($res) {
+            // Cek apakah data ditambahkan untuk pertama kalinya
+            $dataOut = (NilaiPembahasDosenModel::with('subKriteria')->count() == 0);
+            // dd($dataOut);
+        }
+
+        return response()->json([
+            'stat' => $res,
+            'mc' => $res, // Menutup modal jika berhasil
+            'msg' => ($res) ? 'Subkategori "' . $subcategory->name_kriteria_pembahas_dosen . '" berhasil dihapus.' : 'Gagal menghapus subkategori.',
+            'dataOut' => $dataOut
+        ]);
 
         return redirect('/');
     }
@@ -354,14 +397,16 @@ class NilaiPembahasDosenController extends Controller
         $this->authAction('delete', 'modal');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data = SemhasModel::find($id);
+        $data = NilaiPembahasDosenModel::find($id);
+        // Jika aturan memiliki child, tampilkan pesan error
+        if ($data->subKriteria()->exists()) {
+            return $this->showModalError('Data tidak Bisa dihapus karena memiliki Subcategory.');
+        }
 
         return (!$data) ? $this->showModalError() :
             $this->showModalConfirm($this->menuUrl . '/' . $id, [
-                'Judul Semhas' => $data->judul_semhas,
-                'Tanggal Mulai Pendftaran' => $data->tanggal_mulai_pendaftaran,
-                'Tanggal Akhir Pendftaran' => $data->tanggal_akhir_pendaftaran,
-                'Prodi' => $data->prodi->prodi_name,
+                'Nilai Kriteria' => $data->name_kriteria_pembahas_dosen,
+                'Bobot' => $data->bobot,
             ]);
     }
 
@@ -372,12 +417,12 @@ class NilaiPembahasDosenController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
 
-            $res = SemhasModel::deleteData($id);
+            $res = NilaiPembahasDosenModel::deleteData($id);
 
             return response()->json([
                 'stat' => $res,
                 'mc' => $res, // close modal
-                'msg' => DosenModel::getDeleteMessage()
+                'msg' => NilaiPembahasDosenModel::getDeleteMessage()
             ]);
         }
 

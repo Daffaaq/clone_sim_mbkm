@@ -11,7 +11,7 @@
                 <label class="col-sm-3 control-label col-form-label">Judul</label>
                 <div class="col-sm-8">
                     <input type="text" class="form-control form-control-sm"
-                        value="{{ isset($data->name_kriteria_pembimbing_dosen) ? $data->name_kriteria_pembimbing_dosen : '' }}"
+                        value="{{ isset($data->name_kriteria_instruktur_lapangan) ? $data->name_kriteria_instruktur_lapangan : '' }}"
                         readonly />
                 </div>
             </div>
@@ -25,11 +25,20 @@
             @if ($data->subKriteria->isNotEmpty())
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Sub Kriteria</label>
-                    <div class="col-sm-9">
+                    <div class="colom-sub" style="width: 605px;">
                         @foreach ($data->subKriteria as $subKriteria)
-                            <div class="col-sm-9">
-                                <input type="text" class="form-control form-control-sm"
-                                    value="{{ $subKriteria->name_kriteria_pembimbing_dosen }}">
+                            <div class="col-sm-8" style="margin-bottom: 8px;">
+                                <input type="text" class="form-control form-control-sm" style="width: 136%;"
+                                    value="{{ $subKriteria->name_kriteria_instruktur_lapangan }}">
+                                <div class="input-group-append">
+                                    <a href="#" class="ml-2 cursor-pointer remove-btn"
+                                        id="removeBtn_{{ $subKriteria->nilai_instruktur_lapangan_id }}"
+                                        id="id{{ $subKriteria->nilai_instruktur_lapangan_id }}"
+                                        data-subcategory-id="{{ $subKriteria->nilai_instruktur_lapangan_id }}"
+                                        data-parent-id="{{ $subKriteria->parent_id }}">
+                                        <i class="text-danger fa fa-trash"></i>
+                                    </a>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -41,3 +50,46 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function() {
+        var baseUrl = "{{ url('category/nilai-instruktur-lapangan/') }}";
+        $('.remove-btn').on('click', function(event) {
+            event.preventDefault();
+            var subcategoryId = $(this).data('subcategory-id');
+            var parentId = $(this).data('parent-id');
+            // console.log(subcategoryId, parentId);
+
+            // Hapus item secara langsung
+            $.ajax({
+
+                url: baseUrl + '/' + subcategoryId + '/subcategory/delete',
+                //  url: subcategoryId + subcategoryIdValue,
+                type: "DELETE",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    id: parentId,
+                    subcategory_id: subcategoryId
+                },
+                success: function(response) {
+                    if (response.stat) {
+                        $('a[data-subcategory-id="' + subcategoryId + '"]')
+                            .closest('.col-sm-8').remove();
+                        $('.form-message').removeClass('text-danger').addClass(
+                            'text-success').text(response.msg).show();
+                        // Setelah menghapus, periksa apakah masih ada subkriteria yang tersisa
+                        if ($('.colom-sub').find('.col-sm-8').length === 0) {
+                            closeModal($modal, response);
+                            location.reload();
+                        }
+                    } else {
+                        $('.form-message').removeClass('text-success').addClass(
+                            'text-danger').text(response.msg).show();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    })
+</script>

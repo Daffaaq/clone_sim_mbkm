@@ -39,7 +39,7 @@ class NilaiInstrukturLapanganController extends Controller
         ];
 
         $activeMenu = [
-            'l1' => 'Category',
+            'l1' => 'category-nilai',
             'l2' => 'kategory-nilaiinlap',
             'l3' => null
         ];
@@ -204,12 +204,54 @@ class NilaiInstrukturLapanganController extends Controller
             // Menyimpan data subkategori baru
             $res = NilaiInstrukturLapanganModel::insert($newData);
 
+            $firstTimeAddition = false;
+
+            // Jika data berhasil ditambahkan
+            if ($res) {
+                // Cek apakah data ditambahkan untuk pertama kalinya
+                $firstTimeAddition = (NilaiInstrukturLapanganModel::where('parent_id', $id)->count() == count($newData));
+            }
+
             return response()->json([
                 'stat' => $res,
                 'mc' => $res, // Menutup modal jika berhasil
-                'msg' => ($res) ? $this->getMessage('update.success') : $this->getMessage('update.failed')
+                'msg' => ($res) ? $this->getMessage('update.success') : $this->getMessage('update.failed'),
+                'firstTimeAddition' => $firstTimeAddition
             ]);
         }
+
+        return redirect('/');
+    }
+
+    public function destroy_sub_category(Request $request, $id)
+    {
+        // Cek apakah $id merupakan subkategori yang valid dengan parent_id yang sesuai
+        $subcategory = NilaiInstrukturLapanganModel::with('subKriteria')->find($id);
+        // dd($subcategory);
+        if (!$subcategory) {
+            return response()->json([
+                'stat' => false,
+                'msg' => 'Subkategori tidak ditemukan atau tidak sesuai dengan parent_id yang diberikan.'
+            ]);
+        }
+
+        // Hapus subkategori
+        $res = $subcategory->delete();
+
+        $dataOut = false;
+
+        if ($res) {
+            // Cek apakah data ditambahkan untuk pertama kalinya
+            $dataOut = (NilaiInstrukturLapanganModel::with('subKriteria')->count() == 0);
+            // dd($dataOut);
+        }
+
+        return response()->json([
+            'stat' => $res,
+            'mc' => $res, // Menutup modal jika berhasil
+            'msg' => ($res) ? 'Subkategori "' . $subcategory->name_kriteria_instruktur_lapangan . '" berhasil dihapus.' : 'Gagal menghapus subkategori.',
+            'dataOut' => $dataOut
+        ]);
 
         return redirect('/');
     }
@@ -354,14 +396,15 @@ class NilaiInstrukturLapanganController extends Controller
         $this->authAction('delete', 'modal');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data = SemhasModel::find($id);
+        $data = NilaiInstrukturLapanganModel::find($id);
+        if ($data->subKriteria()->exists()) {
+            return $this->showModalError('Data tidak Bisa dihapus karena memiliki Subcategory.');
+        }
 
         return (!$data) ? $this->showModalError() :
             $this->showModalConfirm($this->menuUrl . '/' . $id, [
-                'Judul Semhas' => $data->judul_semhas,
-                'Tanggal Mulai Pendftaran' => $data->tanggal_mulai_pendaftaran,
-                'Tanggal Akhir Pendftaran' => $data->tanggal_akhir_pendaftaran,
-                'Prodi' => $data->prodi->prodi_name,
+                'Nilai Kriteria' => $data->name_kriteria_instruktur_lapangan,
+                'Bobot' => $data->bobot,
             ]);
     }
 
@@ -372,7 +415,7 @@ class NilaiInstrukturLapanganController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
 
-            $res = SemhasModel::deleteData($id);
+            $res = NilaiInstrukturLapanganModel::deleteData($id);
 
             return response()->json([
                 'stat' => $res,

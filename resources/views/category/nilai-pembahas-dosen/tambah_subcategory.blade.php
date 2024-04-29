@@ -7,6 +7,7 @@
         </div>
         <div class="modal-body p-0">
             <div id="success-message" class="alert alert-success" style="display: none;"></div>
+            <div id="error-message" class="alert alert-danger text-center" style="display: none;"></div>
             <div class="form-group required row mb-2">
                 <label class="col-sm-3 control-label col-form-label">Judul</label>
                 <div class="col-sm-8">
@@ -31,8 +32,9 @@
                         <div id="skema_form">
                             <div class="form-group required row mb-2">
                                 <div class="input-group">
-                                    <input type="text" class="form-control form-control-sm"
-                                        name="name_kriteria_pembahas_dosen[]" />
+                                    <input type="text" class="form-control form-control-sm" id="sub-kriteria"
+                                        name="name_kriteria_pembahas_dosen[]"
+                                        placeholder="Kemampuan dalam berkomunikasi" />
                                     <div class="input-group-append">
                                         <a class="ml-2 cursor-pointer remove-btn"><i
                                                 class="text-danger fa fa-trash"></i></a>
@@ -59,7 +61,7 @@
             let form = $('#skema_form') // Ambil elemen terakhir
             var inputHtml = '<div class="form-group required row mb-2">' +
                 '<div class="input-group">' +
-                '<input type="text" class="form-control form-control-sm" name="name_kriteria_pembahas_dosen[]" />' +
+                '<input type="text" class="form-control form-control-sm" id="name_kriteria_pembimbing_dosen[]" name="name_kriteria_pembahas_dosen[]" />' +
                 '<div class="input-group-append">' +
                 '<a class="ml-2 cursor-pointer remove-btn"><i class="text-danger fa fa-trash"></i></a>' +
                 '</div>' +
@@ -70,12 +72,23 @@
 
         // Handler untuk tombol hapus sub kategori
         $(document).on('click', '.remove-btn', function() {
-            $(this).closest('.form-group').remove();
+            // Menghitung jumlah form-group dalam kelompok yang sama dengan tombol yang diklik
+            var formGroups = $(this).closest('.col-sm-8').find('.form-group');
+            // Memastikan bahwa ada lebih dari satu form-group sebelum menghapusnya
+            if (formGroups.length > 1) {
+                // Jika lebih dari satu, hapus form-group yang terkait dengan tombol yang diklik
+                $(this).closest('.form-group').remove();
+            } else {
+                // Jika hanya ada satu, tampilkan pesan bahwa elemen tidak bisa dihapus
+                $('#error-message').text(
+                        'Tidak bisa menghapus form sub Kriteria karena hanya ada satu form Kriteria')
+                    .show();
+            }
         });
         // Atur aturan validasi pada form
         $('#update-status-form').validate({
             rules: {
-                'name_kriteria_pembahas_dosen[]': {
+                'sub-kriteria': {
                     required: true
                 }
             },
@@ -83,32 +96,59 @@
                 name_kriteria_pembahas_dosen: "Nama sub kategori harus diisi"
             },
             submitHandler: function(form) {
-                var formData = {
-                    'name_kriteria_pembahas_dosen': $(
-                        'input[name="name_kriteria_pembahas_dosen[]"]').map(function() {
-                        return $(this).val();
-                    }).get(),
-                    'parent_id': $('input[name=parent_id]').val()
-                };
+                var subKriteriaInput = $('input[name="name_kriteria_pembahas_dosen[]"]');
+                var isAnyEmpty =
+                    false; // Variabel untuk menandai apakah setidaknya satu input kosong
 
-                // Kirim permintaan AJAX ke server
-                $.ajax({
-                    url: '{{ route('nilai-pembahas-dosen.tambah_sub_category', ['id' => $id]) }}',
-                    type: 'POST',
-                    data: formData,
-                    success: function(response) {
-                        if (response.stat) {
-                            $('#success-message').text('Data berhasil ditambahkan')
-                                .show();
-                            // Jika berhasil, tambahkan kode di sini untuk menangani respons yang diterima
-                        } else {
-                            alert('Gagal menambahkan data: ' + response.msg);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error(xhr.responseText);
+                subKriteriaInput.each(function() {
+                    if ($(this).val().trim() === '') {
+                        isAnyEmpty = true;
+                        return false; // Keluar dari loop jika menemukan input yang kosong
                     }
                 });
+
+                if (isAnyEmpty) {
+                    // Jika setidaknya satu input kosong, tampilkan pesan kesalahan
+                    $('#error-message').text(
+                        'Tidak dapat menambahkan subkriteria karena inputan kosong').show();
+                    return; // Hentikan proses submit
+                } else {
+                    // Jika semua input tidak kosong, sembunyikan pesan kesalahan dan lanjutkan proses submit
+                    $('#error-message').hide();
+                    var formData = {
+                        'name_kriteria_pembahas_dosen': $(
+                            'input[name="name_kriteria_pembahas_dosen[]"]').map(function() {
+                            return $(this).val();
+                        }).get(),
+                        'parent_id': $('input[name=parent_id]').val()
+                    };
+
+                    // Kirim permintaan AJAX ke server
+                    $.ajax({
+                        url: '{{ route('nilai-pembahas-dosen.tambah_sub_category', ['id' => $id]) }}',
+                        type: 'POST',
+                        data: formData,
+                        success: function(response) {
+                            if (response.stat) {
+                                $('#success-message').text('Data berhasil ditambahkan')
+                                    .show();
+                                if (response.firstTimeAddition) {
+                                    closeModal($modal, response);
+                                    location.reload();
+                                } else {
+                                    closeModal($modal,
+                                        response); // Jika tidak, cukup tutup modal saja
+                                }
+                                // Jika berhasil, tambahkan kode di sini untuk menangani respons yang diterima
+                            } else {
+                                alert('Gagal menambahkan data: ' + response.msg);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error(xhr.responseText);
+                        }
+                    });
+                }
             }
         });
     });

@@ -37,7 +37,7 @@ class NilaiPembimbingDosenController extends Controller
         ];
 
         $activeMenu = [
-            'l1' => 'Category',
+            'l1' => 'category-nilai',
             'l2' => 'kategori-nilaipemdos',
             'l3' => null
         ];
@@ -397,14 +397,17 @@ class NilaiPembimbingDosenController extends Controller
         $this->authAction('delete', 'modal');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data = SemhasModel::find($id);
+        $data = NilaiPembimbingDosenModel::find($id);
+
+        // Jika aturan memiliki child, tampilkan pesan error
+        if ($data->subKriteria()->exists()) {
+            return $this->showModalError('Data tidak dapat dihapus karena memiliki relasi dengan data lain.');
+        }
 
         return (!$data) ? $this->showModalError() :
             $this->showModalConfirm($this->menuUrl . '/' . $id, [
-                'Judul Semhas' => $data->judul_semhas,
-                'Tanggal Mulai Pendftaran' => $data->tanggal_mulai_pendaftaran,
-                'Tanggal Akhir Pendftaran' => $data->tanggal_akhir_pendaftaran,
-                'Prodi' => $data->prodi->prodi_name,
+                'Nilai Kriteria' => $data->name_kriteria_pembimbing_dosen,
+                'Bobot' => $data->bobot,
             ]);
     }
 
@@ -415,12 +418,12 @@ class NilaiPembimbingDosenController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
 
-            $res = SemhasModel::deleteData($id);
+            $res = NilaiPembimbingDosenModel::deleteData($id);
 
             return response()->json([
                 'stat' => $res,
                 'mc' => $res, // close modal
-                'msg' => DosenModel::getDeleteMessage()
+                'msg' => NilaiPembimbingDosenModel::getDeleteMessage()
             ]);
         }
 
