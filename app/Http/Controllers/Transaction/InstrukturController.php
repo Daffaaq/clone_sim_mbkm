@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Crypt;
 use App\Models\DokumenMagangModel;
 use App\Models\Master\PeriodeModel;
 use App\Models\MitraModel;
+use Illuminate\Validation\Rule;
 use App\Models\Transaction\InstrukturLapanganModel;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
@@ -41,10 +42,10 @@ class InstrukturController extends Controller
 
         // Gunakan mahasiswa_id untuk mencari data magang
         $magang_data = Magang::where('mahasiswa_id', $mahasiswa_id)->get();
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
         $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
             ->where('status', 1) // Status 1 menunjukkan 'Diterima'
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->exists();
         if ($magang_status) {
             $this->authAction('read');
@@ -121,11 +122,11 @@ class InstrukturController extends Controller
     {
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
         $data  = Magang::with('mahasiswa')
             ->with('mitra')
             ->with('periode')
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->with('prodi')
             ->with('mitra.kegiatan')
             ->where('status', 1);
@@ -189,11 +190,11 @@ class InstrukturController extends Controller
         ];
 
         $data = Magang::find($id);
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
         $mitra = MitraModel::where('mitra_id', $data->mitra_id)
             ->with('kegiatan')
             ->with('periode')
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->first();
 
         if ($data->magang_tipe == 2) {
@@ -254,7 +255,7 @@ class InstrukturController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         $id = Crypt::decrypt($id);
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
         $data = Magang::find($id);
         $magang_id = $data->magang_id;
         $kode_magang = $data->magang_kode;
@@ -266,11 +267,11 @@ class InstrukturController extends Controller
 
         $anggota = Magang::where('magang_kode', $kode_magang)
             ->with('mahasiswa')
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->get();
         $id_mitra = $data->magang_id;
         // dd($id_mitra);
-        $anggotas = Magang::where('periode_id', $activePeriods->toArray())
+        $anggotas = Magang::where('periode_id', $activePeriods)
             ->where(function ($query) use ($id_mitra, $kode_magang) {
                 $query->where('mitra_id', $id_mitra)
                     ->orWhere('magang_kode', $kode_magang);
@@ -307,7 +308,7 @@ class InstrukturController extends Controller
             ->with('mitra')
             ->with('mitra.kegiatan')
             ->with('periode')
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->first();
         $mag = Magang::where('magang_kode', $data->magang_kode)->where('magang_tipe', 1)->where('is_accept', 0)->count();
         $me = Magang::where('magang_kode', $data->magang_kode)->where('mahasiswa_id', $id_mahasiswa)->first();
@@ -317,7 +318,7 @@ class InstrukturController extends Controller
             $magang->ketua = FALSE;
         }
         $check = Magang::where('magang_kode', $kode_magang)
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->get();
         $id_joined = $check->pluck('magang_id');
         $user = auth()->user();
@@ -333,6 +334,7 @@ class InstrukturController extends Controller
         //     ->get();
         $instruktur = InstrukturLapanganModel::whereIn('magang_id', $id_joined)
             ->where('mahasiswa_id', $mahasiswa_id) // Menambahkan kriteria pencarian berdasarkan mahasiswa_id
+            ->where('periode_id', $activePeriods)
             ->with('instruktur')
             ->first();
         // dd($instruktur);
@@ -391,7 +393,8 @@ class InstrukturController extends Controller
             'nama_instruktur' => $nama_instruktur,
             'instruktur_email' => $instruktur_email,
             'instruktur_phone' => $instruktur_phone,
-            'password' => $password
+            'password' => $password,
+            'periode_id' => PeriodeModel::where('is_current', 1)->value('periode_id')
         ]);
         $instruktur_id = $insertInstruktur->instruktur_id;
         // Ambil magang_id dari input form
@@ -399,11 +402,11 @@ class InstrukturController extends Controller
 
         // Ambil data mahasiswa yang dipilih
         $mahasiswa_ids = $request->input('mahasiswa_id');
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
         // dd($mahasiswa_ids);
         $magang_ids = Magang::whereIn('mahasiswa_id', $mahasiswa_ids)
             ->where('status', 1)
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->pluck('magang_id')
             ->toArray();
         // Inisialisasi variabel $insertInstrukturLapangan di luar blok foreach
@@ -420,7 +423,8 @@ class InstrukturController extends Controller
                     $insertInstrukturLapangan = InstrukturLapanganModel::create([
                         'magang_id' => $magang_id,
                         'mahasiswa_id' => $mahasiswa_id,
-                        'instruktur_id' => $instruktur_id // Gunakan id instruktur yang baru saja dibuat
+                        'instruktur_id' => $instruktur_id, // Gunakan id instruktur yang baru saja dibuat
+                        'periode_id' => $insertInstruktur->periode_id
                         // Isi kolom-kolom lainnya sesuai kebutuhan
                     ]);
                 }

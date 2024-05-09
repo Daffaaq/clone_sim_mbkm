@@ -47,10 +47,10 @@ class SemhasDaftarController extends Controller
         $prodi_id = $mahasiswa->prodi_id;
 
         // dd($prodi_name);
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
             ->where('status', 1)
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             // Status 1 menunjukkan 'Diterima'
             ->exists();
 
@@ -114,7 +114,7 @@ class SemhasDaftarController extends Controller
                     $jurusan = JurusanModel::all()->first();
                     $jurusanName = $jurusan->jurusan_name;
                     $prodi_name = ProdiModel::find($prodi_id)->prodi_name;
-                    dd($prodi_name);
+                    // dd($prodi_name);
                     $this->authAction('read');
                     $this->authCheckDetailAccess();
 
@@ -163,25 +163,22 @@ class SemhasDaftarController extends Controller
                         'url' => $this->menuUrl,
                         'title' => 'Pendaftaran ' . $this->menuTitle
                     ];
-                    $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+                    $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
                     $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
-                        ->whereHas('magang', function ($query) use ($activePeriods) {
-                            $query->where('periode_id', $activePeriods->toArray());
-                        })
+                        ->where('periode_id', $activePeriods)
                         ->with('instruktur')
                         ->first();
                     $nama_instruktur = optional($instrukturLapangan->instruktur)->nama_instruktur;
 
                     // Mengambil pembimbing dosen untuk mahasiswa tertentu dengan relasi 'dosen'
                     $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)
-                        ->whereHas('magang', function ($query) use ($activePeriods) {
-                            $query->where('periode_id', $activePeriods->toArray());
-                        })
+                        ->where('periode_id', $activePeriods)
                         ->with('dosen')->first();
                     $nama_dosen = optional($pembimbingDosen->dosen)->dosen_name;
 
                     $magang_ids = Magang::whereIn('mahasiswa_id', [$mahasiswa_id]) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
                         ->where('status', 1)
+                        ->where('periode_id', $activePeriods)
                         ->pluck('magang_id');
                     // dd($magang_ids);
 
@@ -190,7 +187,7 @@ class SemhasDaftarController extends Controller
                         ->with('mitra')
                         ->with('mitra.kegiatan')
                         ->with('periode')
-                        ->where('periode_id', $activePeriods->toArray())
+                        ->where('periode_id', $activePeriods)
                         ->first();
                     // dd($magang);
                     $kode_magang = $magang->magang_kode;
@@ -205,6 +202,7 @@ class SemhasDaftarController extends Controller
 
                     $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
                     $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
+                    // dd($pembimbingdosen);
                     $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)
                         ->where('status', 1)
                         ->value('magang_id');
@@ -212,14 +210,13 @@ class SemhasDaftarController extends Controller
                     $jurusanName = $jurusan->jurusan_name;
                     $prodi_name = ProdiModel::find($prodi_id)->prodi_name;
                     $dataSemhasDaftar = SemhasDaftarModel::where('created_by', $user_id)
-                        ->whereHas('magang', function ($query) use ($activePeriods) {
-                            $query->where('periode_id', $activePeriods->toArray());
-                        })
+                        ->where('periode_id', $activePeriods)
                         ->first();
-                    $dataSemhasDaftar1 = SemhasDaftarModel::whereHas('magang', function ($query) use ($kode_magang, $activePeriods) {
-                        $query->where('magang_kode', $kode_magang)
-                            ->where('periode_id', $activePeriods->toArray());
-                    })->get();
+                    // dd($dataSemhasDaftar);
+                    $dataSemhasDaftar1 = SemhasDaftarModel::where('periode_id', $activePeriods)
+                        ->whereHas('magang', function ($query) use ($kode_magang) {
+                            $query->where('magang_kode', $kode_magang);
+                        })->get();
                     if ($dataSemhasDaftar == null) {
                         return view($this->viewPath . 'index')
                             ->with('breadcrumb', (object) $breadcrumb)
@@ -299,8 +296,9 @@ class SemhasDaftarController extends Controller
                 'url' => $this->menuUrl,
                 'title' => 'Pendaftaran ' . $this->menuTitle
             ];
-
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
+                ->where('periode_id', $activePeriods)
                 ->where('status', 0) // Status 0 menunjukkan 'Belum keterima'
                 ->exists();
 
@@ -331,34 +329,40 @@ class SemhasDaftarController extends Controller
         $mahasiswa = MahasiswaModel::where('user_id', $userId)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
         $prodi_id = $mahasiswa->prodi_id;
-        // $semhas = SemhasModel::where('prodi_id', $prodi_id)
-        //     ->get()
-        //     ->filter(function ($item) {
-        //         return now()->between($item->tanggal_mulai_pendaftaran, $item->tanggal_akhir_pendaftaran);
-        //     })
-        //     ->pluck('semhas_id')
-        //     ->toArray();
+
         $semhas = SemhasModel::where('prodi_id', $prodi_id)
             ->where('tanggal_mulai_pendaftaran', '<=', now())
             ->where('tanggal_akhir_pendaftaran', '>=', now())
             ->value('semhas_id');
 
-        // dd($semhas);
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
         $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
+
         $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)
             ->where('status', 1)
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->value('magang_id');
 
-        // dd($semhas, $instrukturLapangan, $pembimbingdosen, $magang_id);
-        $request->validate([
-            'Judul' => 'required',
-            'link_github' => 'required|url',
-            'link_laporan' => 'required|url',
-        ]);
+        // Periksa apakah dataSemhasDaftar1 tidak kosong sebelum mengakses propertinya
+        $dataSemhasDaftar1 = SemhasDaftarModel::where('periode_id', $activePeriods)
+            ->whereHas('magang', function ($query) use ($magang_id) {
+                $query->where('magang_id', $magang_id);
+            })->get();
 
+        // Validasi request berdasarkan kebutuhan aplikasi
+        if ($dataSemhasDaftar1->isEmpty()) {
+            $request->validate([
+                'link_github' => 'required|url',
+                'link_laporan' => 'required|url',
+                'Judul' => 'required' // Validasi hanya diterapkan jika input manual
+            ]);
+        } else {
+            $request->validate([
+                'link_github' => 'required|url',
+                'link_laporan' => 'required|url',
+            ]);
+        }
 
         // Simpan nilai-nilai dalam variabel
         $dataToCreate = [
@@ -367,20 +371,22 @@ class SemhasDaftarController extends Controller
             'pembimbing_dosen_id' => $pembimbingdosen,
             'instruktur_lapangan_id' => $instrukturLapangan,
             'tanggal_daftar' => Carbon::now()->toDateString(), // Menggunakan tanggal dan waktu sekarang
-            'Judul' => $request->Judul,
+            // Periksa apakah dataSemhasDaftar1 tidak kosong sebelum mengakses propertinya
+            'Judul' => $dataSemhasDaftar1->isEmpty() ? $request->Judul : $dataSemhasDaftar1->first()->Judul,
             'link_github' => $request->link_github,
             'link_laporan' => $request->link_laporan,
+            'periode_id' => $activePeriods,
             'created_by' => $userId,
         ];
 
-        // Dump data sebelum pembuatan entri baru
-        // dd($dataToCreate);
-
-        // Buat entri baru dalam tabel t_semhas_daftar
-        SemhasDaftarModel::create($dataToCreate);
+        // Buat entri baru dalam tabel t_semhas_daftar jika dataSemhasDaftar1 kosong
+        if ($dataSemhasDaftar1->isEmpty()) {
+            SemhasDaftarModel::create($dataToCreate);
+        }
 
         return response()->json(['success' => true]);
     }
+
 
     public function list(Request $request)
     {

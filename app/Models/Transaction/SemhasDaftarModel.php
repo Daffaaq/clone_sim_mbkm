@@ -27,6 +27,8 @@ class SemhasDaftarModel extends AppModel
         'Judul',
         'link_github',
         'link_laporan',
+        'Berita_acara',
+        'periode_id',
         'created_at',
         'created_by',
         'updated_at',
@@ -64,5 +66,9 @@ class SemhasDaftarModel extends AppModel
     public function dosenPembahas()
     {
         return $this->belongsTo('App\Models\Master\DosenModel', 'dosen_pembahas_id', 'dosen_pembahas_id');
+    }
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
     }
 }

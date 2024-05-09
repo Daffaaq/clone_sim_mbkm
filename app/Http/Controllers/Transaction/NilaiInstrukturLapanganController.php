@@ -7,6 +7,7 @@ use App\Models\Master\DosenModel;
 use App\Models\Master\NilaiInstrukturLapanganModel;
 use App\Models\Master\NilaiPembahasDosenModel;
 use App\Models\Master\NilaiPembimbingDosenModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Master\SemhasModel;
@@ -64,8 +65,9 @@ class NilaiInstrukturLapanganController extends Controller
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
         $prodi_id = auth()->user()->prodi_id;
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $data = NilaiInstrukturLapanganModel::select("nilai_instruktur_lapangan_id", "name_kriteria_instruktur_lapangan", "bobot")
+            ->where('periode_id', $activePeriods)
             ->whereNull('parent_id')
             ->get();
 
@@ -118,11 +120,15 @@ class NilaiInstrukturLapanganController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
+
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             // Ambil nilai bobot dari request
             $bobot = $request->input('bobot');
 
             // Ubah nilai bobot menjadi format yang diinginkan (misalnya, dari '50' menjadi '0.50')
             $formattedBobot = $this->formatBobot($bobot);
+
+            $request->merge(['periode_id' => $activePeriods]);
 
             // Ganti nilai bobot dalam request dengan yang sudah diformat
             $request->merge(['bobot' => $formattedBobot]);
@@ -187,6 +193,7 @@ class NilaiInstrukturLapanganController extends Controller
                 ]);
             }
 
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             // Menentukan kategori berdasarkan parent_id yang diterima dari permintaan
             $parent_id = $id;
 
@@ -197,6 +204,7 @@ class NilaiInstrukturLapanganController extends Controller
                     'name_kriteria_instruktur_lapangan' => $subcategory,
                     'parent_id' => $parent_id,
                     'bobot' => null,
+                    'periode_id' => $activePeriods,
                     // Kolom lain yang perlu ditambahkan di sini
                 ];
             }
@@ -266,7 +274,8 @@ class NilaiInstrukturLapanganController extends Controller
             'title' => 'Edit ' . $this->menuTitle
         ];
 
-        $data = NilaiInstrukturLapanganModel::with('subKriteria')->find($id);
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = NilaiInstrukturLapanganModel::with('subKriteria')->where('periode_id', $activePeriods)->find($id);
 
         // Konversi bobot dari desimal ke persen sebelum mengirimkannya ke tampilan
         if ($data && isset($data->bobot)) {

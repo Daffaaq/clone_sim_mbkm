@@ -17,6 +17,8 @@ class TJadwalSidangMagang extends Migration
             $table->id('jadwal_sidang_magang_id');
             $table->unsignedBigInteger('semhas_daftar_id')->index();
             $table->foreign('semhas_daftar_id')->references('semhas_daftar_id')->on('t_semhas_daftar');
+            $table->unsignedBigInteger('periode_id');
+            $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->date('tanggal_sidang');
             $table->time('jam_sidang_mulai');
             $table->time('jam_sidang_selesai');

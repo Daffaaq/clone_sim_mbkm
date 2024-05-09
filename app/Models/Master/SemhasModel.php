@@ -24,6 +24,7 @@ class SemhasModel extends AppModel
         'kuota_bimbingan',
         'tanggal_mulai_pendaftaran',
         'tanggal_akhir_pendaftaran',
+        'periode_id',
         'created_at',
         'created_by',
         'updated_at',
@@ -41,5 +42,9 @@ class SemhasModel extends AppModel
     public function prodi()
     {
         return $this->belongsTo(ProdiModel::class, 'prodi_id', 'prodi_id');
+    }
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
     }
 }

@@ -27,21 +27,33 @@
                                             <th class="w-1">:
                                             <td class="w-84">
                                                 <i class="far fa-calendar-alt text-md text-primary"></i>
-                                                {{ $dataJadwalSeminar->tanggal_sidang }} &nbsp; <i
-                                                    class="far fa-clock text-md text-primary"></i>
+                                                {{ \Carbon\Carbon::parse($dataJadwalSeminar->tanggal_sidang)->translatedFormat('l, j F Y') }}
+                                                &nbsp; <i class="far fa-clock text-md text-primary"></i>
                                                 {{ $dataJadwalSeminar->jam_sidang_mulai }} -
                                                 {{ $dataJadwalSeminar->jam_sidang_selesai }}
                                                 WIB
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <th class="w-15 text-right">Tempat</th>
-                                            <th class="w-1">:</th>
-                                            <td class="w-84"><i class="fas fa-door-closed text-md text-primary"></i> Ruang
-                                                Teori 11 &nbsp; <i class="far fa-building text-md text-primary"></i> Gd.
-                                                Sipil
-                                                &amp; Informatika Lt.8 B </td>
-                                        </tr>
+                                        @if ($dataJadwalSeminar->jenis_sidang == 'offline')
+                                            <tr>
+                                                <th class="w-15 text-right">Tempat</th>
+                                                <th class="w-1">:</th>
+                                                <td class="w-84"><i class="fas fa-door-closed text-md text-primary"></i>
+                                                    {{ $dataJadwalSeminar->tempat }} &nbsp; <i
+                                                        class="far fa-building text-md text-primary"></i>
+                                                    {{ $dataJadwalSeminar->gedung }} </td>
+                                            </tr>
+                                        @else
+                                            <tr>
+                                                <th class="w-15 text-right">Tempat</th>
+                                                <th class="w-1">:</th>
+                                                <td class="w-84"><a href="{{ $dataJadwalSeminar->tempat }}"
+                                                        target="_blank" class="text-primary">
+                                                        <i class="fas fa-external-link-alt"></i>
+                                                        {{ $dataJadwalSeminar->tempat }}
+                                                    </a></td>
+                                            </tr>
+                                        @endif
                                         <tr>
                                             <th class="w-15 text-right">Mahasiswa</th>
                                             <th class="w-1">:</th>
@@ -77,7 +89,7 @@
                                         <tr>
                                             <th class="w-15 text-right">Program Studi</th>
                                             <th class="w-1">:</th>
-                                            <td class="w-84">DIV Teknik Informatika</td>
+                                            <td class="w-84">{{ $data->magang->mahasiswa->prodi->prodi_name }}</td>
                                         </tr>
                                         <tr>
                                             <th class="w-15 text-right">Magang ID</th>
@@ -158,24 +170,101 @@
                                         <tr>
                                             <th class="w-15 text-right">Link github/project</th>
                                             <th class="w-1">:</th>
-                                            <td class="w-84">{{ $data->link_github }}</td>
+                                            <td class="w-84">
+                                                <a href="{{ asset($data->link_github) }}" target="_blank">
+                                                    {{ $data->link_github }}
+                                                </a>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th class="w-15 text-right">Repo Dokumen</th>
                                             <th class="w-1">:</th>
-                                            <td class="w-84">{{ $data->link_laporan }}</td>
+                                            <td class="w-84">
+                                                <a href="{{ asset($data->link_laporan) }}" target="_blank">
+                                                    {{ $data->link_laporan }}
+                                                </a>
+                                            </td>
                                         </tr>
                                         <tr>
                                             <th class="w-15 text-right">Dosen Pembimbing</th>
                                             <th class="w-1">:</th>
                                             <td class="w-84">{{ $data->pembimbingDosen->dosen->dosen_name }}</td>
                                         </tr>
-                                        <tr>
-                                            <th class="w-15 text-right">Berita Acara</th>
-                                            <th class="w-1">:</th>
-                                            <td class="w-84"><a href="#" target="_blank"></a></td>
-                                        </tr>
-                                        </tr>
+                                        @if (
+                                            \Carbon\Carbon::parse($dataJadwalSeminar->tanggal_sidang)->isPast() ||
+                                                (\Carbon\Carbon::parse($dataJadwalSeminar->tanggal_sidang)->isToday() &&
+                                                    \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($dataJadwalSeminar->jam_sidang_selesai))))
+                                            <!-- Jika tanggal sidang telah berlalu atau hari ini adalah tanggal sidang dan waktu sekarang sudah setelah atau sama dengan jam sidang selesai -->
+                                            <!-- Bagian HTML -->
+                                            @if (!$data->Berita_acara == null)
+                                                <tr>
+                                                    <th class="w-15 text-right">Berita Acara</th>
+                                                    <th class="w-1">:</th>
+                                                    <td class="w-84">
+                                                        @if ($data->Berita_acara)
+                                                            <a href="{{ asset('storage/assets/berita-acara/' . $data->Berita_acara) }}"
+                                                                target="_blank">
+                                                                Berita Acara Seminar Magang
+                                                            </a>
+                                                        @else
+                                                            No file uploaded
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @else
+                                                <tr>
+                                                    <th class="w-15 text-right">Berita Acara</th>
+                                                    <th class="w-1">:</th>
+                                                    <td class="w-84">
+                                                        <form id="uploadForm" enctype="multipart/form-data" method="POST">
+                                                            @csrf
+                                                            <input type="file" name="berita_acara_file"
+                                                                accept=".pdf,.doc,.docx" required>
+                                                            <button type="submit">Upload</button>
+                                                        </form>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endif
+                                        @if (!$data->Berita_acara == null)
+                                            {{-- @dd($datanilai); --}}
+                                            {{-- @dd($data->semhas_daftar_id); --}}
+                                            <tr>
+                                                <th class="w-15 text-right">Nilai</th>
+                                                <th class="w-1">:</th>
+                                                <td class="w-84">
+                                                    @if (!$datanilai->isEmpty() && !$existingNilai == null)
+                                                        <a href="#" data-block="body"
+                                                            data-url="{{ $page->url }}/{{ $data->semhas_daftar_id }}/nilai-pembimbing"
+                                                            class="ajax_modal btn btn-xs btn-warning tooltips text-secondary mr-2"
+                                                            data-placement="left" data-original-title="Nilai Dosbing"><i
+                                                                class="fas fa-chalkboard-teacher text-white"></i></a>
+                                                    @endif
+                                                    @if (!$datanilaiPembahas->isEmpty() && !$existingNilaiPembahas == null)
+                                                        <a href="#" data-block="body"
+                                                            data-url="{{ $page->url }}/{{ $data->semhas_daftar_id }}/nilai-pembahas"
+                                                            class="ajax_modal btn btn-xs btn-info tooltips text-secondary mr-2"
+                                                            data-placement="left" data-original-title="Nilai Dospem"><i
+                                                                class="fas fa-user-tie text-white"></i></a>
+                                                        <a href="#" data-block="body"
+                                                            data-url="{{ $page->url }}/{{ $data->semhas_daftar_id }}/nilai-instruktur"
+                                                            class="ajax_modal btn btn-xs tooltips text-secondary mr-2"
+                                                            style="background-color: #FFD700;" data-placement="left"
+                                                            data-original-title="Nilai Instruktur Lapangan"><i
+                                                                class="fas fa-hard-hat text-white"></i></a>
+
+                                                        <a href="#" data-block="body"
+                                                            data-url="{{ $page->url }}/{{ $data->semhas_daftar_id }}/nilai-akhir"
+                                                            class="ajax_modal btn btn-xs tooltips text-secondary"
+                                                            style="background-color: #FF5733;" data-placement="left"
+                                                            data-original-title="Nilai Akhir">
+                                                            <i class="fas fa-medal text-white"></i>
+                                                        </a>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @else
+                                        @endif
                                     </tbody>
                                 </table>
                             </div> {{-- Form Anda bisa ditambahkan di sini --}}
@@ -184,4 +273,33 @@
             </section>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('.tooltips').tooltip();
+            $('#uploadForm').submit(function(e) {
+                e.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '{{ route('upload-berita-acara') }}',
+                    type: 'POST',
+                    data: formData,
+                    dataType: 'json',
+                    contentType: false,
+                    processData: false,
+                    success: function(response) {
+                        console.log(response);
+                        window.location.reload();
+                        // Tambahkan logika untuk menampilkan pesan atau melakukan aksi lain
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert('Failed to upload file: ' + xhr.responseText);
+                        // Tambahkan logika untuk menampilkan pesan atau melakukan aksi lain
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

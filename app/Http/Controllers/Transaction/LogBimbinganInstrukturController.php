@@ -53,12 +53,13 @@ class LogBimbinganInstrukturController extends Controller
         ];
 
         // $instruktur = InstrukturModel::where('user_id', auth()->id())->first();
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
         $instruktur = InstrukturModel::where('user_id', $user_id)->first();
         $instruktur_id = $instruktur->instruktur_id;
         // dd($instruktur_id);
-        $instruktur_lapangan = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)->get();
+        $instruktur_lapangan = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)->where('periode_id', $activePeriods)->get();
         $instruktur_lapangan_ids = $instruktur_lapangan->pluck('instruktur_lapangan_id')->toArray();
         // dd($instruktur_lapangan_id);
         // $all = LogBimbinganModel::all();
@@ -98,13 +99,13 @@ class LogBimbinganInstrukturController extends Controller
     {
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
         $instruktur = InstrukturModel::where('user_id', $user_id)->first();
         $instruktur_id = $instruktur->instruktur_id;
 
-        $instruktur_lapangan = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)->get();
+        $instruktur_lapangan = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)->where('periode_id', $activePeriods)->get();
         $instruktur_lapangan_ids = $instruktur_lapangan->pluck('instruktur_lapangan_id')->toArray();
         // dd($instruktur_lapangan);
         // $instruktur_lapangan_id = $instruktur_lapangan->instruktur_lapangan_id;
@@ -122,7 +123,7 @@ class LogBimbinganInstrukturController extends Controller
         // if ($request->filled('filter_mahasiswa')) {
         //     $data->where('created_by', $request->filter_mahasiswa);
         // }
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        // $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
         // $data = LogBimbinganModel::whereIn('instruktur_lapangan_id', $instruktur_lapangan_ids)
         //     ->whereIn('created_by', function ($query) use ($activePeriods) {
         //         $query->select('magang_id')
@@ -138,7 +139,7 @@ class LogBimbinganInstrukturController extends Controller
                         function ($innerQuery) use ($activePeriods) {
                             $innerQuery->select('magang_id')
                                 ->from('t_magang')
-                                ->where('periode_id', $activePeriods->toArray());
+                                ->where('periode_id', $activePeriods);
                         }
                     );
             });
@@ -159,6 +160,7 @@ class LogBimbinganInstrukturController extends Controller
 
     public function updateStatusInstruktur(Request $request)
     {
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // Ambil data yang dikirimkan melalui permintaan AJAX
         $logBimbinganId = $request->input('log_bimbingan_id');
         $statusDosen = $request->input('status2');
@@ -175,7 +177,7 @@ class LogBimbinganInstrukturController extends Controller
             return response()->json(['success' => false, 'message' => 'Nilai Instruktur harus maksimal 100']);
         }
         // Lakukan proses pembaruan status dosen pembimbing di sini
-        $logBimbingan = LogBimbinganModel::find($logBimbinganId);
+        $logBimbingan = LogBimbinganModel::where('periode_id', $activePeriods)->find($logBimbinganId);
         $logBimbingan->status2 = $statusDosen;
 
         // Set tanggal_status_dosen berdasarkan status yang diubah
@@ -418,8 +420,8 @@ class LogBimbinganInstrukturController extends Controller
     {
         $this->authAction('read', 'modal');
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        $data = LogBimbinganModel::find($id);
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
         // dd($data);
         if ($data) {
             $data->jam_mulai = substr($data->jam_mulai, 0, 5); // Ambil jam dan menit dari jam_mulai
@@ -443,13 +445,13 @@ class LogBimbinganInstrukturController extends Controller
             'status2' => 'required|in:0,1,2',
             'nilai_instruktur_lapangan' => 'required|numeric'
         ]);
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // Ambil data yang dikirimkan melalui permintaan AJAX
         $statusInstrukturLapangan = $request->input('status2');
         $nilaiInstrukturLapangan = $request->input('nilai_instruktur_lapangan');
 
         // Lakukan proses pembaruan status dosen pembimbing di sini
-        $logBimbingan = LogBimbinganModel::find($id);
+        $logBimbingan = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
 
         if (!$logBimbingan) {
             // Jika log bimbingan tidak ditemukan, kembalikan respons dengan pesan error

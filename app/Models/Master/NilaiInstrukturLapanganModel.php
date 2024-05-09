@@ -21,6 +21,7 @@ class NilaiInstrukturLapanganModel extends AppModel
         'name_kriteria_instruktur_lapangan',
         'bobot',
         'parent_id',
+        'periode_id',
         'created_at',
         'created_by',
         'updated_at',
@@ -47,5 +48,9 @@ class NilaiInstrukturLapanganModel extends AppModel
     public function parent()
     {
         return $this->belongsTo(NilaiInstrukturLapanganModel::class, 'parent_id', 'nilai_instruktur_lapangan_id');
+    }
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Master\NilaiPembahasDosenModel;
 use App\Models\Master\NilaiPembimbingDosenModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Master\SemhasModel;
@@ -64,7 +65,9 @@ class NilaiPembahasDosenController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
         $prodi_id = auth()->user()->prodi_id;
 
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $data = NilaiPembahasDosenModel::select("nilai_pembahas_dosen_id", "name_kriteria_pembahas_dosen", "bobot")
+            ->where('periode_id', $activePeriods)
             ->whereNull('parent_id')
             ->get();
 
@@ -117,6 +120,8 @@ class NilaiPembahasDosenController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
+
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             // Ambil nilai bobot dari request
             $bobot = $request->input('bobot');
 
@@ -125,6 +130,8 @@ class NilaiPembahasDosenController extends Controller
 
             // Ganti nilai bobot dalam request dengan yang sudah diformat
             $request->merge(['bobot' => $formattedBobot]);
+
+            $request->merge(['periode_id' => $activePeriods]);
 
             // Insert data ke dalam basis data
             $res = NilaiPembahasDosenModel::insertData($request);
@@ -185,7 +192,7 @@ class NilaiPembahasDosenController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
-
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             // Menentukan kategori berdasarkan parent_id yang diterima dari permintaan
             $parent_id = $id;
             // dd($parent_id);
@@ -197,6 +204,7 @@ class NilaiPembahasDosenController extends Controller
                     'name_kriteria_pembahas_dosen' => $subcategory,
                     'parent_id' => $parent_id,
                     'bobot' => null,
+                    'periode_id' => $activePeriods,
                     // Kolom lain yang perlu ditambahkan di sini
                 ];
             }
@@ -266,7 +274,8 @@ class NilaiPembahasDosenController extends Controller
             'title' => 'Edit ' . $this->menuTitle
         ];
 
-        $data = NilaiPembahasDosenModel::with('subKriteria')->find($id);
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = NilaiPembahasDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->find($id);
 
         // Konversi bobot dari desimal ke persen sebelum mengirimkannya ke tampilan
         if ($data && isset($data->bobot)) {

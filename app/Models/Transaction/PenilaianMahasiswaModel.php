@@ -25,6 +25,7 @@ class PenilaianMahasiswaModel extends AppModel
         'komentar_instruktur_lapangan',
         'nilai_dosen_pembimbing',
         'nilai_instruktur_lapangan',
+        'periode_id',
         'created_at',
         'created_by',
         'updated_at',
@@ -52,5 +53,10 @@ class PenilaianMahasiswaModel extends AppModel
     public function instrukturLapangan()
     {
         return $this->belongsTo('App\Models\Master\InstrukturLapanganModel', 'instruktur_lapangan_id', 'instruktur_lapangan_id');
+    }
+
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
     }
 }

@@ -238,34 +238,44 @@
                                                 <label class="col-sm-3 control-label col-form-label">Pilih Judul
                                                     Seminar</label>
                                                 <div class="col-sm-9">
-                                                    <select class="form-control form-control-sm" id="Judul"
-                                                        name="Judul">
+                                                    <select class="form-control form-control-sm" id="Pilih-judul">
                                                         <option value="" selected disabled>Pilih Judul Seminar Hasil
                                                         </option>
-                                                        @foreach ($dataSemhasDaftar1 as $item)
-                                                            <option value="{{ $item->semhas_daftar_id }}">
-                                                                {{ $item->Judul }}
-                                                            </option>
-                                                        @endforeach
+                                                        <option value="existing">Pilih dari Judul yang Sudah Ada</option>
                                                         <option value="manual">Masukkan Manual</option>
                                                     </select>
                                                     <small id="judul" class="form-text text-muted">Pilih Judul Seminar
                                                         Hasil dari yang teman anda inputkan atau masukkan manual jika tidak
-                                                        ada
-                                                        dalam
-                                                        daftar.</small>
+                                                        ada dalam daftar.</small>
                                                 </div>
                                             </div>
+
+                                            <div class="form-group required row mb-2" id="existingJudulInput"
+                                                style="display: none;">
+                                                <label class="col-sm-3 control-label col-form-label">Pilih Judul yang Sudah
+                                                    Ada</label>
+                                                <div class="col-sm-9">
+                                                    <select class="form-control form-control-sm" id="existingJudul"
+                                                        name="existingJudul">
+                                                        <option value="" selected disabled>Pilih Judul yang Sudah Ada
+                                                        </option>
+                                                        @foreach ($dataSemhasDaftar1 as $item)
+                                                            <option value="{{ $item->Judul }}">{{ $item->Judul }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </div>
+
                                             <div class="form-group required row mb-2" id="manualJudulInput"
                                                 style="display: none;">
                                                 <label class="col-sm-3 control-label col-form-label">Judul Seminar
                                                     Hasil</label>
                                                 <div class="col-sm-9">
                                                     <input type="text" class="form-control form-control-sm"
-                                                        id="manualJudul" name="Judul">
+                                                        id="manualJudul" name="manualJudul">
                                                     <small id="manualJudulText" class="form-text text-muted">Masukkan
-                                                        Judul
-                                                        Seminar Hasil</small>
+                                                        Judul Seminar Hasil</small>
                                                 </div>
                                             </div>
                                         @else
@@ -322,7 +332,7 @@
                             </div>
                         </section>
                     @endif
-                    <section class="col-lg-12">
+                    {{-- <section class="col-lg-12">
                         <div class="card card-outline card-{{ $theme->card_outline }}">
                             <div class="card-header">
                                 <h3 class="card-title mt-1">
@@ -383,7 +393,7 @@
                                 </div>
                             </div>
                         </div>
-                    </section>
+                    </section> --}}
                 @elseif(now() > \Carbon\Carbon::parse($semhasData['tanggal_akhir_pendaftaran']))
                     @if (!$dataSemhasDaftar == null)
                         <section class="col-lg-12">
@@ -460,29 +470,52 @@
     <script>
         $(document).ready(function() {
             unblockUI();
-            $('#Judul').change(function() {
+            $('#Pilih-judul').change(function() {
                 if ($(this).val() == 'manual') {
                     $('#manualJudulInput').show();
+                    $('#existingJudulInput').hide();
+                } else if ($(this).val() == 'existing') {
+                    $('#existingJudulInput').show();
+                    $('#manualJudulInput').hide();
                 } else {
+                    $('#existingJudulInput').hide();
                     $('#manualJudulInput').hide();
                 }
             });
             $("#form-daftar").validate({
                 rules: {
-                    Judul: {
-                        required: true,
-                    },
                     link_github: {
                         required: true,
                     },
                     link_laporan: {
                         required: true,
                     },
+                    Judul: {
+                        required: true,
+                    },
+                    manualJudul: { // Menambahkan aturan validasi untuk input manual
+                        required: true,
+                    }
                 },
                 submitHandler: function(form) {
                     $('.form-message').html('');
                     blockUI(form);
-                    var formData = $(form).serialize();
+                    var formData = {};
+                    if ($('#Pilih-judul').val() == 'manual') {
+                        formData = {
+                            'link_github': $('input[name="link_github"]').val(),
+                            'link_laporan': $('input[name="link_laporan"]').val(),
+                            'Judul': $('input[name="manualJudul"]').val(),
+                            // Sisipkan sisa data yang diperlukan
+                        };
+                    } else if ($('#Pilih-judul').val() == 'existing') {
+                        formData = {
+                            'link_github': $('input[name="link_github"]').val(),
+                            'link_laporan': $('input[name="link_laporan"]').val(),
+                            'Judul': $('#existingJudul').val(),
+                            // Sisipkan sisa data yang diperlukan
+                        };
+                    }
                     console.log(formData);
                     $.ajax({
                         type: 'POST',

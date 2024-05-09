@@ -21,6 +21,7 @@ class PembimbingDosenModel extends AppModel
         'mahasiswa_id',
         'magang_id',
         'dosen_id',
+        'periode_id',
         'created_at',
         'created_by',
         'updated_at',
@@ -48,5 +49,10 @@ class PembimbingDosenModel extends AppModel
     public function dosen()
     {
         return $this->belongsTo('App\Models\Master\DosenModel', 'dosen_id', 'dosen_id');
+    }
+
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
     }
 }

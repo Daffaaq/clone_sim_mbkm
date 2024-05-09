@@ -88,7 +88,7 @@
                         "bSearchable": false
                     },
                     {
-                        "mData": "prodi_name",
+                        "mData": "prodi_code",
                         "sClass": "",
                         "sWidth": "10%",
                         "bSortable": true,

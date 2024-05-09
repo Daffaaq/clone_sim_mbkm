@@ -21,6 +21,8 @@ class TPenilaianMahasiswa extends Migration
             $table->foreign('pembimbing_dosen_id')->references('pembimbing_dosen_id')->on('t_pembimbing_dosen');
             $table->unsignedBigInteger('instruktur_lapangan_id')->index()->nullable();
             $table->foreign('instruktur_lapangan_id')->references('instruktur_lapangan_id')->on('t_instruktur_lapangan');
+            $table->unsignedBigInteger('periode_id');
+            $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->longText('komentar_dosen_pembimbing')->nullable();
             $table->longText('komentar_instruktur_lapangan')->nullable();
             $table->enum('nilai_dosen_pembimbing', ['Baik Sekali', 'Baik', 'Cukup', 'Kurang', 'Kurang Sekali'])->nullable();

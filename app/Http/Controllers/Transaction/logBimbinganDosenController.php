@@ -56,8 +56,10 @@ class LogBimbinganDosenController extends Controller
         $user_id = $user->user_id;
         $instruktur = DosenModel::where('user_id', $user_id)->first();
         $instruktur_id = $instruktur->dosen_id;
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // dd($instruktur_id);
-        $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)->get();
+        $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)->where('periode_id', $activePeriods)->get();
+        // dd($pembimbing_dosen);
         // $pembimbing_dosen_id = $pembimbing_dosen->pembimbing_dosen_id;
         $pembimbing_dosen_ids = $pembimbing_dosen->pluck('pembimbing_dosen_id')->toArray();
         // dd($pembimbing_dosen_ids);
@@ -99,7 +101,7 @@ class LogBimbinganDosenController extends Controller
     {
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
         $instruktur = DosenModel::where('user_id', $user_id)->first();
@@ -112,6 +114,7 @@ class LogBimbinganDosenController extends Controller
         // // dd($pembimbing_dosen_ids);
         // $pembimbing_dosen_ids = array_unique($pembimbing_dosen_id);
         $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)
+            ->where('periode_id', $activePeriods)
             ->pluck('pembimbing_dosen_id') // Ambil hanya kolom pembimbing_dosen_id
             ->unique() // Hanya nilai unik
             ->sort() // Urutkan nilai
@@ -121,7 +124,6 @@ class LogBimbinganDosenController extends Controller
         $pembimbing_dosen_ids = $pembimbing_dosen;
         // dd($pembimbing_dosen_ids);
 
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
         // dd($activePeriods);
         // Gunakan instruktur_lapangan_id untuk mengambil data LogBimbinganModel
         // $data = LogBimbinganModel::where('pembimbing_dosen_id', $pembimbing_dosen_id);
@@ -139,7 +141,7 @@ class LogBimbinganDosenController extends Controller
                         function ($innerQuery) use ($activePeriods) {
                             $innerQuery->select('magang_id')
                                 ->from('t_magang')
-                                ->where('periode_id', $activePeriods->toArray());
+                                ->where('periode_id', $activePeriods);
                         }
                     );
             });
@@ -180,6 +182,7 @@ class LogBimbinganDosenController extends Controller
 
     public function updateStatusDosen(Request $request)
     {
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // Ambil data yang dikirimkan melalui permintaan AJAX
         $logBimbinganId = $request->input('log_bimbingan_id');
         $statusDosen = $request->input('status1');
@@ -196,7 +199,7 @@ class LogBimbinganDosenController extends Controller
             return response()->json(['success' => false, 'message' => 'Nilai pembimbing harus maksimal 100']);
         }
         // Lakukan proses pembaruan status dosen pembimbing di sini
-        $logBimbingan = LogBimbinganModel::find($logBimbinganId);
+        $logBimbingan = LogBimbinganModel::where('periode_id', $activePeriods)->find($logBimbinganId);
         // Periksa apakah entitas ditemukan
         // if (!$logBimbingan) {
         //     return response()->json([
@@ -446,8 +449,8 @@ class LogBimbinganDosenController extends Controller
     {
         $this->authAction('read', 'modal');
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        $data = LogBimbinganModel::find($id);
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
         if ($data) {
             $data->jam_mulai = substr($data->jam_mulai, 0, 5); // Ambil jam dan menit dari jam_mulai
             $data->jam_selesai = substr($data->jam_selesai, 0, 5); // Ambil jam dan menit dari jam_selesai
@@ -470,13 +473,13 @@ class LogBimbinganDosenController extends Controller
             'status1' => 'required|in:0,1,2',
             'nilai_pembimbing_dosen' => 'required|numeric'
         ]);
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // Ambil data yang dikirimkan melalui permintaan AJAX
         $statusDosen = $request->input('status1');
         $nilaiPembimbingDosen = $request->input('nilai_pembimbing_dosen');
 
         // Lakukan proses pembaruan status dosen pembimbing di sini
-        $logBimbingan = LogBimbinganModel::find($id);
+        $logBimbingan = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
 
         if (!$logBimbingan) {
             // Jika log bimbingan tidak ditemukan, kembalikan respons dengan pesan error

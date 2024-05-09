@@ -74,12 +74,12 @@ class InstrukturPenilaianMahasiswaController extends Controller
         }
 
         // Dapatkan ID periode yang aktif
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $mahasiswa_ids = InstrukturLapanganModel::where('instruktur_id', $instruktur->instruktur_id)
             ->whereIn('magang_id', function ($query) use ($activePeriods) {
                 $query->select('magang_id')
                     ->from('t_magang')
-                    ->where('periode_id', $activePeriods->toArray());
+                    ->where('periode_id', $activePeriods);
             })
             ->pluck('mahasiswa_id')
             ->toArray();
@@ -89,7 +89,7 @@ class InstrukturPenilaianMahasiswaController extends Controller
         $mahasiswa_names = MahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->pluck('nama_mahasiswa', 'mahasiswa_id');
 
         // Dapatkan nilai dan komentar instruktur lapangan berdasarkan ID mahasiswa
-        $penilaian_mahasiswa = PenilaianMahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->get();
+        $penilaian_mahasiswa = PenilaianMahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->where('periode_id', $activePeriods)->get();
 
 
         // Buat data untuk ditampilkan dalam DataTables
@@ -130,12 +130,12 @@ class InstrukturPenilaianMahasiswaController extends Controller
             // Handle jika instruktur tidak ditemukan
             return response()->json(['error' => 'Instruktur not found'], 404);
         }
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // Periksa apakah entri untuk mahasiswa dengan ID yang diberikan sudah ada
-        $existingData = PenilaianMahasiswaModel::where('mahasiswa_id', $request->mahasiswa_id)->first();
+        $existingData = PenilaianMahasiswaModel::where('mahasiswa_id', $request->mahasiswa_id)->where('periode_id', $activePeriods)->first();
 
         // Dapatkan ID mahasiswa yang terkait dengan instruktur lapangan
-        $instruktur_id = InstrukturLapanganModel::where('instruktur_id', $instruktur->instruktur_id)->pluck('instruktur_lapangan_id')->first();
+        $instruktur_id = InstrukturLapanganModel::where('instruktur_id', $instruktur->instruktur_id)->where('periode_id', $activePeriods)->pluck('instruktur_lapangan_id')->first();
         // dd($instruktur_id);
         $mahasiswa_id = $request->mahasiswa_id;
 
@@ -154,6 +154,7 @@ class InstrukturPenilaianMahasiswaController extends Controller
                 'instruktur_lapangan_id' => $instruktur_id,
                 'komentar_instruktur_lapangan' => $request->komentar_instruktur_lapangan,
                 'nilai_instruktur_lapangan' => $request->nilai_instruktur_lapangan,
+                'periode_id' => $activePeriods,
                 // Tambahkan kolom lainnya sesuai kebutuhan
             ]);
         }

@@ -21,6 +21,7 @@ class InstrukturLapanganModel extends AppModel
         'mahasiswa_id',
         'magang_id',
         'instruktur_id',
+        'periode_id',
         'created_at',
         'created_by',
         'updated_at',
@@ -48,5 +49,10 @@ class InstrukturLapanganModel extends AppModel
     public function instruktur()
     {
         return $this->belongsTo('App\Models\Master\InstrukturModel', 'instruktur_id', 'instruktur_id');
+    }
+
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
     }
 }

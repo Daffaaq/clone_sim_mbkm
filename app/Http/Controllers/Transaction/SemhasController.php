@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
+use App\Models\Master\PeriodeModel;
 use App\Models\Master\SemhasModel;
 use App\Models\Transaction\KuotaDosenModel;
 use Yajra\DataTables\Facades\DataTables;
@@ -57,7 +58,7 @@ class SemhasController extends Controller
         $this->authAction('read', 'json');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
         $prodi_id = auth()->user()->prodi_id;
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $data = SemhasModel::select(
             'm_semhas.semhas_id',
             'm_semhas.judul_semhas',
@@ -67,7 +68,8 @@ class SemhasController extends Controller
             'm_semhas.tanggal_akhir_pendaftaran',
             'm_prodi.prodi_name'
         )
-            ->leftJoin('m_prodi', 'm_semhas.prodi_id', '=', 'm_prodi.prodi_id');
+            ->leftJoin('m_prodi', 'm_semhas.prodi_id', '=', 'm_prodi.prodi_id')
+            ->where('periode_id', $activePeriods);
 
         if ($prodi_id !== null) {
             // Ketika user_id tidak null
@@ -108,6 +110,13 @@ class SemhasController extends Controller
 
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        if($activePeriods == null) return response()->json([
+           'stat' => false,
+           'msg' => 'Tidak ada periode aktif'
+        ]);
+        // dd($activePeriods);
+
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
                 'judul_semhas' => 'required|string|max:100',
@@ -118,6 +127,7 @@ class SemhasController extends Controller
                 'prodi_id' => 'required',
                 // Add other rules for DosenModel fields
             ];
+
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json([
@@ -127,7 +137,19 @@ class SemhasController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
-            $Semhas = SemhasModel::insertData($request);
+            // $requestData = $request->all(); // Menambahkan periode_id ke data
+            // dd($requestData);
+
+            $Semhas = SemhasModel::create([
+                'judul_semhas' => $request->judul_semhas,
+                'gelombang' => $request->gelombang,
+                'kuota_bimbingan' => $request->kuota_bimbingan,
+                'tanggal_mulai_pendaftaran' => $request->tanggal_mulai_pendaftaran,
+                'tanggal_akhir_pendaftaran' => $request->tanggal_akhir_pendaftaran,
+                'prodi_id' => $request->prodi_id,
+                'periode_id' => $activePeriods,
+                // tambahkan bidang lain yang sesuai dengan model SemhasModel
+            ]);
 
             return response()->json([
                 'stat' => $Semhas,
@@ -149,9 +171,9 @@ class SemhasController extends Controller
             'url' => $this->menuUrl . '/' . $id,
             'title' => 'Edit ' . $this->menuTitle
         ];
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $prodis = ProdiModel::selectRaw("prodi_id, prodi_name, prodi_code")->get();
-        $data = SemhasModel::find($id);
+        $data = SemhasModel::where('periode_id', $activePeriods)->find($id);
 
         return (!$data) ? $this->showModalError() :
             view($this->viewPath . 'action')

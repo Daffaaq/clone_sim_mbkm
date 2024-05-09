@@ -73,14 +73,14 @@ class DosenPenilaianMahasiswaController extends Controller
         }
 
         // Dapatkan ID periode yang aktif
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
 
         // Dapatkan ID mahasiswa yang terhubung dengan dosen
         $mahasiswa_ids = PembimbingDosenModel::where('dosen_id', $dosen->dosen_id)
             ->whereIn('magang_id', function ($query) use ($activePeriods) {
                 $query->select('magang_id')
                     ->from('t_magang')
-                    ->where('periode_id', $activePeriods->toArray());
+                    ->where('periode_id', $activePeriods);
             })
             ->pluck('mahasiswa_id')
             ->toArray();
@@ -90,7 +90,7 @@ class DosenPenilaianMahasiswaController extends Controller
         $mahasiswa_names = MahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->pluck('nama_mahasiswa', 'mahasiswa_id');
 
         // Dapatkan nilai dan komentar instruktur lapangan berdasarkan ID mahasiswa
-        $penilaian_mahasiswa = PenilaianMahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->get();
+        $penilaian_mahasiswa = PenilaianMahasiswaModel::whereIn('mahasiswa_id', $mahasiswa_ids)->where('periode_id', $activePeriods)->get();
 
 
         // Buat data untuk ditampilkan dalam DataTables
@@ -135,9 +135,10 @@ class DosenPenilaianMahasiswaController extends Controller
             return response()->json(['error' => 'dosen not found'], 404);
         }
 
-        $existingData = PenilaianMahasiswaModel::where('mahasiswa_id', $request->mahasiswa_id)->first();
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $existingData = PenilaianMahasiswaModel::where('mahasiswa_id', $request->mahasiswa_id)->where('periode_id', $activePeriods)->first();
         // Dapatkan ID mahasiswa yang terkait dengan dosen lapangan
-        $dosen_id = PembimbingDosenModel::where('dosen_id', $dosen->dosen_id)->pluck('pembimbing_dosen_id')->first();
+        $dosen_id = PembimbingDosenModel::where('dosen_id', $dosen->dosen_id)->where('periode_id', $activePeriods)->pluck('pembimbing_dosen_id')->first();
         // dd($instruktur_id);
         $mahasiswa_id = $request->mahasiswa_id;
 
@@ -156,6 +157,7 @@ class DosenPenilaianMahasiswaController extends Controller
                 'pembimbing_dosen_id' => $dosen_id,
                 'komentar_dosen_pembimbing' => $request->komentar_dosen_pembimbing,
                 'nilai_dosen_pembimbing' => $request->nilai_dosen_pembimbing,
+                'periode_id' => $activePeriods,
                 // Tambahkan kolom lainnya sesuai kebutuhan
             ]);
         }

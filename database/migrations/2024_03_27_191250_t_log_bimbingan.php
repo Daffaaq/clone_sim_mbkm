@@ -19,6 +19,8 @@ class TLogBimbingan extends Migration
             $table->foreign('pembimbing_dosen_id')->references('pembimbing_dosen_id')->on('t_pembimbing_dosen');
             $table->unsignedBigInteger('instruktur_lapangan_id')->index();
             $table->foreign('instruktur_lapangan_id')->references('instruktur_lapangan_id')->on('t_instruktur_lapangan');
+            $table->unsignedBigInteger('periode_id');
+            $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->tinyInteger('status1')->comment('0: Menunggu, 1: Diterima, 2: Ditolak');
             $table->tinyInteger('status2')->comment('0: Menunggu, 1: Diterima, 2: Ditolak');
             $table->date('tanggal');

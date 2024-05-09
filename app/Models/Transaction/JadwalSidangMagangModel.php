@@ -25,6 +25,8 @@ class JadwalSidangMagangModel extends AppModel
         'jenis_sidang',
         'tempat',
         'gedung',
+        'periode_id',
+        'periode_id',
         'created_at',
         'created_by',
         'updated_at',
@@ -44,5 +46,8 @@ class JadwalSidangMagangModel extends AppModel
     {
         return $this->belongsTo('App\Models\Transaction\SemhasDaftarModel', 'semhas_daftar_id', 'semhas_daftar_id');
     }
-
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
+    }
 }

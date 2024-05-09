@@ -19,6 +19,8 @@ class MInstruktur extends Migration
             $table->string('instruktur_email', 50)->unique();
             $table->string('instruktur_phone', 15);
             $table->string('password');
+            $table->unsignedBigInteger('periode_id');
+            $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->unsignedBigInteger('user_id')->index();
             $table->dateTime('created_at')->nullable()->useCurrent();
             $table->integer('created_by')->nullable()->index();
@@ -29,7 +31,6 @@ class MInstruktur extends Migration
 
             $table->foreign('user_id')->references('user_id')->on('s_user');
         });
-
     }
 
     /**

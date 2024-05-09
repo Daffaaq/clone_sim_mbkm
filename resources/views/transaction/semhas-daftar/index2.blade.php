@@ -46,14 +46,33 @@
                                             Pembukaan pendaftaran gelombang {{ $semhasData->gelombang }}
                                             {{ $semhasData->judul_semhas }} Jurusan {{ $jurusanName }}
                                     </tr>
-                                    <tr>
-                                        <th class="col-2">Keterangan</th>
-                                        <th>:</th>
-                                        <td class="col-10">
-                                            <div class="alert alert-danger" role="alert">
-                                                {{ $message }}
-                                            </div>
-                                    </tr>
+                                    @if (now() >= \Carbon\Carbon::parse($semhasData['tanggal_mulai_pendaftaran']) &&
+                                            now() <= \Carbon\Carbon::parse($semhasData['tanggal_akhir_pendaftaran']))
+                                        <tr>
+                                            <th class="col-2">Keterangan</th>
+                                            <th>:</th>
+                                            <td class="col-10 bg-danger-opacity">
+                                                <div>{{ $message }}</div>
+                                            </td>
+                                        </tr>
+                                    @elseif(now() > \Carbon\Carbon::parse($semhasData['tanggal_akhir_pendaftaran']))
+                                        <tr>
+                                            <th class="col-2">Keterangan</th>
+                                            <th>:</th>
+                                            <td class="col-10 bg-danger-opacity">
+                                                <div>{{ $message }}</div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th></th>
+                                            <th>:</th>
+                                            <td class="col-10 bg-danger-opacity">
+                                                <div>Mohon Maaf Pendaftaran ditutup mohon hubungi admin Jurusan
+                                                    {{ $jurusanName }} atau koordinator
+                                                    prodi {{ $prodi_name }} </div>
+                                            </td>
+                                        </tr>
+                                    @endif
                                 </tbody>
                             </table> {{-- <div class="alert alert-danger" role="alert">
                                 {{ $message }}

@@ -25,7 +25,10 @@ class TSemhasDaftar extends Migration
             $table->foreign('instruktur_lapangan_id')->references('instruktur_lapangan_id')->on('t_instruktur_lapangan');
             $table->unsignedBigInteger('dosen_pembahas_id')->index()->nullable();
             $table->foreign('dosen_pembahas_id')->references('dosen_id')->on('m_dosen');
+            $table->unsignedBigInteger('periode_id');
+            $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->string('Judul');
+            $table->string('Berita_acara')->nullable();
             $table->date('tanggal_daftar');
             $table->string('link_github');
             $table->string('link_laporan');

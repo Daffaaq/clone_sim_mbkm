@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
 use App\Models\Master\PeriodeModel;
 use App\Models\Master\PerusahaanModel;
@@ -73,7 +74,7 @@ class DashboardController extends Controller
             case 'MHS':
                 return $this->index_mahasiswa($breadcrumb, $activeMenu, $page);
                 break;
-            case 'PER':
+            case 'INT':
                 return $this->index_perusahaan($breadcrumb, $activeMenu, $page);
                 break;
             default:
@@ -168,9 +169,9 @@ class DashboardController extends Controller
 
     private function index_perusahaan($breadcrumb, $activeMenu, $page)
     {
-        $perusahaan = PerusahaanModel::where('user_id', Auth::user()->user_id)->first();
+        $perusahaan = InstrukturModel::where('user_id', Auth::user()->user_id)->first();
 
-        return view('dashboard.perusahaan')
+        return view('dashboard.instruktur')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
             ->with('page', (object) $page)

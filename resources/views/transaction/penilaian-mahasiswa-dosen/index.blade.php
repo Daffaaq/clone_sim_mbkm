@@ -24,8 +24,8 @@
                                 <tr>
                                     <th>No</th>
                                     <th>Mahasiswa</th>
-                                    <th>nilai_dosen_instruktur_lapangan</th>
-                                    <th>komentar_instruktur_lapangan</th>
+                                    <th>Nilai Dosen Pembimbing</th>
+                                    <th>Komentar Dosen Pembimbing</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>

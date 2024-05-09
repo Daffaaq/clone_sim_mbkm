@@ -17,6 +17,8 @@ class MSemhas extends Migration
             $table->id('semhas_id');
             $table->unsignedBigInteger('prodi_id');
             $table->foreign('prodi_id')->references('prodi_id')->on('m_prodi');
+            $table->unsignedBigInteger('periode_id');
+            $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->string('judul_semhas');
             $table->tinyInteger('gelombang');
             $table->tinyInteger('kuota_bimbingan');

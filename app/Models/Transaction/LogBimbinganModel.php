@@ -30,7 +30,8 @@ class LogBimbinganModel extends AppModel
         'nilai_pembimbing_dosen',
         'nilai_instruktur_lapangan',
         'tanggal_status_dosen',
-        'tanggal_status_instruktur', 
+        'tanggal_status_instruktur',
+        'periode_id',
         'created_at',
         'created_by',
         'updated_at',
@@ -53,5 +54,9 @@ class LogBimbinganModel extends AppModel
     public function instrukturLapangan()
     {
         return $this->belongsTo('App\Models\Master\InstrukturLapanganModel', 'instruktur_lapangan_id', 'instruktur_lapangan_id');
+    }
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
     }
 }

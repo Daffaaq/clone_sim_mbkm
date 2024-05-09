@@ -80,8 +80,9 @@ class JadwalSidangMagangController extends Controller
         //         'm_instruktur.nama_instruktur AS nama_instruktur',
         //     )
         //     ->get();
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
-        $data = SemhasDaftarModel::leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
             ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
             ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
             ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
@@ -94,10 +95,9 @@ class JadwalSidangMagangController extends Controller
                 'm_dosen.dosen_name AS nama_dosen',
                 'm_instruktur.nama_instruktur AS nama_instruktur'
             )
-            ->whereHas('magang', function ($query) use ($activePeriods) {
-                $query->whereIn('periode_id', $activePeriods);
-            })
             ->get();
+        // dd($data);
+
 
         // $dataall = SemhasDaftarModel::all();
         // dd($dataall);
@@ -172,8 +172,9 @@ class JadwalSidangMagangController extends Controller
             'title' => 'Edit ' . $this->menuTitle
         ];
 
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $dosen = DosenModel::selectRaw("dosen_id, dosen_name")->get();
-        $data = SemhasDaftarModel::find($id);
+        $data = SemhasDaftarModel::where('periode_id', $activePeriods)->find($id);
         // dd($data);
         $datajadwal = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->first();
         // $datajadwalall = JadwalSidangMagangModel::all();
@@ -297,12 +298,17 @@ class JadwalSidangMagangController extends Controller
                 ]);
             }
 
-            $semhasDaftar = SemhasDaftarModel::findOrFail($id);
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+            $semhasDaftar = SemhasDaftarModel::where('periode_id', $activePeriods)->findOrFail($id);
             $pembimbing_dosen_id = $semhasDaftar->pembimbing_dosen_id;
-            $datadosen = PembimbingDosenModel::pluck('dosen_id')->toArray();
+            // dd($pembimbing_dosen_id);
+            $pembimbing_dosen1 = PembimbingDosenModel::where('pembimbing_dosen_id', $pembimbing_dosen_id)->pluck('dosen_id')->first();
+
+
+            // $datadosen = PembimbingDosenModel::pluck('dosen_id')->toArray();
 
             // Cek apakah $request->dosen_pembahas_id sama dengan $pembimbing_dosen_id
-            if ($request->dosen_pembahas_id == $pembimbing_dosen_id) {
+            if ($request->dosen_pembahas_id == $pembimbing_dosen1) {
                 return response()->json([
                     'stat' => false,
                     'mc' => false,
@@ -313,7 +319,7 @@ class JadwalSidangMagangController extends Controller
             $semhasDaftar->update(['dosen_pembahas_id' => $request->dosen_pembahas_id]);
 
             // Buat entri baru di JadwalSidangMagangModel atau perbarui yang ada
-            $existingSchedule = JadwalSidangMagangModel::where('semhas_daftar_id', $semhasDaftar->semhas_daftar_id)->first();
+            $existingSchedule = JadwalSidangMagangModel::where('semhas_daftar_id', $semhasDaftar->semhas_daftar_id)->where('periode_id', $activePeriods)->first();
             if (!$existingSchedule) {
                 $jadwalSidangMagang = new JadwalSidangMagangModel();
                 $jadwalSidangMagang->semhas_daftar_id = $semhasDaftar->semhas_daftar_id;
@@ -322,7 +328,9 @@ class JadwalSidangMagangController extends Controller
                 $jadwalSidangMagang->jam_sidang_selesai = $request->jam_sidang_selesai;
                 $jadwalSidangMagang->jenis_sidang = $request->jenis_sidang;
                 $jadwalSidangMagang->tempat = $request->tempat;
-                $jadwalSidangMagang->gedung = $request->gedung;
+                // $jadwalSidangMagang->gedung = $request->gedung;
+                $jadwalSidangMagang->gedung = $request->jenis_sidang === 'online' ? null : $request->gedung;
+                $jadwalSidangMagang->periode_id = $activePeriods;
                 $jadwalSidangMagang->save();
 
                 return response()->json([
@@ -337,7 +345,9 @@ class JadwalSidangMagangController extends Controller
                     'jam_sidang_selesai' => $request->jam_sidang_selesai,
                     'jenis_sidang' => $request->jenis_sidang,
                     'tempat' => $request->tempat,
-                    'gedung' => $request->gedung,
+                    // 'gedung' => $request->gedung,
+                    'gedung' => $request->jenis_sidang === 'online' ? null : $request->gedung,
+                    'periode_id' => $activePeriods,
                 ]);
                 return response()->json([
                     'stat' => true,
@@ -355,9 +365,10 @@ class JadwalSidangMagangController extends Controller
     {
         $this->authAction('read', 'modal');
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
 
-        $data = SemhasDaftarModel::leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
+        $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
             ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
             ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
             ->leftJoin('m_dosen as d1', 't_semhas_daftar.dosen_pembahas_id', '=', 'd1.dosen_id') // Menggunakan alias yang sama seperti saat memilih kolom
@@ -384,10 +395,10 @@ class JadwalSidangMagangController extends Controller
             ->with('mitra')
             ->with('mitra.kegiatan')
             ->with('periode')
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->first();
         // dd($magang);
-        $datajadwal = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->first();
+        $datajadwal = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->first();
         $page = [
             'title' => 'Detail ' . $this->menuTitle
         ];

@@ -111,7 +111,7 @@ $is_edit = isset($data);
             $('#gedung_div').hide();
             $('#tempat_div').show();
             $('#gedung').prop('required', false);
-        } 
+        }
     }
     $(document).ready(function() {
         unblockUI();

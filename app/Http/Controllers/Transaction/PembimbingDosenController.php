@@ -76,8 +76,8 @@ class PembimbingDosenController extends Controller
         //     ->get();
 
         $prodi_id = auth()->user()->prodi_id;
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        // dd($activePeriods);
         $data = PembimbingDosenModel::select(
             't_pembimbing_dosen.pembimbing_dosen_id',
             'm_mahasiswa.nama_mahasiswa',
@@ -88,7 +88,8 @@ class PembimbingDosenController extends Controller
             ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
             ->leftJoin('t_magang', 't_pembimbing_dosen.magang_id', '=', 't_magang.magang_id')
             ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id')
-            ->where('t_magang.status', 1); // Pastikan status magang adalah 1 (diterima)
+            ->where('t_magang.status', 1)
+            ->where('t_pembimbing_dosen.periode_id', $activePeriods);
 
         if ($prodi_id !== null) {
             // Ketika prodi_id tidak null
@@ -98,11 +99,7 @@ class PembimbingDosenController extends Controller
                     ->orWhereNull('m_prodi.prodi_id');
             });
         }
-
-        $data = $data->whereHas('magang', function ($query) use ($activePeriods) {
-            $query->whereIn('periode_id', $activePeriods);
-        })
-            ->get();
+        $data = $data->get();
 
 
 
@@ -132,11 +129,11 @@ class PembimbingDosenController extends Controller
         //             ->whereRaw('t_magang.magang_id = t_pembimbing_dosen.magang_id');
         //     })
         //     ->get();
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $mahasiswaWithMagang = MahasiswaModel::selectRaw("m_mahasiswa.mahasiswa_id, m_mahasiswa.nama_mahasiswa, t_magang.magang_id")
             ->join('t_magang', 't_magang.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
             ->where('t_magang.status', 1)
-            ->where('t_magang.periode_id', $activePeriods->toArray())
+            ->where('t_magang.periode_id', $activePeriods)
             ->whereNotExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('t_pembimbing_dosen')
@@ -217,11 +214,11 @@ class PembimbingDosenController extends Controller
                     'msg' => 'Kuota dosen ' . $dosen->nama . ' tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
                 ]);
             }
-            $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             // Sekarang Anda dapat menambahkan mahasiswa tanpa mengurangi kuota dosen
 
             $magang_ids = Magang::whereIn('mahasiswa_id', $request->input('mahasiswa_id'))
-                ->where('periode_id', $activePeriods->toArray())
+                ->where('periode_id', $activePeriods)
                 ->where('status', 1)
                 ->pluck('magang_id')
                 ->toArray();
@@ -230,13 +227,15 @@ class PembimbingDosenController extends Controller
             foreach ($magang_ids as $magang_id) {
                 // Ambil satu mahasiswa dari input
                 $mahasiswa_id = array_shift($mahasiswa_ids);
+                $periode_id = $activePeriods;
                 // Simpan data ke dalam PembimbingDosenModel
-                if ($mahasiswa_id) {
+                if ($mahasiswa_id && $periode_id) {
                     // Simpan data ke dalam InstrukturLapanganModel
                     $pembimbingDosen[] = PembimbingDosenModel::create([
                         'magang_id' => $magang_id,
                         'mahasiswa_id' => $mahasiswa_id,
-                        'dosen_id' => $request->input('dosen_id') // Gunakan id instruktur yang baru saja dibuat
+                        'dosen_id' => $request->input('dosen_id'), // Gunakan id instruktur yang baru saja dibuat
+                        'periode_id' => $periode_id
                         // Isi kolom-kolom lainnya sesuai kebutuhan
                     ]);
                 }
@@ -343,7 +342,7 @@ class PembimbingDosenController extends Controller
                     'msg' => 'Kuota dosen ' . $dosen->nama . ' tidak mencukupi untuk menambahkan semua mahasiswa yang dipilih.'
                 ]);
             }
-            $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             $mahasiswa_ids = $request->input('mahasiswa_id');
             $pembimbingDosen = null;
             $magang_ids = [];
@@ -356,7 +355,7 @@ class PembimbingDosenController extends Controller
                 if (!is_null($mahasiswa_id)) {
                     // Cari nilai magang_id
                     $magang_id = Magang::where('mahasiswa_id', $mahasiswa_id)
-                        ->where('periode_id', $activePeriods->toArray())
+                        ->where('periode_id', $activePeriods)
                         ->value('magang_id');
                     // dd($magang_id);
                     $magang_ids[] = $magang_id;
@@ -367,6 +366,7 @@ class PembimbingDosenController extends Controller
                         $pembimbingDosen->magang_id = $magang_id;
                         $pembimbingDosen->mahasiswa_id = $mahasiswa_id;
                         $pembimbingDosen->dosen_id = $request->input('dosen_id');
+                        $pembimbingDosen->periode_id = $activePeriods;
                         $pembimbingDosen->save();
                     }
                 }

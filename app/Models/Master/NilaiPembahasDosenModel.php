@@ -21,6 +21,7 @@ class NilaiPembahasDosenModel extends AppModel
         'name_kriteria_pembahas_dosen',
         'bobot',
         'parent_id',
+        'periode_id',
         'created_at',
         'created_by',
         'updated_at',
@@ -47,5 +48,9 @@ class NilaiPembahasDosenModel extends AppModel
     public function parent()
     {
         return $this->belongsTo(NilaiPembahasDosenModel::class, 'parent_id', 'nilai_pembahas_dosen_id');
+    }
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
     }
 }

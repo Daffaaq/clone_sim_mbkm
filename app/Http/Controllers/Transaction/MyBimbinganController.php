@@ -69,14 +69,14 @@ class MyBimbinganController extends Controller
         $instruktur = DosenModel::where('user_id', $user_id)->first();
         $instruktur_id = $instruktur->dosen_id;
 
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
 
         $data = PembimbingDosenModel::select(
             't_pembimbing_dosen.pembimbing_dosen_id',
             'm_mahasiswa.nama_mahasiswa',
             'm_mahasiswa.nim',
             'm_dosen.dosen_name',
-            'm_prodi.prodi_name',
+            'm_prodi.prodi_code',
             't_magang.magang_skema',
             'd_mitra.mitra_nama'
         )
@@ -86,12 +86,9 @@ class MyBimbinganController extends Controller
             ->leftJoin('m_prodi', 't_magang.prodi_id', '=', 'm_prodi.prodi_id') // Alias mitra for joining mitra table
             ->leftJoin('d_mitra', 't_magang.mitra_id', '=', 'd_mitra.mitra_id')
             ->where('t_magang.status', 1) // Pastikan status magang adalah 1 (diterima)
-            ->where('t_pembimbing_dosen.dosen_id', $instruktur_id); // Filter berdasarkan instruktur_id
-
-        // Jika Anda ingin memastikan bahwa hanya magang yang memiliki periode aktif yang diambil
-        $data = $data->whereHas('magang', function ($query) use ($activePeriods) {
-            $query->whereIn('periode_id', $activePeriods);
-        })
+            ->where('t_pembimbing_dosen.dosen_id', $instruktur_id) // Filter berdasarkan instruktur_id
+            ->where('t_pembimbing_dosen.periode_id', $activePeriods) // Filter berdasarkan periode aktif
+        
             ->get();
         // dd($data);
         return DataTables::of($data)

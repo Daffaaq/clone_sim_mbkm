@@ -21,6 +21,7 @@ class InstrukturModel extends AppModel
         'nama_instruktur',
         'instruktur_email',
         'instruktur_phone',
+        'periode_id',
         'password',
         'user_id',
         'created_at',
@@ -36,4 +37,9 @@ class InstrukturModel extends AppModel
         //  Model => columnFK
         // 'App\Models\Master\DosenModel' => 'jurusan_id'
     ];
+
+    public function periode()
+    {
+        return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');
+    }
 }

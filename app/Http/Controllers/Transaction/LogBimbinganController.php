@@ -41,13 +41,13 @@ class LogBimbinganController extends Controller
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // Gunakan mahasiswa_id untuk mencari data magang
         $magang_data = Magang::where('mahasiswa_id', $mahasiswa_id)->get();
 
         $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
             ->where('status', 1)
-            ->where('periode_id', $activePeriods->toArray()) // Status 1 menunjukkan 'Diterima'
+            ->where('periode_id', $activePeriods) // Status 1 menunjukkan 'Diterima'
             ->exists();
         if ($magang_status) {
             $this->authAction('read');
@@ -74,11 +74,11 @@ class LogBimbinganController extends Controller
             $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
             // Gunakan mahasiswa_id untuk mencari data magang
-            $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->first();
-            $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->first();
+            $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->first();
+            $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->first();
             // dd($instrukturLapangan, $pembimbingdosen);
-            $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
-            $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
+            $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->pluck('instruktur_lapangan_id')->first();
+            $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->pluck('pembimbing_dosen_id')->first();
             // dd($instrukturLapangan_id, $pembimbingdosen_id);
             // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
             //     ->where('created_by', $userId);
@@ -86,6 +86,7 @@ class LogBimbinganController extends Controller
                 ->where('status1', 1) // Menambahkan pengecekan status1 == 1
                 ->where('status2', 1) // Menambahkan pengecekan status2 == 1
                 ->where('created_by', $userId)
+                ->where('periode_id', $activePeriods)
                 ->get();
             // dd($data);
 
@@ -119,6 +120,7 @@ class LogBimbinganController extends Controller
 
             $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
                 ->where('status', 0) // Status 0 menunjukkan 'Belum keterima'
+                ->where('periode_id', $activePeriods)
                 ->exists();
 
             if ($magang_status) {
@@ -151,7 +153,8 @@ class LogBimbinganController extends Controller
         // $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
         //     ->where('created_by', $userId)
         //     ->get();
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        // dd($activePeriods);
         $data = LogBimbinganModel::select(
             'log_bimbingan_id',
             'tanggal',
@@ -161,16 +164,13 @@ class LogBimbinganController extends Controller
             'status1',
             'status2'
         )
-            ->whereIn('pembimbing_dosen_id', function ($query) use ($activePeriods) {
-                $query->select('pembimbing_dosen_id')
-                    ->from('t_pembimbing_dosen')
-                    ->whereIn('magang_id', function ($innerQuery) use ($activePeriods) {
-                        $innerQuery->select('magang_id')
-                            ->from('t_magang')
-                            ->where('periode_id', $activePeriods->toArray());
-                    });
-            })
+            // ->whereIn('pembimbing_dosen_id', function ($query) use ($activePeriods) {
+            //     $query->select('pembimbing_dosen_id')
+            //     ->where('periode_id', $activePeriods)
+            //         ->from('t_pembimbing_dosen');
+            // })
             ->where('created_by', $userId)
+            ->where('periode_id', $activePeriods)
             ->get();
 
 
@@ -188,16 +188,17 @@ class LogBimbinganController extends Controller
             'url' => $this->menuUrl,
             'title' => 'Tambah ' . $this->menuTitle
         ];
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
         // Gunakan mahasiswa_id untuk mencari data magang
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->first();
-        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->first();
-        $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
-        $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
+        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->first();
+        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->first();
+        $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->pluck('instruktur_lapangan_id')->first();
+        $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->pluck('pembimbing_dosen_id')->first();
         // dd($pembimbingdosen);
 
         $dosen_name = $pembimbingdosen->dosen->dosen_name;
@@ -237,6 +238,7 @@ class LogBimbinganController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
+            $periode_id  = PeriodeModel::where('is_current', 1)->value('periode_id');
             // $user = auth()->user();
             // $user_id = $user->user_id;
             // $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
@@ -267,6 +269,7 @@ class LogBimbinganController extends Controller
                 'status2' => 0, // Status 2 defaultnya adalah 0
                 'foto' => $fileName,
                 'created_by' => Auth::id(),
+                'periode_id' => $periode_id,
                 // fill other fields as needed
             ]);
             // dd($log_bimbingan);
@@ -290,21 +293,22 @@ class LogBimbinganController extends Controller
             'url' => $this->menuUrl . '/' . $id,
             'title' => 'Edit ' . $this->menuTitle
         ];
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
         // Gunakan mahasiswa_id untuk mencari data magang
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->first();
-        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->first();
-        $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
-        $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
+        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->first();
+        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->first();
+        $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->pluck('instruktur_lapangan_id')->first();
+        $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->pluck('pembimbing_dosen_id')->first();
         // dd($pembimbingdosen);
 
         $dosen_name = $pembimbingdosen->dosen->dosen_name;
         $instruktur_name = $instrukturLapangan->instruktur->nama_instruktur;
-        $data = LogBimbinganModel::find($id);
+        $data = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
 
         return (!$data) ? $this->showModalError() :
             view($this->viewPath . 'action')
@@ -341,7 +345,7 @@ class LogBimbinganController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
-
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             // Periksa apakah ada file foto yang diunggah
             if ($request->hasFile('foto')) {
                 // Dapatkan file foto dari request
@@ -354,7 +358,7 @@ class LogBimbinganController extends Controller
                 $file->storeAs('public/assets/logbimbingan', $fileName);
 
                 // Hapus foto lama jika ada
-                $log_bimbingan = LogBimbinganModel::find($id);
+                $log_bimbingan = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
                 if ($log_bimbingan->foto) {
                     Storage::delete('public/assets/logbimbingan/' . $log_bimbingan->foto);
                 }
@@ -365,7 +369,7 @@ class LogBimbinganController extends Controller
             }
 
             // Update data LogBimbinganModel
-            $log_bimbingan = LogBimbinganModel::find($id);
+            $log_bimbingan = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
             $log_bimbingan->tanggal = $request->input('tanggal');
             $log_bimbingan->jam_mulai = $request->input('jam_mulai');
             $log_bimbingan->jam_selesai = $request->input('jam_selesai');
@@ -389,8 +393,9 @@ class LogBimbinganController extends Controller
     {
         $this->authAction('read', 'modal');
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $userId = Auth::id();
-        $data = LogBimbinganModel::find($id);
+        $data = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
         // Memeriksa apakah entitas ditemukan dan apakah dibuat oleh pengguna yang saat ini diotentikasi
         if (!$data || $data->created_by != $userId) {
             // Jika tidak, mungkin Anda ingin menampilkan pesan error atau melakukan tindakan lainnya
@@ -415,8 +420,9 @@ class LogBimbinganController extends Controller
     {
         $this->authAction('delete', 'modal');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
 
-        $data = LogBimbinganModel::find($id);
+        $data = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
 
         return (!$data) ? $this->showModalError() :
             $this->showModalConfirm($this->menuUrl . '/' . $id, [
@@ -431,8 +437,8 @@ class LogBimbinganController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         if ($request->ajax() || $request->wantsJson()) {
-
-            $res = LogBimbinganModel::deleteData($id);
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+            $res = LogBimbinganModel::where('periode_id', $activePeriods)->deleteData($id);
 
             return response()->json([
                 'stat' => $res,
@@ -446,7 +452,7 @@ class LogBimbinganController extends Controller
 
     public function reportLogBimbingan()
     {
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
@@ -461,17 +467,17 @@ class LogBimbinganController extends Controller
         // Mengambil instruktur lapangan untuk mahasiswa tertentu dengan relasi 'instruktur'
         $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
             ->whereHas('magang', function ($query) use ($activePeriods) {
-                $query->where('periode_id', $activePeriods->toArray());
+                $query->where('periode_id', $activePeriods);
             })
-        ->with('instruktur')->first();
+            ->with('instruktur')->first();
         $nama_instruktur = optional($instrukturLapangan->instruktur)->nama_instruktur;
 
         // Mengambil pembimbing dosen untuk mahasiswa tertentu dengan relasi 'dosen'
         $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)
             ->whereHas('magang', function ($query) use ($activePeriods) {
-                $query->where('periode_id', $activePeriods->toArray());
+                $query->where('periode_id', $activePeriods);
             })
-        ->with('dosen')->first();
+            ->with('dosen')->first();
         $nama_dosen = optional($pembimbingDosen->dosen)->dosen_name;
 
         // dd($nama_instruktur);
@@ -486,7 +492,7 @@ class LogBimbinganController extends Controller
             ->with('mitra')
             ->with('mitra.kegiatan')
             ->with('periode')
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->first();
 
         $data = LogBimbinganModel::select(
@@ -504,10 +510,11 @@ class LogBimbinganController extends Controller
                     ->whereIn('magang_id', function ($innerQuery) use ($activePeriods) {
                         $innerQuery->select('magang_id')
                             ->from('t_magang')
-                            ->where('periode_id', $activePeriods->toArray());
+                            ->where('periode_id', $activePeriods);
                     });
             })
             ->where('created_by', $user_id)
+            ->where('periode_id', $activePeriods)
             ->where('status1', 1) // Menambahkan pengecekan status1 == 1
             ->where('status2', 1) // Menambahkan pengecekan status2 == 1
             ->get();

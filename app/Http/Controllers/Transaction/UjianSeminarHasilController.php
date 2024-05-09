@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Master\DosenModel;
 use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
+use App\Models\Master\NilaiPembahasDosenModel;
+use App\Models\Master\NilaiPembimbingDosenModel;
+use App\Models\Master\NilaiInstrukturLapanganModel;
 use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
@@ -15,7 +18,13 @@ use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\LogBimbinganModel;
 use App\Models\Transaction\Magang;
 use App\Models\Transaction\PembimbingDosenModel;
+use App\Models\Transaction\RevisiInstrukturLapanganModel;
+use App\Models\Transaction\RevisiPembahasDosenModel;
+use App\Models\Transaction\RevisiPembimbingDosenModel;
 use App\Models\Transaction\SemhasDaftarModel;
+use App\Models\Transaction\TNilaiInstrukturLapanganModel;
+use App\Models\Transaction\TNilaiPembahasDosenModel;
+use App\Models\Transaction\TNilaiPembimbingDosenModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -43,13 +52,13 @@ class UjianSeminarHasilController extends Controller
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
         // Gunakan mahasiswa_id untuk mencari data magang
         $magang_data = Magang::where('mahasiswa_id', $mahasiswa_id)->get();
 
         $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
             ->where('status', 1)
-            ->where('periode_id', $activePeriods->toArray()) // Status 1 menunjukkan 'Diterima'
+            ->where('periode_id', $activePeriods) // Status 1 menunjukkan 'Diterima'
             ->exists();
         if ($magang_status) {
             $this->authAction('read');
@@ -78,9 +87,7 @@ class UjianSeminarHasilController extends Controller
             $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
             $mahasiswa_id = $mahasiswa->mahasiswa_id;
             $data = SemhasDaftarModel::where('created_by', $user_id)
-                ->whereHas('magang', function ($query) use ($activePeriods) {
-                    $query->where('periode_id', $activePeriods->toArray());
-                })
+                ->where('periode_id', $activePeriods)
                 ->with('pembimbingDosen.dosen')
                 ->with('magang.mitra')
                 ->with('magang.mitra.kegiatan')
@@ -100,8 +107,24 @@ class UjianSeminarHasilController extends Controller
             }
             // dd($data);
             $dataJadwalSeminar = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->first();
-            $dataJadwalSeminar->jam_sidang_mulai = substr($dataJadwalSeminar->jam_sidang_mulai, 0, 5); // Mengambil karakter pertama hingga karakter ke-4
-            $dataJadwalSeminar->jam_sidang_selesai = substr($dataJadwalSeminar->jam_sidang_selesai, 0, 5); // Mengambil karakter pertama hingga karakter ke-4
+            // dd($dataJadwalSeminar);
+            $datanilai = TNilaiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+            // dd($datanilai);
+            $existingNilai = RevisiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
+                ->where('periode_id', $activePeriods)
+                ->first();
+            $datanilaiPembahas = TNilaiPembahasDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+            // dd($datanilai);
+            $existingNilaiPembahas = RevisiPembahasDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
+                ->where('periode_id', $activePeriods)
+                ->first();
+            // 
+            $datanilaiInstrukturLapangan = TNilaiInstrukturLapanganModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+            // dd($datanilai);
+            $existingNilaiInstrukturLapangan = RevisiInstrukturLapanganModel::where('semhas_daftar_id', $data->semhas_daftar_id)
+                ->where('periode_id', $activePeriods)
+                ->first();
+            // 
             // dd($dataJadwalSeminar);
             if (!$dataJadwalSeminar) {
                 $message = "halaman belum bisa diakses. Silahkan menunggu untuk pembagian jadwal sidang magang";
@@ -114,6 +137,10 @@ class UjianSeminarHasilController extends Controller
                     ->with('message', $message)
                     ->with('allowAccess', $this->authAccessKey());
             }
+            $dataJadwalSeminar->jam_sidang_mulai = substr($dataJadwalSeminar->jam_sidang_mulai, 0, 5); // Mengambil karakter pertama hingga karakter ke-4
+            $dataJadwalSeminar->jam_sidang_selesai = substr($dataJadwalSeminar->jam_sidang_selesai, 0, 5); // Mengambil karakter pertama hingga karakter ke-4
+
+
             return view($this->viewPath . 'index')
                 ->with('breadcrumb', (object) $breadcrumb)
                 ->with('activeMenu', (object) $activeMenu)
@@ -121,6 +148,13 @@ class UjianSeminarHasilController extends Controller
                 ->with('data', $data)
                 ->with('user', $user)
                 ->with('dataJadwalSeminar', $dataJadwalSeminar)
+                ->with('datanilai', $datanilai)
+                ->with('existingNilai', $existingNilai)
+                ->with('dataJadwalSeminar', $dataJadwalSeminar)
+                ->with('datanilaiPembahas', $datanilaiPembahas)
+                ->with('existingNilaiPembahas', $existingNilaiPembahas)
+                ->with('existingNilaiInstrukturLapangan', $existingNilaiInstrukturLapangan)
+                ->with('datanilaiInstrukturLapangan', $datanilaiInstrukturLapangan)
                 ->with('allowAccess', $this->authAccessKey());
         } else {
             $this->authAction('read');
@@ -164,382 +198,354 @@ class UjianSeminarHasilController extends Controller
         }
     }
 
-    public function list(Request $request)
+    public function generateBeritaAcara()
     {
-        $this->authAction('read', 'json');
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        $userId = Auth::id();
-
-        // $data  = LogBimbinganModel::selectRaw("log_bimbingan_id, tanggal, topik_bimbingan, jam_mulai, jam_selesai, status1, status2")
-        //     ->where('created_by', $userId);
-        // $data = LogBimbinganModel::select('log_bimbingan_id', 'tanggal', 'topik_bimbingan', 'jam_mulai', 'jam_selesai', 'status1', 'status2')
-        //     ->where('created_by', $userId)
-        //     ->get();
+        $user = auth()->user();
+        // dd($user);
+        // $user = auth()->user()->id;
+        $user_id = $user->user_id;
+        // $userId = Auth::id();
+        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
+        $mahasiswa_id = $mahasiswa->mahasiswa_id;
         $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
-        $data = LogBimbinganModel::select(
-            'log_bimbingan_id',
-            'tanggal',
-            'topik_bimbingan',
-            DB::raw('TIME_FORMAT(jam_mulai, "%H:%i") AS jam_mulai'),
-            DB::raw('TIME_FORMAT(jam_selesai, "%H:%i") AS jam_selesai'),
-            'status1',
-            'status2'
-        )
-            ->whereIn('pembimbing_dosen_id', function ($query) use ($activePeriods) {
-                $query->select('pembimbing_dosen_id')
-                    ->from('t_pembimbing_dosen')
-                    ->whereIn('magang_id', function ($innerQuery) use ($activePeriods) {
-                        $innerQuery->select('magang_id')
-                            ->from('t_magang')
-                            ->where('periode_id', $activePeriods->toArray());
-                    });
-            })
-            ->where('created_by', $userId)
+        $datamsemhasdaftar = SemhasDaftarModel::where('created_by', $user_id)->pluck('magang_id');
+        $datamagang = Magang::where('magang_id', $datamsemhasdaftar)->pluck('magang_kode');
+        $anggota = Magang::where('magang_kode', $datamagang)
+            ->with('mahasiswa')
+            ->where('periode_id', $activePeriods->toArray())
             ->get();
+        $data = SemhasDaftarModel::where('created_by', $user_id)
+            ->whereHas('magang', function ($query) use ($activePeriods) {
+                $query->where('periode_id', $activePeriods->toArray());
+            })
+            ->with('pembimbingDosen.dosen')
+            ->with('magang.mitra')
+            ->with('magang.mitra.kegiatan')
+            ->with('magang.periode')
+            ->with('magang.mahasiswa')
+            ->first();
+        $dataJadwalSeminar = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->first();
+        $dataJadwalSeminar->jam_sidang_mulai = substr($dataJadwalSeminar->jam_sidang_mulai, 0, 5); // Mengambil karakter pertama hingga karakter ke-4
+        $dataJadwalSeminar->jam_sidang_selesai = substr($dataJadwalSeminar->jam_sidang_selesai, 0, 5); // Mengambil karakter pertama hingga karakter ke-4
 
-
-        return DataTables::of($data)
-            ->addIndexColumn()
-            ->make(true);
+        $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak_berita_acara', compact('dataJadwalSeminar', 'data', 'anggota'));
+        return $pdf->stream();
     }
-
-    public function create()
+    public function uploadBeritaAcara(Request $request)
     {
-        $this->authAction('create', 'modal');
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+        // Validasi ukuran file
+        $request->validate([
+            'berita_acara_file' => 'required|file|max:2048', // Maksimal 2 MB
+        ]);
 
-        $page = [
-            'url' => $this->menuUrl,
-            'title' => 'Tambah ' . $this->menuTitle
-        ];
+        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
-        // Gunakan mahasiswa_id untuk mencari data magang
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->first();
-        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->first();
-        $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
-        $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
-        // dd($pembimbingdosen);
+        // Mendapatkan data SemhasDaftarModel
+        $data = SemhasDaftarModel::where('created_by', $user_id)
+            ->where('periode_id', $activePeriods)
+            ->with('pembimbingDosen.dosen')
+            ->with('magang.mitra')
+            ->with('magang.mitra.kegiatan')
+            ->with('magang.periode')
+            ->with('magang.mahasiswa')
+            ->first();
 
-        $dosen_name = $pembimbingdosen->dosen->dosen_name;
-        $instruktur_name = $instrukturLapangan->instruktur->nama_instruktur;
-        // dd($instruktur_name);
-        // dd($dosen_name);
+        // Pastikan data ditemukan sebelum memperbarui
+        if ($data) {
+            if ($request->hasFile('berita_acara_file')) {
+                $file = $request->file('berita_acara_file');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->storeAs('public/assets/berita-acara', $filename); // Simpan file ke direktori 'storage/app/berita_acara'
 
-        return view($this->viewPath . 'action')
-            ->with('page', (object) $page)
-            ->with('instrukturLapangan_id', $instrukturLapangan_id)
-            ->with('pembimbingdosen_id', $pembimbingdosen_id)
-            ->with('dosen_name', $dosen_name)
-            ->with('instruktur_name', $instruktur_name);
-    }
-
-    public function store(Request $request)
-    {
-        $this->authAction('create', 'json');
-
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'tanggal' => 'required|date',
-                'jam_mulai' => 'required',
-                'jam_selesai' => 'required',
-                'topik_bimbingan' => 'required|string',
-                'foto' => 'required|image|mimes:jpeg,png,jpg|max:2048', // Menggunakan aturan image untuk validasi file gambar
-                // Tambahkan aturan validasi lainnya untuk field DosenModel
-            ];
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json([
-                    'stat' => false,
-                    'mc' => false,
-                    'msg' => 'Terjadi kesalahan.',
-                    'msgField' => $validator->errors()
+                // Update kolom 'berita_acara' pada data SemhasDaftarModel dengan nama file
+                $data->update([
+                    'Berita_acara' => $filename,
+                    // update other fields as needed
                 ]);
+                return response()->json(['message' => 'File uploaded successfully', 'filename' => $filename], 200);
+            } else {
+                return response()->json(['error' => 'No file uploaded.'], 400);
             }
-            // $user = auth()->user();
-            // $user_id = $user->user_id;
-            // $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
-            // $mahasiswa_id = $mahasiswa->mahasiswa_id;
-            // $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
-            // $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
-            // dd($pembimbingdosen);
-            // dd($instrukturLapangan);
-            // Dapatkan file foto dari request
-            $file = $request->file('foto');
-
-            // Generate nama file yang unik berdasarkan waktu dan ekstensi asli file
-            $fileName = 'logbimbingan_' . time() . '.' . $file->getClientOriginalExtension();
-
-            // Simpan foto ke dalam direktori penyimpanan
-            $file->storeAs('public/assets/logbimbingan', $fileName);
-
-            $log_bimbingan = LogBimbinganModel::create([
-                'tanggal' => $request->input('tanggal'),
-                'jam_mulai' => $request->input('jam_mulai'),
-                'jam_selesai' => $request->input('jam_selesai'),
-                'topik_bimbingan' => $request->input('topik_bimbingan'),
-                // 'pembimbing_dosen_id' => $pembimbingdosen,
-                // 'instruktur_lapangan_id' => $instrukturLapangan,
-                'pembimbing_dosen_id' => $request->input('pembimbing_dosen_id'),
-                'instruktur_lapangan_id' =>  $request->input('instruktur_lapangan_id'),
-                'status1' => 0, // Status 1 defaultnya adalah 0
-                'status2' => 0, // Status 2 defaultnya adalah 0
-                'foto' => $fileName,
-                'created_by' => Auth::id(),
-                // fill other fields as needed
-            ]);
-            // dd($log_bimbingan);
-            return response()->json([
-                'stat' => $log_bimbingan,
-                'mc' => $log_bimbingan,
-                'msg' => ($log_bimbingan) ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
-            ]);
+        } else {
+            // Jika data tidak ditemukan, lakukan sesuatu, misalnya tampilkan pesan kesalahan
+            return response()->json(['error' => 'Data not found.'], 404);
         }
-
-        return redirect('/');
     }
 
-
-    public function edit($id)
-    {
-        $this->authAction('update', 'modal');
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        $page = [
-            'url' => $this->menuUrl . '/' . $id,
-            'title' => 'Edit ' . $this->menuTitle
-        ];
-        $user = auth()->user();
-        $user_id = $user->user_id;
-        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
-        $mahasiswa_id = $mahasiswa->mahasiswa_id;
-
-        // Gunakan mahasiswa_id untuk mencari data magang
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->first();
-        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->first();
-        $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->pluck('instruktur_lapangan_id')->first();
-        $pembimbingdosen_id = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->pluck('pembimbing_dosen_id')->first();
-        // dd($pembimbingdosen);
-
-        $dosen_name = $pembimbingdosen->dosen->dosen_name;
-        $instruktur_name = $instrukturLapangan->instruktur->nama_instruktur;
-        $data = LogBimbinganModel::find($id);
-
-        return (!$data) ? $this->showModalError() :
-            view($this->viewPath . 'action')
-            ->with('page', (object) $page)
-            ->with('id', $id)
-            ->with('instrukturLapangan_id', $instrukturLapangan_id)
-            ->with('pembimbingdosen_id', $pembimbingdosen_id)
-            ->with('dosen_name', $dosen_name)
-            ->with('instruktur_name', $instruktur_name)
-            ->with('data', $data);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $this->authAction('update', 'json');
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'tanggal' => 'required|date',
-                'jam_mulai' => 'required',
-                'jam_selesai' => 'required',
-                'topik_bimbingan' => 'required|string',
-                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Gunakan 'sometimes' agar validasi tidak wajib
-            ];
-
-            $validator = Validator::make($request->all(), $rules);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'stat'     => false,
-                    'mc'       => false,
-                    'msg'      => 'Terjadi kesalahan.',
-                    'msgField' => $validator->errors()
-                ]);
-            }
-
-            // Periksa apakah ada file foto yang diunggah
-            if ($request->hasFile('foto')) {
-                // Dapatkan file foto dari request
-                $file = $request->file('foto');
-
-                // Generate nama file yang unik berdasarkan waktu dan ekstensi asli file
-                $fileName = 'logbimbingan_' . time() . '.' . $file->getClientOriginalExtension();
-
-                // Simpan foto baru ke dalam direktori penyimpanan
-                $file->storeAs('public/assets/logbimbingan', $fileName);
-
-                // Hapus foto lama jika ada
-                $log_bimbingan = LogBimbinganModel::find($id);
-                if ($log_bimbingan->foto) {
-                    Storage::delete('public/assets/logbimbingan/' . $log_bimbingan->foto);
-                }
-
-                // Update foto baru dalam database
-                $log_bimbingan->foto = $fileName;
-                $log_bimbingan->save();
-            }
-
-            // Update data LogBimbinganModel
-            $log_bimbingan = LogBimbinganModel::find($id);
-            $log_bimbingan->tanggal = $request->input('tanggal');
-            $log_bimbingan->jam_mulai = $request->input('jam_mulai');
-            $log_bimbingan->jam_selesai = $request->input('jam_selesai');
-            $log_bimbingan->topik_bimbingan = $request->input('topik_bimbingan');
-            $log_bimbingan->pembimbing_dosen_id = $request->input('pembimbing_dosen_id');
-            $log_bimbingan->instruktur_lapangan_id = $request->input('instruktur_lapangan_id');
-            $log_bimbingan->save();
-
-            return response()->json([
-                'stat' => $log_bimbingan,
-                'mc' => $log_bimbingan,
-                'msg' => ($log_bimbingan) ? $this->getMessage('update.success') : $this->getMessage('update.failed')
-            ]);
-        }
-
-        return redirect('/');
-    }
-
-
-    public function show($id)
+    public function nilai($id)
     {
         $this->authAction('read', 'modal');
-        // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-        $userId = Auth::id();
-        $data = LogBimbinganModel::find($id);
-        // Memeriksa apakah entitas ditemukan dan apakah dibuat oleh pengguna yang saat ini diotentikasi
-        if (!$data || $data->created_by != $userId) {
-            // Jika tidak, mungkin Anda ingin menampilkan pesan error atau melakukan tindakan lainnya
-            return $this->showModalError();
-        }
-        $page = [
-            'title' => 'Detail ' . $this->menuTitle
-        ];
-
-        return view($this->viewPath . 'detail')
-            ->with('page', (object) $page)
-            ->with('id', $id)
-            ->with('data', $data);
-        // return (!$data) ? $this->showModalError() :
-        //     view($this->viewPath . 'detail')
-        //     ->with('page', (object) $page)
-        //     ->with('id', $id)
-        //     ->with('data', $data);
-    }
-
-    public function confirm($id)
-    {
-        $this->authAction('delete', 'modal');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
-        $data = LogBimbinganModel::find($id);
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
+            ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
+            ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
+            ->leftJoin('m_dosen as d1', 't_semhas_daftar.dosen_pembahas_id', '=', 'd1.dosen_id') // Menggunakan alias yang sama seperti saat memilih kolom
+            ->leftJoin('m_dosen as d2', 't_pembimbing_dosen.dosen_id', '=', 'd2.dosen_id')
+            ->leftJoin('t_instruktur_lapangan', 't_semhas_daftar.instruktur_lapangan_id', '=', 't_instruktur_lapangan.instruktur_lapangan_id')
+            ->leftJoin('m_instruktur', 't_instruktur_lapangan.instruktur_id', '=', 'm_instruktur.instruktur_id')
+            ->select(
+                't_semhas_daftar.semhas_daftar_id',
+                'm_mahasiswa.nama_mahasiswa',
+                't_semhas_daftar.Judul',
+                'd1.dosen_name AS nama_dosen_pembahas', // Menggunakan alias yang sama seperti dalam JOIN
+                'm_instruktur.nama_instruktur AS nama_instruktur',
+                'd2.dosen_name AS nama_dosen', // Menggunakan alias yang sama seperti dalam JOIN
+                't_semhas_daftar.magang_id',
+                't_semhas_daftar.tanggal_daftar',
+                't_semhas_daftar.link_github',
+                't_semhas_daftar.link_laporan'
+            )
+            ->find($id);
+        $semhas_daftar_id = $data->value('semhas_daftar_id');
 
-        return (!$data) ? $this->showModalError() :
-            $this->showModalConfirm($this->menuUrl . '/' . $id, [
-                'NIP' => $data->dosen_nip,
-                'Nama Dosen' => $data->dosen_name,
-            ]);
-    }
-
-    public function destroy(Request $request, $id)
-    {
-        $this->authAction('delete', 'json');
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        if ($request->ajax() || $request->wantsJson()) {
-
-            $res = LogBimbinganModel::deleteData($id);
-
-            return response()->json([
-                'stat' => $res,
-                'mc' => $res, // close modal
-                'msg' => LogBimbinganModel::getDeleteMessage()
-            ]);
-        }
-
-        return redirect('/');
-    }
-
-    public function reportLogBimbingan()
-    {
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
-        $user = auth()->user();
-        $user_id = $user->user_id;
-        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
-        // dd($mahasiswa);
-        $mahasiswa_id = $mahasiswa->mahasiswa_id;
-        // $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->with('instruktur')->get();
-        // $instruktur = $instrukturLapangan->first(); // Ambil objek pertama dari koleksi
-        // $nama_instruktur = optional($instruktur->instruktur)->nama_instruktur; // Akses atribut instruktur dari objek pertama
-        // $PembimbingDosenModel = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->with('dosen')->get();
-        // $dosen = $PembimbingDosenModel->first(); // Ambil objek pertama dari koleksi
-        // $nama_dosen = optional($dosen->dosen)->dosen_name; // Akses atribut instruktur dari objek pertama
-        // Mengambil instruktur lapangan untuk mahasiswa tertentu dengan relasi 'instruktur'
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
-            ->whereHas('magang', function ($query) use ($activePeriods) {
-                $query->where('periode_id', $activePeriods->toArray());
-            })
-            ->with('instruktur')->first();
-        $nama_instruktur = optional($instrukturLapangan->instruktur)->nama_instruktur;
-
-        // Mengambil pembimbing dosen untuk mahasiswa tertentu dengan relasi 'dosen'
-        $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)
-            ->whereHas('magang', function ($query) use ($activePeriods) {
-                $query->where('periode_id', $activePeriods->toArray());
-            })
-            ->with('dosen')->first();
-        $nama_dosen = optional($pembimbingDosen->dosen)->dosen_name;
-
-        // dd($nama_instruktur);
-        // dd($mahasiswa_id);
-        $magang_ids = Magang::whereIn('mahasiswa_id', [$mahasiswa_id]) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
-            ->where('status', 1)
-            ->pluck('magang_id');
-        // dd($magang_ids);
-
-        $magang = Magang::whereIn('magang_id', $magang_ids) // Perhatikan penggunaan whereIn() untuk memeriksa apakah $magang_ids ada di dalam array
-            ->where('mahasiswa_id', $mahasiswa_id) // Tambahkan klausa where untuk mahasiswa_id
+        $magang = Magang::where('magang_id', $data->magang_id)
             ->with('mitra')
             ->with('mitra.kegiatan')
             ->with('periode')
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->first();
+        // dd($magang);
+        $datajadwal = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->first();
+        $datanilai = TNilaiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+        // dd($datanilai);
 
-        $data = LogBimbinganModel::select(
-            'log_bimbingan_id',
-            'tanggal',
-            'topik_bimbingan',
-            DB::raw('TIME_FORMAT(jam_mulai, "%H:%i") AS jam_mulai'),
-            DB::raw('TIME_FORMAT(jam_selesai, "%H:%i") AS jam_selesai'),
-            'status1',
-            'status2'
-        )
-            ->whereIn('pembimbing_dosen_id', function ($query) use ($activePeriods) {
-                $query->select('pembimbing_dosen_id')
-                    ->from('t_pembimbing_dosen')
-                    ->whereIn('magang_id', function ($innerQuery) use ($activePeriods) {
-                        $innerQuery->select('magang_id')
-                            ->from('t_magang')
-                            ->where('periode_id', $activePeriods->toArray());
-                    });
-            })
-            ->where('created_by', $user_id)
-            ->where('status1', 1) // Menambahkan pengecekan status1 == 1
-            ->where('status2', 1) // Menambahkan pengecekan status2 == 1
-            ->get();
+        $kriteriaNilai = NilaiPembimbingDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+        $subkriteria = NilaiPembimbingDosenModel::with('parent')
+            ->whereNotNull('parent_id')
+            ->where('periode_id', $activePeriods)
+            ->count();
 
-        // dd($data);
+        // dd($subkriteria);
 
-        $pdf = Pdf::loadView('transaction.log-bimbingan.cetak_pdf', compact('magang', 'data', 'mahasiswa', 'nama_instruktur', 'nama_dosen'));
-        return $pdf->stream();
+        // // Mengambil parent_id dari hasil query
+        // $idSubKriteria = $subkriteria->pluck('parent_id');
+
+        // // Menggunakan parent_id untuk mencari subkriteria
+        // $subkriteria1 = NilaiPembimbingDosenModel::whereIn('parent_id', $idSubKriteria)->get();
+
+        // dd($subkriteria1);
+        $existingNilai = RevisiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
+            ->where('periode_id', $activePeriods)
+            ->first();
+        // dd($existingNilai);
+        $page = [
+            'title' => 'Nilai Dosen Pembimbing'
+        ];
+
+        return (!$data) ? $this->showModalError() :
+            view($this->viewPath . 'nilai-dosbing')
+            ->with('page', (object) $page)
+            ->with('id', $id)
+            ->with('kriteriaNilai', $kriteriaNilai)
+            ->with('activePeriods', $activePeriods)
+            ->with('semhas_daftar_id', $semhas_daftar_id)
+            ->with('datanilai', $datanilai)
+            ->with('existingNilai', $existingNilai)
+            ->with('data', $data);
+    }
+    public function nilaiDosenPembahas($id)
+    {
+        $this->authAction('read', 'modal');
+        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
+            ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
+            ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
+            ->leftJoin('m_dosen as d1', 't_semhas_daftar.dosen_pembahas_id', '=', 'd1.dosen_id') // Menggunakan alias yang sama seperti saat memilih kolom
+            ->leftJoin('m_dosen as d2', 't_pembimbing_dosen.dosen_id', '=', 'd2.dosen_id')
+            ->leftJoin('t_instruktur_lapangan', 't_semhas_daftar.instruktur_lapangan_id', '=', 't_instruktur_lapangan.instruktur_lapangan_id')
+            ->leftJoin('m_instruktur', 't_instruktur_lapangan.instruktur_id', '=', 'm_instruktur.instruktur_id')
+            ->select(
+                't_semhas_daftar.semhas_daftar_id',
+                'm_mahasiswa.nama_mahasiswa',
+                't_semhas_daftar.Judul',
+                'd1.dosen_name AS nama_dosen_pembahas', // Menggunakan alias yang sama seperti dalam JOIN
+                'm_instruktur.nama_instruktur AS nama_instruktur',
+                'd2.dosen_name AS nama_dosen', // Menggunakan alias yang sama seperti dalam JOIN
+                't_semhas_daftar.magang_id',
+                't_semhas_daftar.tanggal_daftar',
+                't_semhas_daftar.link_github',
+                't_semhas_daftar.link_laporan'
+            )
+            ->find($id);
+        $semhas_daftar_id = $data->value('semhas_daftar_id');
+
+        $magang = Magang::where('magang_id', $data->magang_id)
+            ->with('mitra')
+            ->with('mitra.kegiatan')
+            ->with('periode')
+            ->where('periode_id', $activePeriods)
+            ->first();
+        $datajadwal = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->first();
+        $datanilai = TNilaiPembahasDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+
+        $kriteriaNilai = NilaiPembahasDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+        $subkriteria = NilaiPembahasDosenModel::with('parent')
+            ->whereNotNull('parent_id')
+            ->where('periode_id', $activePeriods)
+            ->count();
+
+        $existingNilai = RevisiPembahasDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
+            ->where('periode_id', $activePeriods)
+            ->first();
+        $page = [
+            'title' => 'Nilai Dosen Pembimbing'
+        ];
+
+        return (!$data) ? $this->showModalError() :
+            view($this->viewPath . 'nilai-dospem')
+            ->with('page', (object) $page)
+            ->with('id', $id)
+            ->with('kriteriaNilai', $kriteriaNilai)
+            ->with('activePeriods', $activePeriods)
+            ->with('semhas_daftar_id', $semhas_daftar_id)
+            ->with('datanilai', $datanilai)
+            ->with('existingNilai', $existingNilai)
+            ->with('data', $data);
+    }
+    public function nilaiInstrukturLapangan($id)
+    {
+        $this->authAction('read', 'modal');
+        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
+            ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
+            ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
+            ->leftJoin('m_dosen as d1', 't_semhas_daftar.dosen_pembahas_id', '=', 'd1.dosen_id') // Menggunakan alias yang sama seperti saat memilih kolom
+            ->leftJoin('m_dosen as d2', 't_pembimbing_dosen.dosen_id', '=', 'd2.dosen_id')
+            ->leftJoin('t_instruktur_lapangan', 't_semhas_daftar.instruktur_lapangan_id', '=', 't_instruktur_lapangan.instruktur_lapangan_id')
+            ->leftJoin('m_instruktur', 't_instruktur_lapangan.instruktur_id', '=', 'm_instruktur.instruktur_id')
+            ->select(
+                't_semhas_daftar.semhas_daftar_id',
+                'm_mahasiswa.nama_mahasiswa',
+                't_semhas_daftar.Judul',
+                'd1.dosen_name AS nama_dosen_pembahas', // Menggunakan alias yang sama seperti dalam JOIN
+                'm_instruktur.nama_instruktur AS nama_instruktur',
+                'd2.dosen_name AS nama_dosen', // Menggunakan alias yang sama seperti dalam JOIN
+                't_semhas_daftar.magang_id',
+                't_semhas_daftar.tanggal_daftar',
+                't_semhas_daftar.link_github',
+                't_semhas_daftar.link_laporan'
+            )
+            ->find($id);
+        $semhas_daftar_id = $data->value('semhas_daftar_id');
+
+        $magang = Magang::where('magang_id', $data->magang_id)
+            ->with('mitra')
+            ->with('mitra.kegiatan')
+            ->with('periode')
+            ->where('periode_id', $activePeriods)
+            ->first();
+        // dd($magang);
+        $datajadwal = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->first();
+        $datanilai = TNilaiInstrukturLapanganModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+        // dd($datanilai);
+
+        $kriteriaNilai = NilaiInstrukturLapanganModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+        $subkriteria = NilaiInstrukturLapanganModel::with('parent')
+
+            ->whereNotNull('parent_id')
+            ->where('periode_id', $activePeriods)
+            ->count();
+
+        // dd($subkriteria1);
+        $existingNilai = RevisiInstrukturLapanganModel::where('semhas_daftar_id', $data->semhas_daftar_id)
+            ->where('periode_id', $activePeriods)
+            ->first();
+        // dd($existingNilai);
+        $page = [
+            'title' => 'Nilai Instruktur Lapangan'
+        ];
+
+        return (!$data) ? $this->showModalError() :
+            view($this->viewPath . 'nilai-instruktur-lapangan')
+            ->with('page', (object) $page)
+            ->with('id', $id)
+            ->with('kriteriaNilai', $kriteriaNilai)
+            ->with('activePeriods', $activePeriods)
+            ->with('semhas_daftar_id', $semhas_daftar_id)
+            ->with('datanilai', $datanilai)
+            ->with('existingNilai', $existingNilai)
+            ->with('data', $data);
+    }
+    public function nilaiAkhir($id)
+    {
+        $this->authAction('read', 'modal');
+        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
+            ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
+            ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
+            ->leftJoin('m_dosen as d1', 't_semhas_daftar.dosen_pembahas_id', '=', 'd1.dosen_id') // Menggunakan alias yang sama seperti saat memilih kolom
+            ->leftJoin('m_dosen as d2', 't_pembimbing_dosen.dosen_id', '=', 'd2.dosen_id')
+            ->leftJoin('t_instruktur_lapangan', 't_semhas_daftar.instruktur_lapangan_id', '=', 't_instruktur_lapangan.instruktur_lapangan_id')
+            ->leftJoin('m_instruktur', 't_instruktur_lapangan.instruktur_id', '=', 'm_instruktur.instruktur_id')
+            ->select(
+                't_semhas_daftar.semhas_daftar_id',
+                'm_mahasiswa.nama_mahasiswa',
+                't_semhas_daftar.Judul',
+                'd1.dosen_name AS nama_dosen_pembahas', // Menggunakan alias yang sama seperti dalam JOIN
+                'm_instruktur.nama_instruktur AS nama_instruktur',
+                'd2.dosen_name AS nama_dosen', // Menggunakan alias yang sama seperti dalam JOIN
+                't_semhas_daftar.magang_id',
+                't_semhas_daftar.tanggal_daftar',
+                't_semhas_daftar.link_github',
+                't_semhas_daftar.link_laporan'
+            )
+            ->find($id);
+        $semhas_daftar_id = $data->value('semhas_daftar_id');
+
+        $magang = Magang::where('magang_id', $data->magang_id)
+            ->with('mitra')
+            ->with('mitra.kegiatan')
+            ->with('periode')
+            ->where('periode_id', $activePeriods)
+            ->first();
+        // dd($magang);
+        $datajadwal = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->first();
+        $datanilaiinstruktur = TNilaiInstrukturLapanganModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+
+
+        $kriteriaNilaiintruktur = NilaiInstrukturLapanganModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+
+        $datanilaiPembahas = TNilaiPembahasDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+
+        $kriteriaNilaiPembahas = NilaiPembahasDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+
+        $datanilaiPembimbing = TNilaiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+        // dd($datanilai);
+
+        $kriteriaNilaiPembimbing = NilaiPembimbingDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+
+        $page = [
+            'title' => 'Nilai Akhir'
+        ];
+
+        return (!$data) ? $this->showModalError() :
+            view($this->viewPath . 'nilai-akhir')
+            ->with('page', (object) $page)
+            ->with('id', $id)
+            ->with('kriteriaNilaiintruktur', $kriteriaNilaiintruktur)
+            ->with('kriteriaNilaiPembahas', $kriteriaNilaiPembahas)
+            ->with('kriteriaNilaiPembimbing', $kriteriaNilaiPembimbing)
+            ->with('activePeriods', $activePeriods)
+            ->with('semhas_daftar_id', $semhas_daftar_id)
+            ->with('datanilaiPembahas', $datanilaiPembahas)
+            ->with('datanilaiinstruktur', $datanilaiinstruktur)
+            ->with('datanilaiPembimbing', $datanilaiPembimbing)
+            ->with('data', $data);
     }
 }

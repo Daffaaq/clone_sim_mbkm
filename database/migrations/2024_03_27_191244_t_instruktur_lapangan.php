@@ -21,6 +21,8 @@ class TInstrukturLapangan extends Migration
             $table->foreign('mahasiswa_id')->references('mahasiswa_id')->on('m_mahasiswa');
             $table->unsignedBigInteger('instruktur_id')->index();
             $table->foreign('instruktur_id')->references('instruktur_id')->on('m_instruktur');
+            $table->unsignedBigInteger('periode_id');
+            $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->dateTime('created_at')->nullable()->useCurrent();
             $table->integer('created_by')->nullable()->index();
             $table->dateTime('updated_at')->nullable();

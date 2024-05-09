@@ -41,9 +41,10 @@ class MyMagangController extends Controller
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->with('prodi')->first();
         // dd($mahasiswa);
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
-        $activePeriods = PeriodeModel::where('is_active', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // Gunakan mahasiswa_id untuk mencari data magang
-        $magang_ids = Magang::whereIn('mahasiswa_id', [$mahasiswa_id]) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
+        $magang_ids = Magang::whereIn('mahasiswa_id', [$mahasiswa_id])
+            ->where('periode_id', $activePeriods) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
             ->where('status', 1)
             ->pluck('magang_id');
         $magang = Magang::whereIn('magang_id', $magang_ids) // Perhatikan penggunaan whereIn() untuk memeriksa apakah $magang_ids ada di dalam array
@@ -51,19 +52,15 @@ class MyMagangController extends Controller
             ->with('mitra')
             ->with('mitra.kegiatan')
             ->with('periode')
-            ->where('periode_id', $activePeriods->toArray())
+            ->where('periode_id', $activePeriods)
             ->first();
         // dd($magang);
         $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
-            ->whereHas('magang', function ($query) use ($activePeriods) {
-                $query->where('periode_id', $activePeriods->toArray());
-            })
-        ->with('instruktur')->first();
+            ->where('periode_id', $activePeriods)
+            ->with('instruktur')->first();
 
         $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)
-            ->whereHas('magang', function ($query) use ($activePeriods) {
-                $query->where('periode_id', $activePeriods->toArray());
-            })
+        ->where('periode_id', $activePeriods)
         ->with('dosen')->first();
         // dd($instrukturLapangan, $pembimbingDosen);
         // $nama_dosen = optional($pembimbingDosen->dosen)->dosen_name;
@@ -76,7 +73,7 @@ class MyMagangController extends Controller
 
         $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
             ->where('status', 1)
-            ->where('periode_id', $activePeriods->toArray())// Status 1 menunjukkan 'Diterima'
+            ->where('periode_id', $activePeriods)// Status 1 menunjukkan 'Diterima'
             ->exists();
         if ($magang_status) {
             $this->authAction('read');
@@ -130,6 +127,7 @@ class MyMagangController extends Controller
             ];
 
             $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
+                ->where('periode_id', $activePeriods)
                 ->where('status', 0) // Status 0 menunjukkan 'Belum keterima'
                 ->exists();
 

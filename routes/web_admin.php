@@ -35,6 +35,9 @@ use App\Http\Controllers\Transaction\BeritaController as TransactionBeritaContro
 use App\Http\Controllers\Transaction\DaftarMagangController;
 use App\Http\Controllers\Transaction\DosenPenilaianMahasiswaController;
 use App\Http\Controllers\Transaction\InstrukturPenilaianMahasiswaController;
+use App\Http\Controllers\Transaction\JadwalDosenPembahasController;
+use App\Http\Controllers\Transaction\JadwalDosenPembimbingController;
+use App\Http\Controllers\Transaction\JadwalInstrukturLapanganController;
 use App\Http\Controllers\Transaction\JadwalSidangMagangController;
 use App\Http\Controllers\Transaction\LihatStatusPendaftaranController;
 use App\Http\Controllers\Transaction\LihatStatusPengajuanController;
@@ -233,6 +236,17 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
 
     //ujian-seminar-hasil
     Route::resource('ujian-seminar-hasil', UjianSeminarHasilController::class)->parameter('ujian-seminar-hasil', 'id');
+    Route::post('ujian-seminar-hasil/berita-acara', [UjianSeminarHasilController::class, 'uploadBeritaAcara'])->name('upload-berita-acara');
+    Route::get('ujian-seminar-hasil/{id}/nilai-pembimbing', [UjianSeminarHasilController::class, 'nilai'])->name('nilai-mahasiswa-dosen-pembimbing');
+    Route::get('ujian-seminar-hasil/{id}/nilai-pembahas', [UjianSeminarHasilController::class, 'nilaiDosenPembahas'])->name('nilai-mahasiswa-dosen-pembahas');
+    Route::get('ujian-seminar-hasil/{id}/nilai-instruktur', [UjianSeminarHasilController::class, 'nilaiInstrukturLapangan'])->name('nilai-mahasiswa-instruktur-lapangan');
+    Route::get('ujian-seminar-hasil/{id}/nilai-akhir', [UjianSeminarHasilController::class, 'nilaiAkhir'])->name('nilai-mahasiswa-akhir');
+
+    // jadwal-seminar-hasil intruktur lapangan
+    Route::resource('jadwal-semhas-instruktur', JadwalInstrukturLapanganController::class)->parameter('log-bimbingan', 'id');
+    Route::post('jadwal-semhas-instruktur/list', [JadwalInstrukturLapanganController::class, 'list']);
+    Route::get('jadwal-semhas-instruktur/{id}/nilai', [JadwalInstrukturLapanganController::class, 'nilai']);
+    Route::post('jadwal-semhas-instruktur/nilai', [JadwalInstrukturLapanganController::class, 'simpanNilai'])->name('simpan.nilai.instruktur');
     //berita
     Route::resource('berita', TransactionBeritaController::class)->parameter('berita', 'id');
     Route::post('berita/list', [TransactionBeritaController::class, 'list']);
@@ -279,6 +293,20 @@ Route::group(['prefix' => 'dosen-pembimbing', 'middleware' => ['auth']], functio
     Route::post('penilaian-mahasiswa-dosen/list', [DosenPenilaianMahasiswaController::class, 'list']);
     Route::get('penilaian-mahasiswa-dosen/{id}/delete', [DosenPenilaianMahasiswaController::class, 'confirm']);
     Route::post('penilaian-mahasiswa-dosen/updatedataPenilaianMahasiswa', [DosenPenilaianMahasiswaController::class, 'updatedataPenilaianMahasiswa'])->name('update.penilaian.mahasiswa.dosen');
+
+    Route::resource('jadwal-semhas', JadwalDosenPembimbingController::class)->parameter('log-bimbingan', 'id');
+    Route::post('jadwal-semhas/list', [JadwalDosenPembimbingController::class, 'list']);
+    Route::get('jadwal-semhas/{id}/nilai', [JadwalDosenPembimbingController::class, 'nilai']);
+    Route::post('jadwal-semhas/nilai', [JadwalDosenPembimbingController::class, 'simpanNilai'])->name('simpan.nilai');
+    Route::get('jadwal-semhas/{id}/delete', [JadwalDosenPembimbingController::class, 'confirm']);
+});
+Route::group(['prefix' => 'dosen-pembahas', 'middleware' => ['auth']], function () {
+
+    Route::resource('jadwal-semhas', JadwalDosenPembahasController::class)->parameter('log-bimbingan', 'id');
+    Route::post('jadwal-semhas/list', [JadwalDosenPembahasController::class, 'list']);
+    Route::get('jadwal-semhas/{id}/nilai', [JadwalDosenPembahasController::class, 'nilai']);
+    Route::post('jadwal-semhas/nilai', [JadwalDosenPembahasController::class, 'simpanNilai'])->name('simpan.nilai.pembahas');
+    Route::get('jadwal-semhas/{id}/delete', [JadwalDosenPembahasController::class, 'confirm']);
 });
 Route::group(['prefix' => 'category', 'middleware' => ['auth']], function () {
     //group
