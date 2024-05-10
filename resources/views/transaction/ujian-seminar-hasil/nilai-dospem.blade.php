@@ -7,16 +7,16 @@
         </div>
         <div class="modal-body p-0">
             <div class="header">
-                <h5 style="align-content: flex-start">EVALUASI AKHIR SEMESTER DOSEN PEMBIMBING</h5>
+                <h5 style="align-content: flex-start;margin-left:5px">EVALUASI AKHIR SEMESTER DOSEN PEMBIMBING</h5>
                 <br>
                 <h5 style="text-align: center">FORM PENILAIAN DISEMINASI HASIL KEGIATAN MBKM</h5>
                 <h5 style="text-align: center">DOSEN PEMBIMBING</h5>
             </div>
-            <div class="upper">
+            <div class="upper"style="margin-left: 5px">
                 <table border="0" cellpadding="1" class="tbl-no">
                     <tbody>
                         <tr>
-                            <td width="93"><span style="font-size: 16px;">Nama Mahasiswa</span></td>
+                            <td width="200"><span style="font-size: 16px;">Nama Mahasiswa</span></td>
                             <td width="8"style="padding-left: 5px;><span style="font-size: 16px;">:</span></td>
                                 <td width="200"><span style="font-size: 16px;">{{ $data->magang->mahasiswa->nama_mahasiswa }}</span> </td>
                             </tr>

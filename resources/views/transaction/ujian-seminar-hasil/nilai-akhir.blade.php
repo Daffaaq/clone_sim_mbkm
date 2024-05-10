@@ -7,13 +7,13 @@
         </div>
         <div class="modal-body p-0">
             <table class="table">
-                <thead>
+                <thead class="" style="text-align: center">
                     <th scope="col">Nilai Pembimbing</th>
                     <th scope="col">Nilai Pembahas</th>
                     <th scope="col">Nilai dari Mitra</th>
                     <th scope="col">Nilai Akhir</th>
                 </thead>
-                <tbody>
+                <tbody class="" style="text-align: center">
                     <td class="total-nilai1-pembimbing"></td>
                     <td class="total-nilai1-pembahas"></td>
                     <td class="total-nilai1-intruktur"></td>
