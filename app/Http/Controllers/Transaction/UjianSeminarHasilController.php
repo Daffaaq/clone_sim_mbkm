@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Validation\Rule;
 
@@ -126,6 +127,19 @@ class UjianSeminarHasilController extends Controller
                 ->first();
             // 
             // dd($dataJadwalSeminar);
+            $jamsekarang = Carbon::now(); // Waktu saat ini
+            $datajamsidangselesai = Carbon::parse($dataJadwalSeminar->jam_sidang_selesai); // Waktu sidang selesai
+
+            if ($jamsekarang->gte($datajamsidangselesai)) {
+                // Jika waktu saat ini lebih besar dari atau sama dengan waktu sidang selesai
+                $hasilPerbandingan = true;
+            } else {
+                $hasilPerbandingan = false;
+            }
+            // dd($hasilPerbandingan);
+            // dd($datajamsidangselesai);
+            // $datacomparasion = 
+            // dd($jamsekarang);
             if (!$dataJadwalSeminar) {
                 $message = "halaman belum bisa diakses. Silahkan menunggu untuk pembagian jadwal sidang magang";
                 return view($this->viewPath . 'index')
@@ -148,6 +162,7 @@ class UjianSeminarHasilController extends Controller
                 ->with('data', $data)
                 ->with('user', $user)
                 ->with('dataJadwalSeminar', $dataJadwalSeminar)
+                ->with('hasilPerbandingan', $hasilPerbandingan)
                 ->with('datanilai', $datanilai)
                 ->with('existingNilai', $existingNilai)
                 ->with('dataJadwalSeminar', $dataJadwalSeminar)

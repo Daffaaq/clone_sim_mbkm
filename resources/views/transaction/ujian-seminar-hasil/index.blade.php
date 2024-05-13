@@ -191,9 +191,8 @@
                                             <td class="w-84">{{ $data->pembimbingDosen->dosen->dosen_name }}</td>
                                         </tr>
                                         @if (
-                                            \Carbon\Carbon::parse($dataJadwalSeminar->tanggal_sidang)->isPast() ||
-                                                (\Carbon\Carbon::parse($dataJadwalSeminar->tanggal_sidang)->isToday() &&
-                                                    \Carbon\Carbon::now()->gte(\Carbon\Carbon::parse($dataJadwalSeminar->jam_sidang_selesai))))
+                                            \Carbon\Carbon::parse($dataJadwalSeminar->tanggal_sidang)->isPast() &&
+                                                (\Carbon\Carbon::parse($dataJadwalSeminar->tanggal_sidang)->isToday() && $hasilPerbandingan))
                                             <!-- Jika tanggal sidang telah berlalu atau hari ini adalah tanggal sidang dan waktu sekarang sudah setelah atau sama dengan jam sidang selesai -->
                                             <!-- Bagian HTML -->
                                             @if (!$data->Berita_acara == null)
