@@ -190,40 +190,36 @@
                                             <th class="w-1">:</th>
                                             <td class="w-84">{{ $data->pembimbingDosen->dosen->dosen_name }}</td>
                                         </tr>
-                                        @if (
-                                            \Carbon\Carbon::parse($dataJadwalSeminar->tanggal_sidang)->isPast() &&
-                                                (\Carbon\Carbon::parse($dataJadwalSeminar->tanggal_sidang)->isToday() && $hasilPerbandingan))
-                                            <!-- Jika tanggal sidang telah berlalu atau hari ini adalah tanggal sidang dan waktu sekarang sudah setelah atau sama dengan jam sidang selesai -->
-                                            <!-- Bagian HTML -->
-                                            @if (!$data->Berita_acara == null)
-                                                <tr>
-                                                    <th class="w-15 text-right">Berita Acara</th>
-                                                    <th class="w-1">:</th>
-                                                    <td class="w-84">
-                                                        @if ($data->Berita_acara)
-                                                            <a href="{{ asset('storage/assets/berita-acara/' . $data->Berita_acara) }}"
-                                                                target="_blank">
-                                                                Berita Acara Seminar Magang
-                                                            </a>
-                                                        @else
-                                                            No file uploaded
-                                                        @endif
-                                                    </td>
-                                                </tr>
-                                            @else
-                                                <tr>
-                                                    <th class="w-15 text-right">Berita Acara</th>
-                                                    <th class="w-1">:</th>
-                                                    <td class="w-84">
-                                                        <form id="uploadForm" enctype="multipart/form-data" method="POST">
-                                                            @csrf
-                                                            <input type="file" name="berita_acara_file"
-                                                                accept=".pdf,.doc,.docx" required>
-                                                            <button type="submit">Upload</button>
-                                                        </form>
-                                                    </td>
-                                                </tr>
-                                            @endif
+                                        <!-- Jika tanggal sidang telah berlalu atau hari ini adalah tanggal sidang dan waktu sekarang sudah setelah atau sama dengan jam sidang selesai -->
+                                        <!-- Bagian HTML -->
+                                        @if (!$data->Berita_acara == null)
+                                            <tr>
+                                                <th class="w-15 text-right">Berita Acara</th>
+                                                <th class="w-1">:</th>
+                                                <td class="w-84">
+                                                    @if ($data->Berita_acara)
+                                                        <a href="{{ asset('storage/assets/berita-acara/' . $data->Berita_acara) }}"
+                                                            target="_blank">
+                                                            Berita Acara Seminar Magang
+                                                        </a>
+                                                    @else
+                                                        No file uploaded
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @else
+                                            <tr>
+                                                <th class="w-15 text-right">Berita Acara</th>
+                                                <th class="w-1">:</th>
+                                                <td class="w-84">
+                                                    <form id="uploadForm" enctype="multipart/form-data" method="POST">
+                                                        @csrf
+                                                        <input type="file" name="berita_acara_file"
+                                                            accept=".pdf,.doc,.docx" required>
+                                                        <button type="submit">Upload</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
                                         @endif
                                         @if (!$data->Berita_acara == null)
                                             {{-- @dd($datanilai); --}}
@@ -232,6 +228,7 @@
                                                 <th class="w-15 text-right">Nilai</th>
                                                 <th class="w-1">:</th>
                                                 <td class="w-84">
+                                                    {{-- @dd($datanilai); --}}
                                                     @if (!$datanilai->isEmpty() && !$existingNilai == null)
                                                         <a href="#" data-block="body"
                                                             data-url="{{ $page->url }}/{{ $data->semhas_daftar_id }}/nilai-pembimbing"

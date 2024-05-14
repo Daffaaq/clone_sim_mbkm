@@ -401,7 +401,7 @@ class JadwalDosenPembahasController extends Controller
                 't_semhas_daftar.link_laporan'
             )
             ->find($id);
-        $semhas_daftar_id = $data->value('semhas_daftar_id');
+        $semhas_daftar_id = $id;
 
         $magang = Magang::where('magang_id', $data->magang_id)
             ->with('mitra')
