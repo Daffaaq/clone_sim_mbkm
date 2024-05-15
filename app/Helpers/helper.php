@@ -84,25 +84,25 @@ function getMahasiswaID()
     }
 }
 
-function getPerusahaan()
+function getinstruktur()
 {
     $user = \Illuminate\Support\Facades\Auth::user();
     if ($user->group_id == 5) {
-        $perusahaan = session()->get('perusahaan');
-
-        return ($perusahaan) ?: $user->getUserPerusahaan;
+        $instruktur = session()->get('instruktur');
+        // dd($instruktur);
+        return ($instruktur) ?: $user->getUserInstruktur;
     } else {
         return null;
     }
 }
 
-function getPerusahaanID()
+function getinstrukturID()
 {
     $user = \Illuminate\Support\Facades\Auth::user();
+    // dd($user->group_id);
     if ($user->group_id == 5) {
-        $perusahaan = session()->get('perusahaan');
-
-        return ($perusahaan) ? $perusahaan->perusahaan_id : $user->getUserPerusahaan->perusahaan_id;
+        $instruktur = session()->get('instruktur');
+        return ($instruktur) ? $instruktur->instruktur_id : $user->getUserInstruktur->instruktur_id;
     } else {
         return null;
     }

@@ -43,7 +43,6 @@
                                     <th>Tanggal</th>
                                     <th>Jam Mulai</th>
                                     <th>Jam Selesai</th>
-                                    <th>Penjelasan Kegiatan</th>
                                     <th>Status Instruktur Lapangan</th>
                                     <th>Nilai Instruktur Lapangan</th>
                                     <th>Action</th>
@@ -166,13 +165,6 @@
                         "mData": "jam_selesai",
                         "sClass": "",
                         "sWidth": "15%",
-                        "bSortable": true,
-                        "bSearchable": true
-                    },
-                    {
-                        "mData": "topik_bimbingan",
-                        "sClass": "",
-                        "sWidth": "40%",
                         "bSortable": true,
                         "bSearchable": true
                     },

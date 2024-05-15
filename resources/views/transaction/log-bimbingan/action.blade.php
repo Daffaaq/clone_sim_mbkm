@@ -58,7 +58,7 @@ $is_edit = isset($data);
                     <label class="col-sm-3 control-label col-form-label">Topik Bimbingan</label>
                     <div class="col-sm-9">
                         <textarea class="form-control form-control summernote " id="topik_bimbingan" name="topik_bimbingan" value="">
-                        {{ isset($data->topik_bimbingan) ? $data->topik_bimbingan : '' }}
+                        {!! isset($data->topik_bimbingan) ? $data->topik_bimbingan : '' !!}
                         </textarea>
                     </div>
                 </div>
@@ -92,30 +92,24 @@ $is_edit = isset($data);
             //         }
             //     }
             // });
-            $('.summernote').summernote({
+            $('#topik_bimbingan').summernote({
+                tabsize: 2,
                 height: 200,
-                callbacks: {
-                    onBlur: function() {
-                        // Hapus karakter spasi dan tag br sebelum menyimpan konten
-                        var content = $(this).summernote('code').replace(/&nbsp;/g, ' ')
-                            .replace(/<br\s*[\/]?>/gi, '\n');
-                        $(this).val(content);
-                    },
-                    onKeydown: function(e) {
-                        if (e.keyCode === 13) { // Jika tombol enter ditekan
-                            var cursorPosition = $(this).summernote('core.editor')
-                                .getCursorPosition();
-                            var contentAfterCursor = $(this).summernote('core.editor')
-                                .getTextRange(cursorPosition, cursorPosition + 1);
-                            if (contentAfterCursor === " " || contentAfterCursor === "\n") {
-                                e
-                                    .preventDefault(); // Hentikan penambahan baris baru jika hanya ada spasi atau baris baru setelah kursor
-                                return false;
-                            }
-                        }
-                    }
-                },
-                disableNormalizeContent: true
+                dialogsInBody: true,
+                codeviewFilter: true,
+                codeviewIframeFilter: true,
+                popover: {
+                    air: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'underline', 'clear']],
+                        ['fontname', ['fontname']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['table', ['table']],
+                        ['insert', ['link', 'picture', 'video']],
+                        ['view', ['fullscreen', 'codeview', 'help']],
+                    ]
+                }
             });
         });
         unblockUI();
@@ -154,6 +148,16 @@ $is_edit = isset($data);
                 }
             },
             submitHandler: function(form) {
+                if ($('#topik_bimbingan').summernote('isEmpty')) {
+                    setFormMessage('.form-message', {
+                        stat: false,
+                        msg: 'Deskripsi harus diisi',
+                        msgField: {
+                            'topik_bimbingan': 'Deskripsi harus diisi'
+                        }
+                    });
+                    return false;
+                }
                 $('.form-message').html('');
                 blockUI(form);
                 $(form).ajaxSubmit({

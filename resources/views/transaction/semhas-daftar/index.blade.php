@@ -298,10 +298,8 @@
                                                 <input type="text" class="form-control form-control-sm"
                                                     id="link_github" name="link_github">
                                                 <small id="judul" class="form-text text-muted">Buat link repository
-                                                    untuk
-                                                    aplikasi yang sudah dikembangkan ditempat magang. Bisa link repository
-                                                    pada
-                                                    Github </small>
+                                                    untuk aplikasi yang sudah dikembangkan ditempat magang. Bisa link
+                                                    repository pada Github </small>
                                             </div>
                                         </div>
                                         <div class="form-group required row mb-2">
@@ -310,9 +308,8 @@
                                                 <input type="text" class="form-control form-control-sm"
                                                     id="link_laporan" name="link_laporan">
                                                 <small id="judul" class="form-text text-muted">Buat link repository
-                                                    untuk
-                                                    dokumen Proposal, Log Bimbingan. Bisa link share folder pada Google
-                                                    Drive</small>
+                                                    untuk dokumen Proposal, Log Bimbingan. Bisa link share folder pada
+                                                    Google Drive</small>
                                             </div>
                                         </div>
                                         <input type="hidden" name="semhas" value="{{ $semhas_id }}">
@@ -327,6 +324,7 @@
                                             </div>
                                         </div>
                                     </form>
+
                                     {{-- Form Anda bisa ditambahkan di sini --}}
                                 </div>
                             </div>
@@ -498,36 +496,40 @@
                     }
                 },
                 submitHandler: function(form) {
-                    $('.form-message').html('');
-                    blockUI(form);
                     var formData = {};
                     if ($('#Pilih-judul').val() == 'manual') {
                         formData = {
                             'link_github': $('input[name="link_github"]').val(),
                             'link_laporan': $('input[name="link_laporan"]').val(),
                             'Judul': $('input[name="manualJudul"]').val(),
-                            // Sisipkan sisa data yang diperlukan
+                            'semhas': $('input[name="semhas"]').val(),
+                            'instrukturLapangan': $('input[name="instrukturLapangan"]').val(),
+                            'pembimbingdosen': $('input[name="pembimbingdosen"]').val(),
+                            'magang_id': $('input[name="magang_id"]').val()
                         };
                     } else if ($('#Pilih-judul').val() == 'existing') {
                         formData = {
                             'link_github': $('input[name="link_github"]').val(),
                             'link_laporan': $('input[name="link_laporan"]').val(),
                             'Judul': $('#existingJudul').val(),
-                            // Sisipkan sisa data yang diperlukan
+                            'semhas': $('input[name="semhas"]').val(),
+                            'instrukturLapangan': $('input[name="instrukturLapangan"]').val(),
+                            'pembimbingdosen': $('input[name="pembimbingdosen"]').val(),
+                            'magang_id': $('input[name="magang_id"]').val()
                         };
                     }
                     console.log(formData);
+                    // const url = `/transaksi/seminarhasil-daftar`;
                     $.ajax({
                         type: 'POST',
-                        url: $(form).attr('action'),
+                        url: '{{ route('daftar.semhas') }}',
                         data: formData,
-                        dataType: 'json',
                         success: function(data) {
-                            console.log("Submit berhasil!");
-                            unblockUI(form);
-                            setFormMessage('.form-message', data);
                             if (data.success) {
                                 window.location.href = '/transaksi/seminarhasil-daftar';
+                            } else {
+                                unblockUI(form);
+                                console.error("Unexpected response format", data);
                             }
                         },
                         error: function(xhr, status, error) {
@@ -535,7 +537,8 @@
                             console.error(xhr.responseText);
                         }
                     });
-                },
+                }
+
                 validClass: "valid-feedback",
                 errorElement: "div",
                 errorClass: 'invalid-feedback',

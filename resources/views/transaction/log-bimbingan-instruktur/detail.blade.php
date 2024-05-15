@@ -56,7 +56,7 @@
                 <tr>
                     <th class="w-25 text-right">Topik Bimbingan</th>
                     <th class="w-1">:</th>
-                    <td class="w-74" style="word-wrap: break-word;">{{ $data->topik_bimbingan }}</td>
+                    <td class="w-74" style="word-wrap: break-word;">{!! $data->topik_bimbingan !!}</td>
                 </tr>
                 <tr>
                     <th class="w-25 text-right">Foto</th>

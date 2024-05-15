@@ -149,7 +149,7 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::resource('seminarhasil-daftar', SemhasDaftarController::class)->parameter('semhas', 'id');
     Route::post('seminarhasil-daftar/list', [SemhasDaftarController::class, 'list']);
     Route::get('seminarhasil-daftar/{id}/delete', [SemhasDaftarController::class, 'confirm']);
-    Route::post('log-seminarhasil/daftar', [SemhasDaftarController::class, 'daftarSemhas'])->name('daftar.semhas');
+    Route::post('seminarhasil/daftar', [SemhasDaftarController::class, 'daftarSemhas'])->name('daftar.semhas');
 
     //log bimbingan
     Route::resource('log-bimbingan', LogBimbinganController::class)->parameter('log-bimbingan', 'id');

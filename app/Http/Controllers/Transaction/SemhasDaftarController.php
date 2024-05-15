@@ -323,6 +323,7 @@ class SemhasDaftarController extends Controller
 
     public function daftarSemhas(Request $request)
     {
+        // dd($request->all());
         // Validasi request
         // Dapatkan ID pengguna yang sedang login
         $userId = Auth::id();
@@ -353,14 +354,14 @@ class SemhasDaftarController extends Controller
         // Validasi request berdasarkan kebutuhan aplikasi
         if ($dataSemhasDaftar1->isEmpty()) {
             $request->validate([
-                'link_github' => 'required|url',
-                'link_laporan' => 'required|url',
+                'link_github' => 'required',
+                'link_laporan' => 'required',
                 'Judul' => 'required' // Validasi hanya diterapkan jika input manual
             ]);
         } else {
             $request->validate([
-                'link_github' => 'required|url',
-                'link_laporan' => 'required|url',
+                'link_github' => 'required',
+                'link_laporan' => 'required',
             ]);
         }
 
@@ -384,7 +385,7 @@ class SemhasDaftarController extends Controller
             SemhasDaftarModel::create($dataToCreate);
         }
 
-        return response()->json(['success' => true]);
+        return redirect('/transaksi/seminarhasil-daftar');
     }
 
 

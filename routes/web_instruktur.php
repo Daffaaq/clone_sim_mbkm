@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\KegiatanController;
 use App\Http\Controllers\Master\PerusahaanController;
+use App\Http\Controllers\Profile\InstrukturProfileController;
 use App\Http\Controllers\Setting\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -9,8 +10,8 @@ Route::group(['prefix' => 'instruktur', 'middleware' => ['auth']], function () {
 
 
 
-    // Route::get('profile', [MahasiswaProfileController::class, 'index']);
-    // Route::put('profile', [MahasiswaProfileController::class, 'update']);
+    Route::get('profile', [InstrukturProfileController::class, 'index']);
+    Route::put('profile', [InstrukturProfileController::class, 'update']);
 });
 
 Route::resource('kegiatan', KegiatanController::class)->parameter('kegiatan', 'id');

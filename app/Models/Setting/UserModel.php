@@ -4,6 +4,7 @@ namespace App\Models\Setting;
 
 
 use App\Models\Master\DosenModel;
+use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
 use App\Models\Master\PerusahaanModel;
 use App\Models\Master\ProdiModel;
@@ -109,6 +110,10 @@ class UserModel extends Authenticatable
     {
         return ($this->role->group_code == 'MHS' && $this->role->group_id == 4);
     }
+    public function isInstruktur()
+    {
+        return ($this->role->group_code == 'INT' && $this->role->group_id == 5);
+    }
 
 
     /*
@@ -129,9 +134,9 @@ class UserModel extends Authenticatable
         return $this->hasOne(MahasiswaModel::class, 'user_id', 'user_id');
     }
 
-    public function getUserPerusahaan()
+    public function getUserInstruktur()
     {
-        return $this->hasOne(PerusahaanModel::class, 'user_id', 'user_id');
+        return $this->hasOne(InstrukturModel::class, 'user_id', 'user_id');
     }
 
 
