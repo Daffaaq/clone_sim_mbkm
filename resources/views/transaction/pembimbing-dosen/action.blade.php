@@ -23,9 +23,21 @@ $is_edit = isset($data);
                             class="form-control form-control-sm select2_combobox" multiple>
                             <option value="" disabled>- Pilih -</option>
                             @if (count($mahasiswa) > 0)
-                                @foreach ($mahasiswa as $mahasiswa_id => $r)
+                                {{-- @foreach ($mahasiswa as $mahasiswa_id => $r)
                                     <option value="{{ $mahasiswa_id }}" data-magang-id="{{ $r['magang_id'] }}">
                                         {{ $r['nama_mahasiswa'] }}
+                                    </option>
+                                @endforeach --}}
+                                @foreach ($mahasiswa as $mahasiswa_id => $r)
+                                    @php
+                                        $nama_mahasiswa = $r['nama_mahasiswa'];
+                                        $magang_id = $r['magang_id'];
+                                        // Ambil informasi kode magang dari model Magang
+                                        $kode_magang =
+                                            \App\Models\Transaction\Magang::find($magang_id)->magang_kode ?? '';
+                                    @endphp
+                                    <option value="{{ $mahasiswa_id }}" data-magang-id="{{ $magang_id }}">
+                                        {{ $nama_mahasiswa }} - {{ $kode_magang }}
                                     </option>
                                 @endforeach
                             @else

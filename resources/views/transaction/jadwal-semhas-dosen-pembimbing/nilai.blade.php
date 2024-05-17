@@ -238,7 +238,7 @@
             var valid = true;
             nilaiInputs.forEach(function(input) {
                 var nilai = parseFloat(input.value);
-                if (isNaN(nilai) || nilai < 51 || nilai > 100) {
+                if (nilai < 51 || nilai > 100) {
                     // Menampilkan pesan kesalahan jika nilai tidak sesuai kriteria
                     $('#error-message').text(
                         'Nilai harus di antara 51 dan 100'
@@ -250,7 +250,43 @@
                         false; // Set variabel valid menjadi false jika ada nilai tidak valid
                     return false; // Stop the iteration jika ada nilai tidak valid
                 }
+                if (isNaN(nilai)) {
+                    $('#error-message').text(
+                        'Nilai harus diisi'
+                    ).show();
+                    setTimeout(function() {
+                        $('#error-message').fadeOut('slow');
+                    }, 5000);
+                    valid =
+                        false; // Set variabel valid menjadi false jika ada nilai tidak valid
+                    return false; // Stop the iteration jika ada nilai tidak valid
+                }
             });
+            var saranPembimbingDosen = document.getElementById('saran_pembimbing_dosen').value.trim();
+            var catatanPembimbingDosen = document.getElementById('catatan_pembimbing_dosen').value
+                .trim();
+
+            if (saranPembimbingDosen === '') {
+                $('#error-message').text(
+                    'Mohon maaf saran harus diisi'
+                ).show();
+                setTimeout(function() {
+                    $('#error-message').fadeOut('slow');
+                }, 5000);
+                valid = false;
+                return false;
+            }
+
+            if (catatanPembimbingDosen === '') {
+                $('#error-message').text(
+                    'Mohon maaf catatan harus diisi'
+                ).show();
+                setTimeout(function() {
+                    $('#error-message').fadeOut('slow');
+                }, 5000);
+                valid = false;
+                return false;
+            }
             if (valid) {
                 var formData = new FormData(form);
                 var $modal = $('#modal-master');

@@ -51,7 +51,6 @@
                                         <th>Nama Mahasiswa</th>
                                         <th>Nama Mitra</th>
                                         <th>Skema</th>
-                                        <th>#</th>
                                     </tr>
                                 </thead>
                             </table>
@@ -121,34 +120,6 @@
                         "sWidth": "15%",
                         "bSortable": true,
                         "bSearchable": true
-                    },
-                    {
-                        "mData": "pembimbing_dosen_id",
-                        "sClass": "text-center pr-2",
-                        "sWidth": "10%",
-                        "bSortable": false,
-                        "bSearchable": false,
-                        "mRender": function(data, type, row, meta) {
-                            // var buttons = '';
-                            // @if ($allowAccess->update)
-                            //     // if (row.status == 0) {
-                            //     //     buttons +=
-                            //     //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_approve" class="ajax_modal btn btn-xs btn-success tooltips text-white" data-placement="left" data-original-title="Approve" ><i class="fa fa-check"></i></a> ` +
-                            //     //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/confirm_reject" class="ajax_modal btn btn-xs btn-danger tooltips text-white" data-placement="left" data-original-title="Reject" ><i class="fa fa-times"></i></a> `;
-                            //     // }
-                            //     buttons +=
-                            //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Edit Data" ><i class="fa fa-edit"></i></a> `;
-                            // @endif
-                            // @if ($allowAccess->delete)
-                            //     buttons +=
-                            //         `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/delete" class="ajax_modal btn btn-xs btn-danger tooltips text-light" data-placement="left" data-original-title="Hapus Data" ><i class="fa fa-trash"></i></a> `;
-                            // @endif
-
-                            // return buttons;
-                            return '<a href="#" data-block="body" data-url="{{ $page->url }}/' +
-                                data +
-                                '" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="show Data" ><i class="fa fa-eye text-white"></i></a>';
-                        }
                     }
                 ],
                 "fnDrawCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {

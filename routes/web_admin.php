@@ -244,6 +244,7 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::get('ujian-seminar-hasil/{encrpyt}/cetak-nilai-pembimbing', [UjianSeminarHasilController::class, 'cetakNilaiDosenPembimbing'])->name('cetak-nilai-mahasiswa-dosen-pembimbing');
     Route::get('ujian-seminar-hasil/{encrpyt}/cetak-nilai-pembahas', [UjianSeminarHasilController::class, 'cetakNilaiDosenpembahas'])->name('cetak-nilai-mahasiswa-dosen-pembahas');
     Route::get('ujian-seminar-hasil/{encrpyt}/cetak-nilai-instruktur', [UjianSeminarHasilController::class, 'cetakNilaiInstrukturLapangan'])->name('cetak-nilai-mahasiswa-instruktur-lapangan');
+    Route::get('ujian-seminar-hasil/{encrpyt}/cetak-nilai-akhir', [UjianSeminarHasilController::class, 'cetakNilaiAkhir'])->name('cetak-nilai-mahasiswa-akhir');
 
     // jadwal-seminar-hasil intruktur lapangan
     Route::resource('jadwal-semhas-instruktur', JadwalInstrukturLapanganController::class)->parameter('log-bimbingan', 'id');

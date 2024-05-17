@@ -521,7 +521,8 @@ class UjianSeminarHasilController extends Controller
                 't_semhas_daftar.link_laporan'
             )
             ->find($id);
-        $semhas_daftar_id = $data->value('semhas_daftar_id');
+        $semhas_daftar_id = $id;
+        $encryption = Crypt::encrypt($id);
 
         $magang = Magang::where('magang_id', $data->magang_id)
             ->with('mitra')
@@ -561,6 +562,7 @@ class UjianSeminarHasilController extends Controller
             ->with('datanilaiPembahas', $datanilaiPembahas)
             ->with('datanilaiinstruktur', $datanilaiinstruktur)
             ->with('datanilaiPembimbing', $datanilaiPembimbing)
+            ->with('encryption', $encryption)
             ->with('data', $data);
     }
 
@@ -769,6 +771,137 @@ class UjianSeminarHasilController extends Controller
         }
 
         $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-Instruktur-lapangan', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
+        return $pdf->stream();
+    }
+    public function cetakNilaiAkhir($id)
+    {
+        $id = Crypt::decrypt($id);
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
+            ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
+            ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
+            ->leftJoin('m_dosen as d1', 't_semhas_daftar.dosen_pembahas_id', '=', 'd1.dosen_id') // Menggunakan alias yang sama seperti saat memilih kolom
+            ->leftJoin('m_dosen as d2', 't_pembimbing_dosen.dosen_id', '=', 'd2.dosen_id')
+            ->leftJoin('t_instruktur_lapangan', 't_semhas_daftar.instruktur_lapangan_id', '=', 't_instruktur_lapangan.instruktur_lapangan_id')
+            ->leftJoin('m_instruktur', 't_instruktur_lapangan.instruktur_id', '=', 'm_instruktur.instruktur_id')
+            ->select(
+                't_semhas_daftar.semhas_daftar_id',
+                'm_mahasiswa.nama_mahasiswa',
+                't_semhas_daftar.Judul',
+                'd1.dosen_name AS nama_dosen_pembahas', // Menggunakan alias yang sama seperti dalam JOIN
+                'm_instruktur.nama_instruktur AS nama_instruktur',
+                'd2.dosen_name AS nama_dosen', // Menggunakan alias yang sama seperti dalam JOIN
+                't_semhas_daftar.magang_id',
+                't_semhas_daftar.tanggal_daftar',
+                't_semhas_daftar.link_github',
+                't_semhas_daftar.link_laporan'
+            )
+            ->find($id);
+        $semhas_daftar_id = $id;
+        $encryption = Crypt::encrypt($id);
+
+        $magang = Magang::where('magang_id', $data->magang_id)
+            ->with('mitra')
+            ->with('mitra.kegiatan')
+            ->with('periode')
+            ->where('periode_id', $activePeriods)
+            ->first();
+        // dd($magang);
+        $datanilaiinstruktur = TNilaiInstrukturLapanganModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+
+
+        $kriteriaNilaiintruktur = NilaiInstrukturLapanganModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+
+        $datanilaiPembahas = TNilaiPembahasDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+
+        $kriteriaNilaiPembahas = NilaiPembahasDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+
+        $datanilaiPembimbing = TNilaiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+        // dd($datanilai);
+
+        $kriteriaNilaiPembimbing = NilaiPembimbingDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+
+        // Perhitungan nilai instruktur
+        $totalNilaiInstruktur = 0;
+        $nilaiDetailsInstruktur = [];
+
+        foreach ($kriteriaNilaiintruktur as $nilai) {
+            $nilaiModel = $datanilaiinstruktur->firstWhere('nilai_instruktur_lapangan_id', $nilai->nilai_instruktur_lapangan_id);
+            $nilaiValue = $nilaiModel ? $nilaiModel->nilai : 0;
+            $nilaiXBobot = $nilai->bobot ? (float)$nilaiValue * (float)$nilai->bobot : 0;
+            $totalNilaiInstruktur += $nilaiXBobot;
+
+            // Modify the sprintf format to always display two decimal places
+            $nilaiDetailsInstruktur[] = [
+                'name' => $nilai->name_kriteria_instruktur_lapangan,
+                'nilai' => $nilaiValue,
+                'bobot' => $nilai->bobot,
+                'nilaiXBobot' => sprintf("%.2f", $nilaiXBobot)
+            ];
+        }
+        // Perhitungan nilai pembimbing
+        // Perhitungan nilai pembimbing
+        $totalNilaiPembimbing = 0;
+        $nilaiDetailsPembimbing = [];
+
+        foreach ($kriteriaNilaiPembimbing as $nilai) {
+            $nilaiModel = $datanilaiPembimbing->firstWhere('nilai_pembimbing_dosen_id', $nilai->nilai_pembimbing_dosen_id);
+            $nilaiValue = $nilaiModel ? $nilaiModel->nilai : 0;
+            $nilaiXBobot = $nilai->bobot ? (float)$nilaiValue * (float)$nilai->bobot : 0;
+            $totalNilaiPembimbing += $nilaiXBobot;
+
+            // Perbaiki penamaan variabel di bawah dari $nilaiDetailsPembimbin menjadi $nilaiDetailsPembimbing
+            $nilaiDetailsPembimbing[] = [
+                'name' => $nilai->name_kriteria_pembimbing_dosen,
+                'nilai' => $nilaiValue,
+                'bobot' => $nilai->bobot,
+                'nilaiXBobot' => sprintf("%.2f", $nilaiXBobot)
+            ];
+        }
+
+
+        // Perhitungan nilai pembahas
+        $totalNilaiPembahas = 0;
+        $nilaiDetailsPembahas = [];
+
+        foreach ($kriteriaNilaiPembahas as $nilai) {
+            $nilaiModel = $datanilaiPembahas->firstWhere('nilai_pembahas_dosen_id', $nilai->nilai_pembahas_dosen_id);
+            $nilaiValue = $nilaiModel ? $nilaiModel->nilai : 0;
+            $nilaiXBobot = $nilai->bobot ? (float)$nilaiValue * (float)$nilai->bobot : 0;
+            $totalNilaiPembahas += $nilaiXBobot;
+
+            $nilaiDetailsPembahas[] = [
+                'name' => $nilai->name_kriteria_pembahas_dosen,
+                'nilai' => $nilaiValue,
+                'bobot' => $nilai->bobot,
+                'nilaiXBobot' => sprintf("%.2f", $nilaiXBobot)
+            ];
+        }
+
+        // Hitung nilai total instruktur
+        $totalNilaiInstruktur = 0;
+        foreach ($nilaiDetailsInstruktur as $detail) {
+            $totalNilaiInstruktur += $detail['nilaiXBobot'];
+        }
+
+        // Hitung nilai total pembahas
+        $totalNilaiPembahas = 0;
+        foreach ($nilaiDetailsPembahas as $detail) {
+            $totalNilaiPembahas += $detail['nilaiXBobot'];
+        }
+
+        // Hitung nilai total pembimbing
+        $totalNilaiPembimbing = 0;
+        foreach ($nilaiDetailsPembimbing as $detail) {
+            $totalNilaiPembimbing += $detail['nilaiXBobot'];
+        }
+
+        // Hitung nilai akhir
+        // dd($nilaiDetailsPembimbing);
+        $nilaiAkhir = ($totalNilaiInstruktur * 0.5) + ($totalNilaiPembahas * 0.15) + ($totalNilaiPembimbing * 0.35);
+
+        $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-akhir', compact('data', 'magang', 'totalNilaiInstruktur', 'totalNilaiPembahas', 'totalNilaiPembimbing', 'nilaiAkhir'));
         return $pdf->stream();
     }
 }

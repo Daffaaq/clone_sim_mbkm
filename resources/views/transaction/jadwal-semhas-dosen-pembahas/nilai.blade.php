@@ -105,7 +105,7 @@
 
                 if (!isNaN(nilai) && !isNaN(bobot) && nilaiXBobotCell) {
                     var nilaiXBobot = nilai * bobot;
-                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
+                    nilaiXBobotCell.textContent = nilaiXBobot;
                 }
 
                 // Hitung total nilai
@@ -116,7 +116,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1').textContent = totalNilai.toFixed(2);
+            document.querySelector('.total-nilai1').textContent = totalNilai;
         }
 
         // Hitung nilai saat halaman dimuat
@@ -138,7 +138,7 @@
                     // Hitung nilai x bobot
                     var nilaiXBobot = nilai * bobot;
                     console.log("Nilai x Bobot: " + nilaiXBobot);
-                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
+                    nilaiXBobotCell.textContent = nilaiXBobot;
                 } else if (!isNaN(nilai) && isNaN(bobot) && nilaiXBobotCell) {
                     // Jika bobot tidak valid, hitung rata-rata nilai
                     var totalNilai = 0;
@@ -169,7 +169,7 @@
 
                         disabledInputs.forEach(function(disabledInput) {
                             // Perbarui nilai input yang dinonaktifkan dengan nilai rata-rata
-                            disabledInput.value = average.toFixed(2);
+                            disabledInput.value = average;
                             // Mendapatkan nilai x bobot cell
                             var nilaiXBobotCell = disabledInput.closest('tr')
                                 .querySelector('td:nth-child(4)');
@@ -177,7 +177,7 @@
                             // Hitung dan perbarui nilai x bobot menggunakan nilai rata-rata
                             var nilaiXBobot = average * parseFloat(nilaiXBobotCell
                                 .previousElementSibling.textContent);
-                            nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
+                            nilaiXBobotCell.textContent = nilaiXBobot;
                         });
                     } else {
                         console.log("Tidak ada input yang memiliki bobot NaN.");
@@ -195,8 +195,7 @@
                         totalNilai += value;
                     }
                 });
-                document.querySelector('.total-nilai1').textContent = totalNilai
-                    .toFixed(2);
+                document.querySelector('.total-nilai1').textContent = totalNilai;
             });
         });
         // form.addEventListener('submit', function(event) {

@@ -121,18 +121,32 @@
                                                 class="form-horizontal" id="form-sb" enctype="multipart/form-data">
                                                 @csrf
                                                 <input type="hidden" name="magang_id" value="{{ $magang->magang_id }}">
-                                                @foreach ($anggotas as $anggota)
+                                                {{-- @foreach ($anggotas as $anggota)
                                                     <div class="form-check">
-                                                        {{-- @if ($anggota->mahasiswa) --}}
-                                                        {{-- @dd($anggota->mahasiswa->mahasiswa_id) --}}
                                                         <input class="form-check-input" type="checkbox"
                                                             name="mahasiswa_id[]"
                                                             value="{{ $anggota->mahasiswa->mahasiswa_id }}">
                                                         <label
                                                             class="form-check-label">{{ $anggota->mahasiswa->nama_mahasiswa }}</label>
-                                                        {{-- @endif --}}
                                                     </div>
-                                                @endforeach
+                                                @endforeach --}}
+                                                <div class="checkbox-container"
+                                                    style="display: flex; flex-direction: column; gap: 10px;">
+                                                    @foreach ($anggotas as $anggota)
+                                                        <div class="form-check"
+                                                            style="display: flex; align-items: center; padding: 5px; border: 1px solid #ccc; border-radius: 5px;">
+                                                            <input class="form-check-input" type="checkbox"
+                                                                name="mahasiswa_id[]"
+                                                                value="{{ $anggota->mahasiswa->mahasiswa_id }}"
+                                                                id="mahasiswa-{{ $anggota->mahasiswa->mahasiswa_id }}"
+                                                                style="margin-right: 10px;">
+                                                            <label class="form-check-label"
+                                                                for="mahasiswa-{{ $anggota->mahasiswa->mahasiswa_id }}"
+                                                                style="cursor: pointer;">{{ $anggota->mahasiswa->nama_mahasiswa }}</label>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+
                                                 <span id="validation-message" class="text-danger"
                                                     style="display: none;">Mohon pilih setidaknya satu mahasiswa.</span>
                                                 <!-- Tambahkan input untuk data instruktur -->
@@ -151,7 +165,8 @@
                                                         Instruktur</label>
                                                     <input type="email" class="form-control" id="instruktur_email"
                                                         name="instruktur_email">
-                                                    <small id="excel" class="form-text" style="margin-left: 0px;">email
+                                                    <small id="excel" class="form-text"
+                                                        style="margin-left: 0px;">email
                                                         Pembimbing Lapangan harus valid</small>
                                                     <span id="valid-message-instruktur_email" class="text-danger"
                                                         style="display: none;">Kolom ini harus diisi.</span>

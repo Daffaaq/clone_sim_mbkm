@@ -193,6 +193,8 @@
         </div>
         <div class="modal-footer">
             <button type="button" data-dismiss="modal" class="btn btn-warning">Keluar</button>
+            <a href="{{ url('transaksi/ujian-seminar-hasil/' . $encryption . '/cetak-nilai-akhir') }}"
+                class="btn btn-primary" target="_blank">Cetak</a>
         </div>
     </div>
 </div>
@@ -215,7 +217,7 @@
 
                 if (!isNaN(nilai) && !isNaN(bobot) && nilaiXBobotCell) {
                     var nilaiXBobot = nilai * bobot;
-                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
+                    nilaiXBobotCell.textContent = nilaiXBobot;
                 }
 
                 // Hitung total nilai
@@ -226,8 +228,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1-intruktur').textContent = instrukturTotalNilai
-                .toFixed(2);
+            document.querySelector('.total-nilai1-intruktur').textContent = instrukturTotalNilai;
         }
 
         // Menghitung nilai saat halaman dimuat untuk tabel instruktur lapangan
@@ -247,7 +248,7 @@
 
                 if (!isNaN(nilai) && !isNaN(bobot) && nilaiXBobotCell) {
                     var nilaiXBobot = nilai * bobot;
-                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
+                    nilaiXBobotCell.textContent = nilaiXBobot;
                 }
 
                 // Hitung total nilai
@@ -258,8 +259,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1-pembimbing').textContent = instrukturTotalNilai
-                .toFixed(2);
+            document.querySelector('.total-nilai1-pembimbing').textContent = instrukturTotalNilai;
         }
 
         // Menghitung nilai saat halaman dimuat untuk tabel instruktur lapangan
@@ -290,7 +290,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1-pembahas').textContent = pembahasTotalNilai.toFixed(2);
+            document.querySelector('.total-nilai1-pembahas').textContent = pembahasTotalNilai;
         }
 
         // Menghitung nilai saat halaman dimuat untuk tabel pembahas
@@ -304,6 +304,6 @@
         var nilaiAkhir = (nilaiPembimbing * 0.35) + (nilaiPembahas * 0.15) + (nilaiInstruktur * 0.50);
 
         // Menampilkan nilai akhir pada elemen yang ditarget
-        document.querySelector('.total-nilai-akhir').textContent = nilaiAkhir.toFixed(2);
+        document.querySelector('.total-nilai-akhir').textContent = nilaiAkhir;
     });
 </script>

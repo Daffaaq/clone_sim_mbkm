@@ -212,6 +212,8 @@
                                                 <th class="w-15 text-right">Berita Acara</th>
                                                 <th class="w-1">:</th>
                                                 <td class="w-84">
+                                                    <div id="error-message" class="alert alert-warning"
+                                                        style="display: none;"></div>
                                                     <form id="uploadForm" enctype="multipart/form-data" method="POST">
                                                         @csrf
                                                         <input type="file" name="berita_acara_file"
@@ -276,6 +278,18 @@
             $('.tooltips').tooltip();
             $('#uploadForm').submit(function(e) {
                 e.preventDefault();
+                var fileInput = $('input[name="berita_acara_file"]')[0];
+                var file = fileInput.files[0];
+
+                // Check file size (2 MB = 2048 KB)
+                if (file.size > 2048 * 1024) {
+                    $('#error-message').text('File size must be less than 2 MB').show();
+                    setTimeout(function() {
+                        $('#error-message').fadeOut('slow');
+                    }, 5000);
+                    $('input[name="berita_acara_file"]').val('');
+                    return;
+                }
                 var formData = new FormData(this);
                 $.ajax({
                     url: '{{ route('upload-berita-acara') }}',

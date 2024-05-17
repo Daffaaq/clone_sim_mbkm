@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Nilai Dosen Pembahas</title>
+    <title>Nilai Akhir</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         * {
@@ -94,61 +94,20 @@
             </tbody>
         </table>
     </div>
-    <table class="table" style="border-collapse: collapse;">
-        <thead>
-            <tr>
-                <th scope="col" style="width: 420px; border: 1px solid black;">Kriteria Penilaian</th>
-                <th scope="col" style="border: 1px solid black;">Nilai (1-100)</th>
-                <th scope="col" style="border: 1px solid black;">Bobot Nilai</th>
-                <th scope="col" style="border: 1px solid black;">Nilai x Bobot</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($nilaiDetails as $detail)
-                <tr>
-                    <td style="border-right: 1px solid black; border-left: 1px solid black;">{{ $detail['name'] }}</td>
-                    <td style="border-right: 1px solid black; text-align: center;">{{ $detail['nilai'] }}</td>
-                    <td style="border-right: 1px solid black; text-align: center;">{{ $detail['bobot'] }}</td>
-                    @if ($detail['bobot'] != null)
-                        <td style="border-right: 1px solid black; text-align: center;">{{ $detail['nilaiXBobot'] }}
-                        </td>
-                    @else
-                        <td style="border-right: 1px solid black; text-align: center;"></td>
-                    @endif
-                </tr>
-            @endforeach
-            <tr>
-                <td style="border: 1px solid black;"></td>
-            </tr>
-            <tr class="total-nilai-row">
-                <td colspan="3" class="total-nilai" style="text-align: center; border: 1px solid black;">TOTAL NILAI
-                </td>
-                <td class="total-nilai1" style="text-align: center; border: 1px solid black;">{{ $totalNilai }}</td>
-            </tr>
-        </tbody>
-    </table>
-    <table>
-        <tr>
-            <td>
-                <div class="form-group" style="display: flex; align-items: center; margin-bottom: 10px;">
-                    <label for="saran_pembahas_dosen"
-                        style="flex: 0 0 200px; margin-right: 10px; text-align: right;">Saran Pembahas Dosen</label>
-                    <textarea class="form-control" id="saran_pembahas_dosen" name="saran_pembahas_dosen" rows="3"
-                        style="flex: 1; width: 590px;" readonly>{{ $existingNilai->saran_pembahas_dosen ?? '' }}</textarea>
-                </div>
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <div class="form-group" style="display: flex; align-items: center; margin-bottom: 10px;">
-                    <label for="catatan_pembahas_dosen"
-                        style="flex: 0 0 200px; margin-right: 10px; text-align: right;">Catatan Pembahas Dosen</label>
-                    <textarea class="form-control" id="catatan_pembahas_dosen" name="catatan_pembahas_dosen" rows="3"
-                        style="flex: 1; width: 590px;" readonly>{{ $existingNilai->catatan_pembahas_dosen ?? '' }}</textarea>
-                </div>
-            </td>
-        </tr>
-    </table>
+   <table class="table" style="border: 1px solid black;">
+    <thead class="" style="text-align: center">
+        <th scope="col" style="border: 1px solid black;">Nilai Pembimbing</th>
+        <th scope="col" style="border: 1px solid black;">Nilai Pembahas</th>
+        <th scope="col" style="border: 1px solid black;">Nilai dari Mitra</th>
+        <th scope="col" style="border: 1px solid black;">Nilai Akhir</th>
+    </thead>
+    <tbody class="" style="text-align: center">
+        <td class="total-nilai1-pembimbing" style="border: 1px solid black;">{{$totalNilaiPembimbing}}</td>
+        <td class="total-nilai1-pembahas" style="border: 1px solid black;">{{$totalNilaiPembahas}}</td>
+        <td class="total-nilai1-intruktur" style="border: 1px solid black;">{{$totalNilaiInstruktur}}</td>
+        <td class="total-nilai-akhir" style="border: 1px solid black;">{{$nilaiAkhir}}</td>
+    </tbody>
+</table>
 </body>
 
 </html>
