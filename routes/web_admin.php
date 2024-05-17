@@ -241,6 +241,9 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::get('ujian-seminar-hasil/{id}/nilai-pembahas', [UjianSeminarHasilController::class, 'nilaiDosenPembahas'])->name('nilai-mahasiswa-dosen-pembahas');
     Route::get('ujian-seminar-hasil/{id}/nilai-instruktur', [UjianSeminarHasilController::class, 'nilaiInstrukturLapangan'])->name('nilai-mahasiswa-instruktur-lapangan');
     Route::get('ujian-seminar-hasil/{id}/nilai-akhir', [UjianSeminarHasilController::class, 'nilaiAkhir'])->name('nilai-mahasiswa-akhir');
+    Route::get('ujian-seminar-hasil/{encrpyt}/cetak-nilai-pembimbing', [UjianSeminarHasilController::class, 'cetakNilaiDosenPembimbing'])->name('cetak-nilai-mahasiswa-dosen-pembimbing');
+    Route::get('ujian-seminar-hasil/{encrpyt}/cetak-nilai-pembahas', [UjianSeminarHasilController::class, 'cetakNilaiDosenpembahas'])->name('cetak-nilai-mahasiswa-dosen-pembahas');
+    Route::get('ujian-seminar-hasil/{encrpyt}/cetak-nilai-instruktur', [UjianSeminarHasilController::class, 'cetakNilaiInstrukturLapangan'])->name('cetak-nilai-mahasiswa-instruktur-lapangan');
 
     // jadwal-seminar-hasil intruktur lapangan
     Route::resource('jadwal-semhas-instruktur', JadwalInstrukturLapanganController::class)->parameter('log-bimbingan', 'id');

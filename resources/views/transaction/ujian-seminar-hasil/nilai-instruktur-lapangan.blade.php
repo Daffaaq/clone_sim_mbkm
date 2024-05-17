@@ -7,10 +7,16 @@
         </div>
         <div class="modal-body p-0">
             <div class="header">
-                <h5 style="align-content: flex-start;margin-left: 5px">EVALUASI AKHIR SEMESTER DOSEN PEMBIMBING</h5>
+                <div class="header-container" style="display: flex;">
+                    <h5 style="margin-left: 5px;">EVALUASI AKHIR SEMESTER Instruktur Lapangan</h5>
+                    <a href="{{ url('transaksi/ujian-seminar-hasil/' . $encryption . '/cetak-nilai-instruktur') }}"
+                        class="print-button" style="margin-left: 280px;" target="_blank">
+                        <i class="fas fa-print"></i>
+                    </a>
+                </div>
                 <br>
                 <h5 style="text-align: center">FORM PENILAIAN DISEMINASI HASIL KEGIATAN MBKM</h5>
-                <h5 style="text-align: center">DOSEN PEMBIMBING</h5>
+                <h5 style="text-align: center">Instruktur Lapangan</h5>
             </div>
             <div class="upper" style="margin-left: 5px">
                 <table border="0" cellpadding="1" class="tbl-no">
@@ -125,6 +131,8 @@
         </div>
         <div class="modal-footer">
             <button type="button" data-dismiss="modal" class="btn btn-warning">Keluar</button>
+            <a href="{{ url('transaksi/ujian-seminar-hasil/' . $encryption . '/cetak-nilai-nilai-instruktur') }}"
+                class="btn btn-primary" target="_blank">Cetak</a>
         </div>
     </div>
 </div>
@@ -147,7 +155,7 @@
 
                 if (!isNaN(nilai) && !isNaN(bobot) && nilaiXBobotCell) {
                     var nilaiXBobot = nilai * bobot;
-                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
+                    nilaiXBobotCell.textContent = nilaiXBobot;
                 }
 
                 // Hitung total nilai
@@ -158,7 +166,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1').textContent = totalNilai.toFixed(2);
+            document.querySelector('.total-nilai1').textContent = totalNilai;
         }
 
         // Hitung nilai saat halaman dimuat
