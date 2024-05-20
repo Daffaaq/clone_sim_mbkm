@@ -311,7 +311,6 @@ class DosenController extends Controller
     public function import_action(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
-
             $rules = [
                 'file' => 'required|mimes:xls,xlsx'
             ];
@@ -321,178 +320,84 @@ class DosenController extends Controller
             if ($validator->fails()) {
                 return response()->json([
                     'stat'     => false,
-                    'mc'       => false,
                     'msg'      => 'Terjadi kesalahan.',
                     'msgField' => $validator->errors()
                 ]);
             }
 
             $file = $request->file('file');
-
             $nama_file = rand() . '.' . $file->getClientOriginalExtension();
-
             $file->move(public_path('assets/temp_import'), $nama_file);
 
-            $collection = Excel::toCollection(new MahasiswaImport, public_path('assets/temp_import/' . $nama_file));
-            $collection = $collection[0];
+            try {
+                $collection = Excel::toCollection(new MahasiswaImport, public_path('assets/temp_import/' . $nama_file));
+                $collection = $collection[0];
 
-            $collection->each(function ($item) {
-                // Inisialisasi username dan password
-                $username = null;
-                $password = null;
+                $collection->each(function ($item) {
+                    // Inisialisasi username dan password
+                    $username = null;
+                    $password = null;
 
-                // Periksa apakah ada data di kolom yang dapat digunakan sebagai username atau password
-                if (!empty($item[0]) || !empty($item[1])) {
-                    // Jika kolom pertama berisi "-", ubah menjadi null
-                    if ($item[0] === '-') {
-                        $item[0] = null;
+                    // Periksa apakah ada data di kolom yang dapat digunakan sebagai username atau password
+                    if (!empty($item[0]) || !empty($item[1])) {
+                        // Jika kolom pertama berisi "-", ubah menjadi null
+                        if ($item[0] === '-') {
+                            $item[0] = null;
+                        }
+
+                        // Jika kolom kedua berisi "-", ubah menjadi null
+                        if ($item[1] === '-') {
+                            $item[1] = null;
+                        }
+
+                        // Tentukan nilai untuk username
+                        $username = $item[1] ?? $item[0];
+
+                        // Tentukan nilai untuk password
+                        $password = $item[1] ?? $item[0];
+
+                        // Memeriksa apakah ada data yang valid untuk digunakan sebagai username dan password
+                        if ($username && $password) {
+                            $user = UserModel::insertGetId([
+                                'username' => $username,
+                                'name' => $item[2], // Misalkan indeks 2 adalah nama pengguna
+                                'password' => Hash::make($password),
+                                'group_id' => 3,
+                                'is_active' => 1,
+                                'email' => $item[3],
+                            ]);
+
+                            DosenModel::insert([
+                                'user_id' => $user,
+                                'dosen_nip' => !empty($item[0]) ? $item[0] : null,
+                                'dosen_nidn' => !empty($item[1]) ? $item[1] : null,
+                                'dosen_name' => $item[2],
+                                'dosen_email' => $item[3],
+                                'dosen_phone' => $item[4],
+                                'dosen_gender' => $item[5],
+                                'dosen_tahun' => $item[6],
+                                'kuota' => $item[7],
+                            ]);
+                        }
                     }
+                });
 
-                    // Jika kolom kedua berisi "-", ubah menjadi null
-                    if ($item[1] === '-') {
-                        $item[1] = null;
-                    }
+                unlink(public_path('assets/temp_import/' . $nama_file)); // Hapus file setelah selesai
 
-                    // Tentukan nilai untuk username
-                    $username = $item[1] ?? $item[0];
+                return response()->json([
+                    'stat' => true,
+                    'mc' => true, // close modal
+                    'msg' => 'Dosen berhasil diimport'
+                ]);
+            } catch (\Exception $e) {
+                unlink(public_path('assets/temp_import/' . $nama_file)); // Hapus file jika terjadi kesalahan
 
-                    // Tentukan nilai untuk password
-                    $password = $item[1] ?? $item[0];
-
-                    // Memeriksa apakah ada data yang valid untuk digunakan sebagai username dan password
-                    if ($username && $password) {
-                        $user = UserModel::insertGetId([
-                            'username' => $username,
-                            'name' => $item[2], // Misalkan indeks 2 adalah nama pengguna
-                            'password' => Hash::make($password),
-                            'group_id' => 3,
-                            'is_active' => 1,
-                            'email' => $item[3],
-                        ]);
-
-                        DosenModel::insert([
-                            'user_id' => $user,
-                            'dosen_nip' => !empty($item[0]) ? $item[0] : null,
-                            'dosen_nidn' => !empty($item[1]) ? $item[1] : null,
-                            'dosen_name' => $item[2],
-                            'dosen_email' => $item[3],
-                            'dosen_phone' => $item[4],
-                            'dosen_gender' => $item[5],
-                            'dosen_tahun' => $item[6],
-                            'kuota' => $item[7],
-                        ]);
-                    }
-                }
-            });
-
-            unlink(public_path('assets/temp_import/' . $nama_file));
-            // Hapus file setelah selesai
-
-            return response()->json([
-                'stat' => true,
-                'mc' => true, // close modal
-                'msg' => 'Dosen berhasil diimport'
-            ]);
+                return response()->json([
+                    'stat' => false,
+                    'msg' => 'Terjadi kesalahan selama proses impor.',
+                    'error' => $e->getMessage()
+                ]);
+            }
         }
     }
-
-    // public function import_action(Request $request)
-    // {
-    //     if ($request->ajax() || $request->wantsJson()) {
-
-    //         $rules = [
-    //             'file' => 'required|mimes:xls,xlsx'
-    //         ];
-
-    //         $validator = Validator::make($request->all(), $rules);
-
-    //         if ($validator->fails()) {
-    //             return response()->json([
-    //                 'stat'     => false,
-    //                 'mc'       => false,
-    //                 'msg'      => 'Terjadi kesalahan.',
-    //                 'msgField' => $validator->errors()
-    //             ]);
-    //         }
-
-    //         $file = $request->file('file');
-
-    //         $nama_file = rand() . '.' . $file->getClientOriginalExtension();
-
-    //         $file->move(public_path('assets/temp_import'), $nama_file);
-
-    //         $collection = Excel::toCollection(new MahasiswaImport, public_path('assets/temp_import/' . $nama_file));
-    //         $collection = $collection[0];
-
-    //         $errors = [];
-    //         $errorOccurred = false; // Flag untuk menandai jika kesalahan terjadi
-
-    //         $existingEmails = DosenModel::pluck('dosen_email')->toArray(); // Ambil semua email yang sudah ada di database
-
-    //         $collection->each(function ($item) use (&$errors, &$errorOccurred, $existingEmails) {
-    //             if (!$errorOccurred) { // Pengecekan flag errorOccurred
-    //                 // Inisialisasi username dan password
-    //                 $username = null;
-    //                 $password = null;
-
-    //                 // Periksa apakah ada data di kolom yang dapat digunakan sebagai username atau password
-    //                 if (!empty($item[0]) || !empty($item[1])) {
-    //                     // Tentukan nilai untuk username
-    //                     $username = $item[1] ?? $item[0];
-
-    //                     // Tentukan nilai untuk password
-    //                     $password = $item[1] ?? $item[0];
-
-    //                     // Memeriksa apakah ada data yang valid untuk digunakan sebagai username dan password
-    //                     if ($username && $password) {
-    //                         // Cek apakah email sudah ada di database
-    //                         if (in_array($item[3], $existingEmails)) {
-    //                             $errors[] = "Data dengan nama '{$item[2]}' memiliki email '{$item[3]}' yang sudah ada di database.";
-    //                         } else {
-    //                             $user = UserModel::create([
-    //                                 'username' => $username,
-    //                                 'name' => $item[2], // Misalkan indeks 2 adalah nama pengguna
-    //                                 'password' => Hash::make($password),
-    //                                 'group_id' => 3,
-    //                                 'is_active' => 1,
-    //                                 'email' => $item[3],
-    //                             ]);
-
-    //                             DosenModel::create([
-    //                                 'user_id' => $user->id,
-    //                                 'dosen_nip' => !empty($item[0]) ? $item[0] : null,
-    //                                 'dosen_nidn' => !empty($item[1]) ? $item[1] : null,
-    //                                 'dosen_name' => $item[2],
-    //                                 'dosen_email' => $item[3],
-    //                                 'dosen_phone' => $item[4],
-    //                                 'dosen_gender' => $item[5],
-    //                                 'dosen_tahun' => $item[6],
-    //                                 'kuota' => $item[7],
-    //                             ]);
-    //                         }
-    //                     }
-    //                 }
-    //             }
-    //         });
-
-
-    //         unlink(public_path('assets/temp_import/' . $nama_file));
-    //         // Hapus file setelah selesai
-
-    //         if (!empty($errors)) {
-    //             return response()->json([
-    //                 'stat' => false,
-    //                 'mc' => false, // close modal
-    //                 'msg' => 'Terjadi kesalahan saat mengimpor data:',
-    //                 'errors' => $errors
-    //             ]);
-    //         }
-
-    //         return response()->json([
-    //             'stat' => true,
-    //             'mc' => true, // close modal
-    //             'msg' => 'Dosen berhasil diimport'
-    //         ]);
-    //     }
-    // }
 }

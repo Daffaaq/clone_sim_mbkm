@@ -21,6 +21,12 @@
                         </div>
                     </div>
                     <div class="card-body p-0">
+                        <div id="importSuccessMessage" class="alert alert-success" style="display: none;">
+                            Data Dosen berhasil diimpor
+                        </div>
+                        <div id="importerrorMessage" class="alert alert-danger" style="display: none;">
+                            Data Dosen gagal diimpor
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-striped table-hover table-full-width" id="table_master">
                                 <thead>
@@ -60,14 +66,6 @@
                                 <small id="excel" class="form-text" style="margin-left: 0px; color: red;">File type:
                                     .xls/.xlsx</small>
                             </div>
-                            {{-- <label for="file">Pilih File:</label>
-                            <input type="file" class="form-control-file" id="file" name="file"
-                                accept=".xls,.xlsx">
-                            <small id="excel" class="form-text text-muted">Max file size: 2048KB (2MB).</small> --}}
-                        </div>
-                        <div class="alert
-                                    alert-danger" id="importErrorAlert"
-                            style="display: none;">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -96,7 +94,6 @@
             $('#btnImport').click(function() {
                 // Tampilkan modal untuk memilih file
                 $('#importFileModal').modal('show');
-                $('#importErrorAlert').hide();
             });
             $('#importFileForm').submit(function(e) {
                 e.preventDefault();
@@ -109,38 +106,32 @@
                     contentType: false,
                     processData: false,
                     success: function(response) {
-                        // // Tutup modal setelah berhasil mengimpor
-                        // $('#importFileModal').modal('hide');
-                        // // Tampilkan pesan sukses
-                        // alert('Dosen berhasil diimpor');
-                        // // Refresh tabel data
-                        // dataMaster.ajax.reload();
                         if (response.stat) {
                             // Tutup modal setelah berhasil mengimpor
                             $('#importFileModal').modal('hide');
-                            // Tampilkan pesan sukses
-                            alert('Dosen berhasil diimpor');
+                            // Reset form
+                            $('#importFileForm')[0].reset();
+                            // Clear file input label
+                            $('#importFileForm .custom-file-label').html('Choose file');
+                            // Show success message
+                            $('#importSuccessMessage').show().delay(5000).fadeOut();
                             // Refresh tabel data
                             dataMaster.ajax.reload();
                         } else {
-                            var errorMsg = response.msg +
-                                '\n'; // Tambahkan pesan kesalahan utama
-                            $.each(response.errors, function(index, value) {
-                                errorMsg += value +
-                                    '\n'; // Tambahkan pesan-pesan kesalahan dari array errors
-                            });
-                            $('#importErrorAlert').text(errorMsg)
-                                .show(); // Tampilkan pesan kesalahan
-
-                            // Sembunyikan pesan kesalahan setelah 5 detik
-                            setTimeout(function() {
-                                $('#importErrorAlert').hide();
-                            }, 5000);
+                            $('#importFileModal').modal('hide');
+                            $('#importFileForm')[0].reset();
+                            // Clear file input label
+                            $('#importFileForm .custom-file-label').html('Choose file');
+                            $('#importerrorMessage').show().delay(5000).fadeOut();
                         }
                     },
                     error: function(xhr, status, error) {
                         // Tangani kesalahan
-                        alert('Terjadi kesalahan saat mengimpor data');
+                        $('#importFileModal').modal('hide');
+                        $('#importFileForm')[0].reset();
+                        // Clear file input label
+                        $('#importFileForm .custom-file-label').html('Choose file');
+                        $('#importerrorMessage').show().delay(5000).fadeOut();
                     }
                 });
             });

@@ -23,6 +23,7 @@ use App\Http\Controllers\Proposal\AdminProposalMahasiswaBermasalahController;
 use App\Http\Controllers\Proposal\AdminProposalMahasiswaController;
 use App\Http\Controllers\Proposal\AdminUsulanTopikController;
 use App\Http\Controllers\Report\DaftarMahasiswaDiterimaController;
+use App\Http\Controllers\Report\DaftarMahasiswaSudahMagangController;
 use App\Http\Controllers\Report\DaftarMitraController;
 use App\Http\Controllers\Report\LogActivityController;
 use App\Http\Controllers\Setting\AccountController;
@@ -272,6 +273,11 @@ Route::group(['prefix' => 'laporan', 'middleware' => ['auth']], function () {
 Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');
 Route::post('daftar-mahasiswa-diterima/list', [DaftarMahasiswaDiterimaController::class, 'list']);
 Route::get('daftar-mahasiswa-diterima/{id}/delete', [DaftarMahasiswaDiterimaController::class, 'confirm']);
+
+
+// daftar mahasiswa selesai Magang
+Route::resource('daftar-mahasiswa-selesai-magang', DaftarMahasiswaSudahMagangController::class)->parameter('daftar-mahasiswa-selesai-magang', 'id');
+Route::post('daftar-mahasiswa-selesai-magang/list', [DaftarMahasiswaSudahMagangController::class, 'list']);
 
 //kuota with url mitra/{id}/kuota
 Route::prefix('mitra/{id}')->group(function () {
