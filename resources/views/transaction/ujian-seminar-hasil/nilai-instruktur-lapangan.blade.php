@@ -155,7 +155,7 @@
 
                 if (!isNaN(nilai) && !isNaN(bobot) && nilaiXBobotCell) {
                     var nilaiXBobot = nilai * bobot;
-                    nilaiXBobotCell.textContent = nilaiXBobot;
+                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
                 }
 
                 // Hitung total nilai
@@ -166,7 +166,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1').textContent = totalNilai;
+            document.querySelector('.total-nilai1').textContent = totalNilai.toFixed(2);
         }
 
         // Hitung nilai saat halaman dimuat

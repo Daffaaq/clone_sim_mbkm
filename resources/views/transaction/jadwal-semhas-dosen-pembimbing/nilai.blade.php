@@ -105,7 +105,7 @@
 
                 if (!isNaN(nilai) && !isNaN(bobot) && nilaiXBobotCell) {
                     var nilaiXBobot = nilai * bobot;
-                    nilaiXBobotCell.textContent = nilaiXBobot;
+                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
                 }
 
                 // Hitung total nilai
@@ -116,7 +116,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1').textContent = totalNilai;
+            document.querySelector('.total-nilai1').textContent = totalNilai.toFixed(2);
         }
 
         // Hitung nilai saat halaman dimuat
@@ -138,7 +138,7 @@
                     // Hitung nilai x bobot
                     var nilaiXBobot = nilai * bobot;
                     console.log("Nilai x Bobot: " + nilaiXBobot);
-                    nilaiXBobotCell.textContent = nilaiXBobot;
+                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
                 } else if (!isNaN(nilai) && isNaN(bobot) && nilaiXBobotCell) {
                     // Jika bobot tidak valid, hitung rata-rata nilai
                     var totalNilai = 0;
@@ -177,7 +177,7 @@
                             // Hitung dan perbarui nilai x bobot menggunakan nilai rata-rata
                             var nilaiXBobot = average * parseFloat(nilaiXBobotCell
                                 .previousElementSibling.textContent);
-                            nilaiXBobotCell.textContent = nilaiXBobot;
+                            nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
                         });
                     } else {
                         console.log("Tidak ada input yang memiliki bobot NaN.");
@@ -195,7 +195,7 @@
                         totalNilai += value;
                     }
                 });
-                document.querySelector('.total-nilai1').textContent = totalNilai;
+                document.querySelector('.total-nilai1').textContent = totalNilai.toFixed(2);
             });
         });
         // form.addEventListener('submit', function(event) {

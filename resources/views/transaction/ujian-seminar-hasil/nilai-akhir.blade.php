@@ -217,7 +217,7 @@
 
                 if (!isNaN(nilai) && !isNaN(bobot) && nilaiXBobotCell) {
                     var nilaiXBobot = nilai * bobot;
-                    nilaiXBobotCell.textContent = nilaiXBobot;
+                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
                 }
 
                 // Hitung total nilai
@@ -228,7 +228,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1-intruktur').textContent = instrukturTotalNilai;
+            document.querySelector('.total-nilai1-intruktur').textContent = instrukturTotalNilai.toFixed(2);
         }
 
         // Menghitung nilai saat halaman dimuat untuk tabel instruktur lapangan
@@ -248,7 +248,7 @@
 
                 if (!isNaN(nilai) && !isNaN(bobot) && nilaiXBobotCell) {
                     var nilaiXBobot = nilai * bobot;
-                    nilaiXBobotCell.textContent = nilaiXBobot;
+                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
                 }
 
                 // Hitung total nilai
@@ -259,7 +259,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1-pembimbing').textContent = instrukturTotalNilai;
+            document.querySelector('.total-nilai1-pembimbing').textContent = instrukturTotalNilai.toFixed(2);
         }
 
         // Menghitung nilai saat halaman dimuat untuk tabel instruktur lapangan
@@ -290,7 +290,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1-pembahas').textContent = pembahasTotalNilai;
+            document.querySelector('.total-nilai1-pembahas').textContent = pembahasTotalNilai.toFixed(2);
         }
 
         // Menghitung nilai saat halaman dimuat untuk tabel pembahas
@@ -304,6 +304,6 @@
         var nilaiAkhir = (nilaiPembimbing * 0.35) + (nilaiPembahas * 0.15) + (nilaiInstruktur * 0.50);
 
         // Menampilkan nilai akhir pada elemen yang ditarget
-        document.querySelector('.total-nilai-akhir').textContent = nilaiAkhir;
+        document.querySelector('.total-nilai-akhir').textContent = nilaiAkhir.toFixed(2);
     });
 </script>
