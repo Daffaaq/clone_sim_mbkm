@@ -899,7 +899,8 @@ class UjianSeminarHasilController extends Controller
 
         // Hitung nilai akhir
         // dd($nilaiDetailsPembimbing);
-        $nilaiAkhir = ($totalNilaiInstruktur * 0.5) + ($totalNilaiPembahas * 0.15) + ($totalNilaiPembimbing * 0.35);
+        $nilaiAkhirdemo = ($totalNilaiInstruktur * 0.5) + ($totalNilaiPembahas * 0.15) + ($totalNilaiPembimbing * 0.35);
+        $nilaiAkhir = sprintf("%.2f", $nilaiAkhirdemo);
 
         $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-akhir', compact('data', 'magang', 'totalNilaiInstruktur', 'totalNilaiPembahas', 'totalNilaiPembimbing', 'nilaiAkhir'));
         return $pdf->stream();
