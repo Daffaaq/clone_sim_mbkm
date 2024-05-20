@@ -29,6 +29,7 @@
                                         <th>Instruktur Lapangan</th>
                                         <th>Judul</th>
                                         <th>Nilai</th>
+                                        <th>Status</th>
                                         <th>Jadwal</th>
                                         {{-- <th>#</th> --}}
                                     </tr>
@@ -94,6 +95,20 @@
                             return '' +
                                 `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai" ><i class="fas fa-tasks" style="color: #ffffff;"></i></a> `
 
+                        }
+                    },
+                    {
+                        "mData": "nilai_exist",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": false,
+                        "bSearchable": false,
+                        "mRender": function(data, type, row, meta) {
+                            if (data) {
+                                return '<span class="badge badge-success">Sudah Mengisi Nilai</span>';
+                            } else {
+                                return '<span class="badge badge-danger">Belum Mengisi Nilai</span>';
+                            }
                         }
                     },
                     {

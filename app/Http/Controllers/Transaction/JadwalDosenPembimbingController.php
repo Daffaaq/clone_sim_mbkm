@@ -105,231 +105,44 @@ class JadwalDosenPembimbingController extends Controller
                 'm_instruktur.nama_instruktur AS nama_instruktur'
             )
             ->get();
+
+        $data->each(function ($item) use ($activePeriods) {
+            $nilaiExist = TNilaiPembimbingDosenModel::where('semhas_daftar_id', $item->semhas_daftar_id)
+                ->where('periode_id', $activePeriods)
+                ->exists();
+            $item->nilai_exist = $nilaiExist;
+        });
         // dd($data);
         return DataTables::of($data)
             ->addIndexColumn()
             ->make(true);
     }
 
-    public function create()
-    {
-        $this->authAction('create', 'modal');
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        $page = [
-            'url' => $this->menuUrl,
-            'title' => 'Tambah ' . $this->menuTitle
-        ];
-        $user = auth()->user();
-        $user_id = $user->user_id;
-        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
-        $mahasiswa_id = $mahasiswa->mahasiswa_id;
-
-        // Gunakan mahasiswa_id untuk mencari data magang
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->get();
-        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->get();
-        $dosen = []; // Inisialisasi array untuk menyimpan data dosen
-        $instrktur = []; // Inisialisasi array untuk menyimpan data dosen
-
-        foreach ($instrukturLapangan as $instruktur) {
-            // Dapatkan dosen_id dari objek pembimbing
-            $instruktur_id = $instruktur->instruktur_id;
-
-            // Ambil data intsruktur berdasarkan instruktur_id
-            $instrktur[] = InstrukturModel::findOrFail($instruktur_id);
-        }
-        foreach ($pembimbingdosen as $pembimbing) {
-            // Dapatkan dosen_id dari objek pembimbing
-            $dosen_id = $pembimbing->dosen_id;
-
-            // Ambil data dosen berdasarkan dosen_id
-            $dosen[] = DosenModel::findOrFail($dosen_id);
-        }
-
-        return view($this->viewPath . 'action')
-            ->with('page', (object) $page)
-            ->with('dosen', $dosen)
-            ->with('instrktur', $instrktur);
-    }
-
-    public function store(Request $request)
-    {
-        $this->authAction('create', 'json');
-
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'tanggal' => 'required|date',
-                'jam_mulai' => 'required',
-                'jam_selesai' => 'required',
-                'topik_bimbingan' => 'required|string',
-                'foto' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Menggunakan aturan image untuk validasi file gambar
-                // Tambahkan aturan validasi lainnya untuk field DosenModel
-            ];
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json([
-                    'stat' => false,
-                    'mc' => false,
-                    'msg' => 'Terjadi kesalahan.',
-                    'msgField' => $validator->errors()
-                ]);
-            }
-            // Dapatkan file foto dari request
-            $file = $request->file('foto');
-
-            // Generate nama file yang unik berdasarkan waktu dan ekstensi asli file
-            $fileName = 'logbimbingan_' . time() . '.' . $file->getClientOriginalExtension();
-
-            // Simpan foto ke dalam direktori penyimpanan
-            $file->storeAs('public/assets/logbimbingan', $fileName);
-
-            $log_bimbingan = LogBimbinganModel::create([
-                'tanggal' => $request->input('tanggal'),
-                'jam_mulai' => $request->input('jam_mulai'),
-                'jam_selesai' => $request->input('jam_selesai'),
-                'topik_bimbingan' => $request->input('topik_bimbingan'),
-                'pembimbing_dosen_id' => $request->input('pembimbing_dosen_id'),
-                'instruktur_lapangan_id' => $request->input('instruktur_lapangan_id'),
-                'status1' => 0, // Status 1 defaultnya adalah 0
-                'status2' => 0, // Status 2 defaultnya adalah 0
-                'foto' => $fileName,
-                'created_by' => Auth::id(),
-                // fill other fields as needed
-            ]);
-            // dd($log_bimbingan);
-            return response()->json([
-                'stat' => $log_bimbingan,
-                'mc' => $log_bimbingan,
-                'msg' => ($log_bimbingan) ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
-            ]);
-        }
-
-        return redirect('/');
-    }
-
-
-    public function edit($id)
-    {
-        $this->authAction('update', 'modal');
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        $page = [
-            'url' => $this->menuUrl . '/' . $id,
-            'title' => 'Edit ' . $this->menuTitle
-        ];
-        $user = auth()->user();
-        $user_id = $user->user_id;
-        $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
-        $mahasiswa_id = $mahasiswa->mahasiswa_id;
-
-        // Gunakan mahasiswa_id untuk mencari data magang
-        $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->get();
-        $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->get();
-        $dosen = []; // Inisialisasi array untuk menyimpan data dosen
-        $instrktur = []; // Inisialisasi array untuk menyimpan data dosen
-
-        foreach ($instrukturLapangan as $instruktur) {
-            // Dapatkan dosen_id dari objek pembimbing
-            $instruktur_id = $instruktur->instruktur_id;
-
-            // Ambil data intsruktur berdasarkan instruktur_id
-            $instrktur[] = InstrukturModel::findOrFail($instruktur_id);
-        }
-        foreach ($pembimbingdosen as $pembimbing) {
-            // Dapatkan dosen_id dari objek pembimbing
-            $dosen_id = $pembimbing->dosen_id;
-
-            // Ambil data dosen berdasarkan dosen_id
-            $dosen[] = DosenModel::findOrFail($dosen_id);
-        }
-        $data = LogBimbinganModel::find($id);
-
-        return (!$data) ? $this->showModalError() :
-            view($this->viewPath . 'action')
-            ->with('page', (object) $page)
-            ->with('id', $id)
-            ->with('dosen', $dosen)
-            ->with('instrktur', $instrktur)
-            ->with('data', $data);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $this->authAction('update', 'json');
-        if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
-
-        if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'tanggal' => 'required|date',
-                'jam_mulai' => 'required',
-                'jam_selesai' => 'required',
-                'topik_bimbingan' => 'required|string',
-                'foto' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048', // Gunakan 'sometimes' agar validasi tidak wajib
-            ];
-
-            $validator = Validator::make($request->all(), $rules);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'stat'     => false,
-                    'mc'       => false,
-                    'msg'      => 'Terjadi kesalahan.',
-                    'msgField' => $validator->errors()
-                ]);
-            }
-
-            // Periksa apakah ada file foto yang diunggah
-            if ($request->hasFile('foto')) {
-                // Dapatkan file foto dari request
-                $file = $request->file('foto');
-
-                // Generate nama file yang unik berdasarkan waktu dan ekstensi asli file
-                $fileName = 'logbimbingan_' . time() . '.' . $file->getClientOriginalExtension();
-
-                // Simpan foto baru ke dalam direktori penyimpanan
-                $file->storeAs('public/assets/logbimbingan', $fileName);
-
-                // Hapus foto lama jika ada
-                $log_bimbingan = LogBimbinganModel::find($id);
-                if ($log_bimbingan->foto) {
-                    Storage::delete('public/assets/logbimbingan/' . $log_bimbingan->foto);
-                }
-
-                // Update foto baru dalam database
-                $log_bimbingan->foto = $fileName;
-                $log_bimbingan->save();
-            }
-
-            // Update data LogBimbinganModel
-            $log_bimbingan = LogBimbinganModel::find($id);
-            $log_bimbingan->tanggal = $request->input('tanggal');
-            $log_bimbingan->jam_mulai = $request->input('jam_mulai');
-            $log_bimbingan->jam_selesai = $request->input('jam_selesai');
-            $log_bimbingan->topik_bimbingan = $request->input('topik_bimbingan');
-            $log_bimbingan->pembimbing_dosen_id = $request->input('pembimbing_dosen_id');
-            $log_bimbingan->instruktur_lapangan_id = $request->input('instruktur_lapangan_id');
-            $log_bimbingan->save();
-
-            return response()->json([
-                'stat' => $log_bimbingan,
-                'mc' => $log_bimbingan,
-                'msg' => ($log_bimbingan) ? $this->getMessage('update.success') : $this->getMessage('update.failed')
-            ]);
-        }
-
-        return redirect('/');
-    }
 
 
     public function show($id)
     {
         $this->authAction('read', 'modal');
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+        $user = auth()->user();
+        $user_id = $user->user_id;
+        $instruktur = DosenModel::where('user_id', $user_id)->first();
+        $instruktur_id = $instruktur->dosen_id;
+
         $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
 
+        $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)
+            ->where('periode_id', $activePeriods)
+            ->pluck('pembimbing_dosen_id') // Ambil hanya kolom pembimbing_dosen_id
+            ->unique() // Hanya nilai unik
+            ->sort() // Urutkan nilai
+            ->values() // Reset index array
+            ->toArray(); // Konversi ke array
+
+        $pembimbing_dosen_ids = $pembimbing_dosen;
+
         $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->wherein('t_semhas_daftar.pembimbing_dosen_id', $pembimbing_dosen_ids)
             ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
             ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
             ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
@@ -341,10 +154,10 @@ class JadwalDosenPembimbingController extends Controller
                 't_semhas_daftar.semhas_daftar_id',
                 'm_mahasiswa.nama_mahasiswa',
                 't_semhas_daftar.Judul',
+                't_semhas_daftar.magang_id',
                 'd1.dosen_name AS nama_dosen_pembahas', // Menggunakan alias yang sama seperti dalam JOIN
                 'm_instruktur.nama_instruktur AS nama_instruktur',
-                'd2.dosen_name AS nama_dosen', // Menggunakan alias yang sama seperti dalam JOIN
-                't_semhas_daftar.magang_id',
+                'd2.dosen_name AS nama_dosen',
                 't_semhas_daftar.tanggal_daftar',
                 't_semhas_daftar.link_github',
                 't_semhas_daftar.link_laporan'

@@ -64,10 +64,51 @@ class JadwalInstrukturLapanganController extends Controller
             'title' => 'Daftar ' . $this->menuTitle
         ];
 
+        $user = auth()->user();
+        $user_id = $user->user_id;
+        $instruktur = InstrukturModel::where('user_id', $user_id)->first();
+        $instruktur_id = $instruktur->instruktur_id;
+
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $pembimbing_dosen = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)
+            ->where('periode_id', $activePeriods)
+            ->pluck('instruktur_lapangan_id') // Ambil hanya kolom pembimbing_dosen_id
+            ->unique() // Hanya nilai unik
+            ->sort() // Urutkan nilai
+            ->values() // Reset index array
+            ->toArray(); // Konversi ke array
+
+        $pembimbing_dosen_ids = $pembimbing_dosen;
+        $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->wherein('t_semhas_daftar.instruktur_lapangan_id', $pembimbing_dosen_ids)
+            ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
+            ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
+            ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
+            ->leftJoin('m_dosen', 't_pembimbing_dosen.dosen_id', '=', 'm_dosen.dosen_id')
+            ->leftJoin('t_instruktur_lapangan', 't_semhas_daftar.instruktur_lapangan_id', '=', 't_instruktur_lapangan.instruktur_lapangan_id')
+            ->leftJoin('m_instruktur', 't_instruktur_lapangan.instruktur_id', '=', 'm_instruktur.instruktur_id')
+            ->select(
+                't_semhas_daftar.semhas_daftar_id',
+                'm_mahasiswa.nama_mahasiswa',
+                't_semhas_daftar.Judul',
+                'm_instruktur.nama_instruktur AS nama_instruktur'
+            )
+            ->get();
+        $semhasDaftarIds = $data->pluck('semhas_daftar_id'); // Ambil semua semhas_daftar_id sebagai array
+        // dd($semhasDaftarIds);
+
+        $existingNilai = TNilaiInstrukturLapanganModel::whereIn('semhas_daftar_id', $semhasDaftarIds)
+            ->where('periode_id', $activePeriods)
+            ->get();
+
+        // dd($existingNilai);
+
+
         return view($this->viewPath . 'index')
             ->with('breadcrumb', (object) $breadcrumb)
             ->with('activeMenu', (object) $activeMenu)
             ->with('page', (object) $page)
+            ->with('existingNilai', $existingNilai)
             ->with('allowAccess', $this->authAccessKey());
     }
 
@@ -108,6 +149,13 @@ class JadwalInstrukturLapanganController extends Controller
                 'm_instruktur.nama_instruktur AS nama_instruktur'
             )
             ->get();
+
+        $data->each(function ($item) use ($activePeriods) {
+            $nilaiExist = TNilaiInstrukturLapanganModel::where('semhas_daftar_id', $item->semhas_daftar_id)
+                ->where('periode_id', $activePeriods)
+                ->exists();
+            $item->nilai_exist = $nilaiExist;
+        });
         // dd($data);
         return DataTables::of($data)
             ->addIndexColumn()
@@ -330,9 +378,25 @@ class JadwalInstrukturLapanganController extends Controller
     {
         $this->authAction('read', 'modal');
         // if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+        $user = auth()->user();
+        $user_id = $user->user_id;
+        $instruktur = InstrukturModel::where('user_id', $user_id)->first();
+        $instruktur_id = $instruktur->instruktur_id;
+
         $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
 
+        $pembimbing_dosen = InstrukturLapanganModel::where('instruktur_id', $instruktur_id)
+            ->where('periode_id', $activePeriods)
+            ->pluck('instruktur_lapangan_id') // Ambil hanya kolom pembimbing_dosen_id
+            ->unique() // Hanya nilai unik
+            ->sort() // Urutkan nilai
+            ->values() // Reset index array
+            ->toArray(); // Konversi ke array
+
+        $pembimbing_dosen_ids = $pembimbing_dosen;
+
         $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->wherein('t_semhas_daftar.instruktur_lapangan_id', $pembimbing_dosen_ids)
             ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
             ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
             ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
@@ -344,10 +408,10 @@ class JadwalInstrukturLapanganController extends Controller
                 't_semhas_daftar.semhas_daftar_id',
                 'm_mahasiswa.nama_mahasiswa',
                 't_semhas_daftar.Judul',
+                't_semhas_daftar.magang_id',
                 'd1.dosen_name AS nama_dosen_pembahas', // Menggunakan alias yang sama seperti dalam JOIN
                 'm_instruktur.nama_instruktur AS nama_instruktur',
-                'd2.dosen_name AS nama_dosen', // Menggunakan alias yang sama seperti dalam JOIN
-                't_semhas_daftar.magang_id',
+                'd2.dosen_name AS nama_dosen',
                 't_semhas_daftar.tanggal_daftar',
                 't_semhas_daftar.link_github',
                 't_semhas_daftar.link_laporan'

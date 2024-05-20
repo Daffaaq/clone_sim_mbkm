@@ -43,7 +43,7 @@ class LogBimbinganInstrukturController extends Controller
 
         $activeMenu = [
             'l1' => 'transaction',
-            'l2' => 'transaksi-log-bimbingan-Instruktur',
+            'l2' => 'transaksi-loginstruk',
             'l3' => null
         ];
 
@@ -167,9 +167,9 @@ class LogBimbinganInstrukturController extends Controller
         $nilaiPembimbingInstruktur = $request->input('nilai_instruktur_lapangan'); // Ambil nilai pembimbing dosen dari permintaan
 
         if (
-            $statusDosen == 1 && $nilaiPembimbingInstruktur < 80
+            $statusDosen == 1 && $nilaiPembimbingInstruktur < 81
         ) {
-            return response()->json(['success' => false, 'message' => 'Nilai Instuktur harus minimal 80']);
+            return response()->json(['success' => false, 'message' => 'Nilai Instuktur harus minimal 81']);
         }
         if (
             $statusDosen == 1 && $nilaiPembimbingInstruktur > 100

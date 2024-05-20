@@ -462,13 +462,7 @@ class LogBimbinganController extends Controller
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         // dd($mahasiswa);
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
-        // $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->with('instruktur')->get();
-        // $instruktur = $instrukturLapangan->first(); // Ambil objek pertama dari koleksi
-        // $nama_instruktur = optional($instruktur->instruktur)->nama_instruktur; // Akses atribut instruktur dari objek pertama
-        // $PembimbingDosenModel = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->with('dosen')->get();
-        // $dosen = $PembimbingDosenModel->first(); // Ambil objek pertama dari koleksi
-        // $nama_dosen = optional($dosen->dosen)->dosen_name; // Akses atribut instruktur dari objek pertama
-        // Mengambil instruktur lapangan untuk mahasiswa tertentu dengan relasi 'instruktur'
+        // dd($mahasiswa_id);
         $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
             ->whereHas('magang', function ($query) use ($activePeriods) {
                 $query->where('periode_id', $activePeriods);
@@ -486,12 +480,12 @@ class LogBimbinganController extends Controller
 
         // dd($nama_instruktur);
         // dd($mahasiswa_id);
-        $magang_ids = Magang::whereIn('mahasiswa_id', [$mahasiswa_id]) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
+        $magang_ids = Magang::where('mahasiswa_id', $mahasiswa_id) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
             ->where('status', 1)
-            ->pluck('magang_id');
+            ->value('magang_id');
         // dd($magang_ids);
 
-        $magang = Magang::whereIn('magang_id', $magang_ids) // Perhatikan penggunaan whereIn() untuk memeriksa apakah $magang_ids ada di dalam array
+        $magang = Magang::where('magang_id', $magang_ids) // Perhatikan penggunaan whereIn() untuk memeriksa apakah $magang_ids ada di dalam array
             ->where('mahasiswa_id', $mahasiswa_id) // Tambahkan klausa where untuk mahasiswa_id
             ->with('mitra')
             ->with('mitra.kegiatan')
@@ -504,9 +498,7 @@ class LogBimbinganController extends Controller
             'tanggal',
             'topik_bimbingan',
             DB::raw('TIME_FORMAT(jam_mulai, "%H:%i") AS jam_mulai'),
-            DB::raw('TIME_FORMAT(jam_selesai, "%H:%i") AS jam_selesai'),
-            'status1',
-            'status2'
+            DB::raw('TIME_FORMAT(jam_selesai, "%H:%i") AS jam_selesai')
         )
             ->whereIn('pembimbing_dosen_id', function ($query) use ($activePeriods) {
                 $query->select('pembimbing_dosen_id')
@@ -523,9 +515,15 @@ class LogBimbinganController extends Controller
             ->where('status2', 1) // Menambahkan pengecekan status2 == 1
             ->get();
 
-        // dd($data);
+        // dd($data->count());
 
-        $pdf = Pdf::loadView('transaction.log-bimbingan.cetak_pdf', compact('magang', 'data', 'mahasiswa', 'nama_instruktur', 'nama_dosen'));
+        $pdf = Pdf::loadView('transaction.log-bimbingan.cetak_pdf', [
+            'magang' => $magang,
+            'data' => $data,
+            'mahasiswa' => $mahasiswa,
+            'nama_instruktur' => $nama_instruktur,
+            'nama_dosen' => $nama_dosen
+        ]);
         return $pdf->stream();
     }
 }

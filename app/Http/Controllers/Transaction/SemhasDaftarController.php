@@ -217,6 +217,7 @@ class SemhasDaftarController extends Controller
                         ->whereHas('magang', function ($query) use ($kode_magang) {
                             $query->where('magang_kode', $kode_magang);
                         })->get();
+                    // dd($dataSemhasDaftar1);
                     if ($dataSemhasDaftar == null) {
                         return view($this->viewPath . 'index')
                             ->with('breadcrumb', (object) $breadcrumb)

@@ -69,7 +69,8 @@ $is_edit = isset($data);
                             <input type="hidden" name="existing_foto" value="{{ $data->foto }}">
                         @endif
                         <input type="file" class="form-control-file" id="foto" name="foto">
-                        <small id="fotoHelp" class="form-text text-muted">Max file size: 2048KB (2MB).</small>
+                        <small id="fotoHelp" class="form-text text-muted">Max file size: 2048KB (2MB). Must be in .png,
+                            .jpg, or .jpeg format.</small>
                     </div>
                 </div>
             </div>
