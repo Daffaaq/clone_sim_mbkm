@@ -44,7 +44,7 @@
     <div class="login-box">
         <div class="card mb-1">
             <div class="card-body login-card-body">
-                <h4 class="login-title text-center">{{ env('APP_NAME') }} 1</h4>
+                <h4 class="login-title text-center">{{ env('APP_NAME') }} 2</h4>
                 <h5 class="login-title text-center text-primary">{{ env('APP_PROJECT') }}</h5>
                 <p class="text-center text-sm">Silahkan login untuk masuk sistem</p>
                 <div class="login-message text-center mb-2">

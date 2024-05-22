@@ -15,6 +15,6 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           username: ${{ secrets.SSH_USERNAME }}
           script: |
-            cd /var/www/clone_sim_mbkm`/
+            cd /var/www/clone_sim_mbkm/
             sudo git pull
             sudo composer install --no-interaction --prefer-dist --optimize-autoloader
