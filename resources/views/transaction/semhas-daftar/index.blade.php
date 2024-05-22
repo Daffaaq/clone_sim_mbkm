@@ -157,14 +157,15 @@
                                             Institusi</label>
                                         <div class="col-sm-9">
                                             <input type="text" class="form-control form-control-sm"
-                                                value="{{ $nama_dosen }}" readonly>
+                                                value="{{ $pembimbingDosennama->dosen->dosen_name }}" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group  row mb-2">
                                         <label class="col-sm-3 control-label col-form-label">Instruktur Lapangan</label>
                                         <div class="col-sm-9">
                                             <input type="text" class="form-control form-control-sm"
-                                                value="{{ $nama_instruktur }}" readonly>
+                                                value="{{ $instrukturLapangannama->instruktur->nama_instruktur }}"
+                                                readonly>
                                         </div>
                                     </div>
                                     <div class="form-group  row mb-2">
@@ -221,14 +222,15 @@
                                             Institusi</label>
                                         <div class="col-sm-9">
                                             <input type="text" class="form-control form-control-sm"
-                                                value="{{ $nama_dosen }}" readonly>
+                                                value="{{ $pembimbingDosennama->dosen->dosen_name }}" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group  row mb-2">
                                         <label class="col-sm-3 control-label col-form-label">Instruktur Lapangan</label>
                                         <div class="col-sm-9">
                                             <input type="text" class="form-control form-control-sm"
-                                                value="{{ $nama_instruktur }}" readonly>
+                                                value="{{ $instrukturLapangannama->instruktur->nama_instruktur }}"
+                                                readonly>
                                         </div>
                                     </div>
                                     <form action="{{ route('daftar.semhas') }}" method="POST" id="form-daftar">
@@ -376,14 +378,15 @@
                                             Institusi</label>
                                         <div class="col-sm-9">
                                             <input type="text" class="form-control form-control-sm"
-                                                value="{{ $nama_dosen }}" readonly>
+                                                value="{{ $pembimbingDosennama->dosen->dosen_name }}" readonly>
                                         </div>
                                     </div>
                                     <div class="form-group  row mb-2">
                                         <label class="col-sm-3 control-label col-form-label">Instruktur Lapangan</label>
                                         <div class="col-sm-9">
                                             <input type="text" class="form-control form-control-sm"
-                                                value="{{ $nama_instruktur }}" readonly>
+                                                value="{{ $instrukturLapangannama->instruktur->nama_instruktu }}"
+                                                readonly>
                                         </div>
                                     </div>
                                     <div class="form-group  row mb-2">

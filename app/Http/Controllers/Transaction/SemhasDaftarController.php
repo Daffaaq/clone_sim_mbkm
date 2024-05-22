@@ -164,17 +164,13 @@ class SemhasDaftarController extends Controller
                         'title' => 'Pendaftaran ' . $this->menuTitle
                     ];
                     $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
-                    $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
+                    $instrukturLapangannama = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
                         ->where('periode_id', $activePeriods)
-                        ->with('instruktur')
-                        ->first();
-                    $nama_instruktur = optional($instrukturLapangan->instruktur)->nama_instruktur;
+                        ->with('instruktur')->first();
 
-                    // Mengambil pembimbing dosen untuk mahasiswa tertentu dengan relasi 'dosen'
-                    $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)
+                    $pembimbingDosennama = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)
                         ->where('periode_id', $activePeriods)
                         ->with('dosen')->first();
-                    $nama_dosen = optional($pembimbingDosen->dosen)->dosen_name;
 
                     $magang_ids = Magang::whereIn('mahasiswa_id', [$mahasiswa_id]) // Perhatikan penambahan tanda kurung siku untuk membungkus nilai dalam array
                         ->where('status', 1)
@@ -222,8 +218,6 @@ class SemhasDaftarController extends Controller
                         return view($this->viewPath . 'index')
                             ->with('breadcrumb', (object) $breadcrumb)
                             ->with('activeMenu', (object) $activeMenu)
-                            ->with('nama_instruktur', $nama_instruktur)
-                            ->with('nama_dosen', $nama_dosen)
                             ->with('magang', $magang)
                             ->with('dataSemhasDaftar', $dataSemhasDaftar)
                             ->with('dataSemhasDaftar1', $dataSemhasDaftar1)
@@ -231,6 +225,8 @@ class SemhasDaftarController extends Controller
                             ->with('successDaftar1', $successDaftar1)
                             ->with('semhasData', $semhasData)
                             ->with('semhas_id', $semhas_id)
+                            ->with('instrukturLapangannama', $instrukturLapangannama)
+                            ->with('pembimbingDosennama', $pembimbingDosennama)
                             ->with('instrukturLapangan', $instrukturLapangan)
                             ->with('pembimbingdosen', $pembimbingdosen)
                             ->with('magang_id', $magang_id)
@@ -261,8 +257,8 @@ class SemhasDaftarController extends Controller
                             ->with('breadcrumb', (object) $breadcrumb)
                             ->with('activeMenu', (object) $activeMenu)
                             ->with('successDaftar1', $successDaftar1)
-                            ->with('nama_instruktur', $nama_instruktur)
-                            ->with('nama_dosen', $nama_dosen)
+                            ->with('instrukturLapangannama', $instrukturLapangannama)
+                            ->with('pembimbingDosennama', $pembimbingDosennama)
                             ->with('magang', $magang)
                             ->with('prodi_name', $prodi_name)
                             ->with('dataSemhasDaftar', $dataSemhasDaftar)

@@ -169,7 +169,7 @@
 
                         disabledInputs.forEach(function(disabledInput) {
                             // Perbarui nilai input yang dinonaktifkan dengan nilai rata-rata
-                            disabledInput.value = average;
+                            disabledInput.value = average.toFixed(2);
                             // Mendapatkan nilai x bobot cell
                             var nilaiXBobotCell = disabledInput.closest('tr')
                                 .querySelector('td:nth-child(4)');

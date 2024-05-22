@@ -25,10 +25,13 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Nama Mahasiswa</th>
-                                        <th>Dosen Pembimbing</th>
-                                        <th>Instruktur Lapangan</th>
                                         <th>Judul</th>
-                                        <th>Jadwal</th>
+                                        <th>Berita Acara</th>
+                                        <th>Nilai Instruktur Lapangan</th>
+                                        <th>Nilai Dosen Pembimbing</th>
+                                        <th>Nilai Dosen Pembahas</th>
+                                        <th>Status Magang</th>
+                                        <th>Detail</th>
                                         {{-- <th>#</th> --}}
                                     </tr>
                                 </thead>
@@ -70,25 +73,69 @@
                         "bSearchable": true
                     },
                     {
-                        "mData": "nama_dosen",
-                        "sClass": "",
-                        "sWidth": "15%",
-                        "bSortable": true,
-                        "bSearchable": true
-                    },
-                    {
-                        "mData": "nama_instruktur",
-                        "sClass": "",
-                        "sWidth": "15%",
-                        "bSortable": true,
-                        "bSearchable": true
-                    },
-                    {
                         "mData": "Judul",
                         "sClass": "",
                         "sWidth": "20%",
                         "bSortable": true,
                         "bSearchable": true
+                    },
+                    {
+                        "mData": "Berita_acara",
+                        "sClass": "",
+                        "sWidth": "20%",
+                        "bSortable": true,
+                        "bSearchable": true,
+                        "mRender": function(data, type, row, meta) {
+                            if (data) {
+                                var url = '{{ asset('storage/assets/berita-acara') }}/' + data;
+                                return '<span class="badge badge-success"><a href="' + url +
+                                    '" target="_blank" class="text-white text-decoration-underline">Sudah Upload Berita Acara</a></span>';
+                            } else {
+                                return '<span class="badge badge-danger">Belum Upload Berita Acara</span>';
+                            }
+                        }
+                    },
+                    {
+                        "mData": "nilai_exist_instruktur",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": false,
+                        "bSearchable": false,
+                        "mRender": function(data, type, row, meta) {
+                            if (data) {
+                                return '<span class="badge badge-success">Sudah Mengisi Nilai</span>';
+                            } else {
+                                return '<span class="badge badge-danger">Belum Mengisi Nilai</span>';
+                            }
+                        }
+                    },
+                    {
+                        "mData": "nilai_exist_pembimbing",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": false,
+                        "bSearchable": false,
+                        "mRender": function(data, type, row, meta) {
+                            if (data) {
+                                return '<span class="badge badge-success">Sudah Mengisi Nilai</span>';
+                            } else {
+                                return '<span class="badge badge-danger">Belum Mengisi Nilai</span>';
+                            }
+                        }
+                    },
+                    {
+                        "mData": "nilai_exist_pembahas",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": false,
+                        "bSearchable": false,
+                        "mRender": function(data, type, row, meta) {
+                            if (data) {
+                                return '<span class="badge badge-success">Sudah Mengisi Nilai</span>';
+                            } else {
+                                return '<span class="badge badge-danger">Belum Mengisi Nilai</span>';
+                            }
+                        }
                     },
                     {
                         "mData": "semhas_daftar_id",
@@ -97,33 +144,56 @@
                         "bSortable": false,
                         "bSearchable": false,
                         "mRender": function(data, type, row, meta) {
-                            return ''
-                            @if ($allowAccess->update)
-                                +
-                                `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Tambah Jadwal" ><i class="fa fa-calendar-alt"></i></a> `
-                            @endif +
-                             `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="show Data" ><i class="fa fa-eye"></i></a> `
+                            let magangStatus = row.magang_status === 'Sudah Selesai Magang' ?
+                                '<span class="badge badge-success">' + row.magang_status +
+                                '</span>' :
+                                '<span class="badge badge-danger">' + row.magang_status + '</span>';
+                            return magangStatus;
 
                         }
+                    },
+                    {
+                        "mData": "semhas_daftar_id",
+                        "sClass": "",
+                        "sWidth": "15%",
+                        "bSortable": false,
+                        "bSearchable": false,
+                        "mRender": function(data, type, row, meta) {
+                            if (!row.nilai_exist_instruktur && !row.nilai_exist_pembimbing && !row
+                                .nilai_exist_pembahas) {
+                                // Tampilkan kosong jika semua nilai-nilai tersebut tidak ada
+                                return '';
+                            } else {
+                                let buttons = '';
+                                if (!row.nilai_exist_instruktur) {
+                                    buttons +=
+                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white" style="color: #ffffff;"></i></a>
+                                        <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white" style="color: #ffffff;"></i></a>`;
+                                }
+                                if (!row.nilai_exist_pembimbing) {
+                                    buttons +=
+                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white" style="color: #ffffff;"></i></a>
+                            <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white" style="color: #ffffff;"></i></a>`;
+                                }
+                                if (!row.nilai_exist_pembahas) {
+                                    buttons +=
+                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white" style="color: #ffffff;"></i></a>
+                                        <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white" style="color: #ffffff;"></i></a>`;
+                                }
+                                if (row.nilai_exist_instruktur && row.nilai_exist_pembimbing && row
+                                    .nilai_exist_pembahas) {
+                                    buttons +=
+                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-akhir" class="ajax_modal btn btn-xs btn-danger tooltips text-secondary" data-placement="left" data-original-title="Nilai Akhir" ><i class="fas fa-medal text-white" style="color: #ffffff;"></i></a>`;
+                                    buttons +=
+                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white" style="color: #ffffff;"></i></a>
+                            <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white" style="color: #ffffff;"></i></a>
+                            <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white" style="color: #ffffff;"></i></a>`;
+                                }
+                                return buttons;
+                            }
+                        }
                     }
-                    // {
-                    //     "mData": "t_semhas_daftar.semhas_daftar_id",
-                    //     "sClass": "text-center pr-2",
-                    //     "sWidth": "10%",
-                    //     "bSortable": false,
-                    //     "bSearchable": false,
-                    //     "mRender": function(data, type, row, meta) {
-                    //         return ''
-                    //         @if ($allowAccess->update)
-                    //             +
-                    //             `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/edit" class="ajax_modal btn btn-xs btn-warning tooltips text-secondary" data-placement="left" data-original-title="Edit Data" ><i class="fa fa-edit"></i></a> `
-                    //         @endif
-                    //         @if ($allowAccess->delete)
-                    //             +
-                    //             `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/delete" class="ajax_modal btn btn-xs btn-danger tooltips text-light" data-placement="left" data-original-title="Hapus Data" ><i class="fa fa-trash"></i></a> `
-                    //         @endif ;
-                    //     }
-                    // }
+
                 ],
                 "fnDrawCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     $('a', this.fnGetNodes()).tooltip();

@@ -278,6 +278,14 @@ Route::get('daftar-mahasiswa-diterima/{id}/delete', [DaftarMahasiswaDiterimaCont
 // daftar mahasiswa selesai Magang
 Route::resource('daftar-mahasiswa-selesai-magang', DaftarMahasiswaSudahMagangController::class)->parameter('daftar-mahasiswa-selesai-magang', 'id');
 Route::post('daftar-mahasiswa-selesai-magang/list', [DaftarMahasiswaSudahMagangController::class, 'list']);
+Route::get('daftar-mahasiswa-selesai-magang/{id}/nilai-pembimbing', [DaftarMahasiswaSudahMagangController::class, 'nilaiPembimbing'])->name('nilai-mahasiswa-dosen-pembimbing_selesai-magang');
+Route::get('daftar-mahasiswa-selesai-magang/{id}/nilai-pembahas', [DaftarMahasiswaSudahMagangController::class, 'nilaiDosenPembahas'])->name('nilai-mahasiswa-dosen-pembahas_selesai-magang');
+Route::get('daftar-mahasiswa-selesai-magang/{id}/nilai-instruktur', [DaftarMahasiswaSudahMagangController::class, 'nilaiInstrukturLapangan'])->name('nilai-mahasiswa-instruktur-lapangan_selesai-magang');
+Route::get('daftar-mahasiswa-selesai-magang/{id}/nilai-akhir', [DaftarMahasiswaSudahMagangController::class, 'nilaiAkhir'])->name('nilai-mahasiswa-akhir_selesai-magang');
+Route::get('daftar-mahasiswa-selesai-magang/{encrpyt}/cetak-nilai-pembimbing', [DaftarMahasiswaSudahMagangController::class, 'cetakNilaiDosenPembimbing'])->name('cetak-nilai-mahasiswa-dosen-pembimbing_selesai-magang');
+Route::get('daftar-mahasiswa-selesai-magang/{encrpyt}/cetak-nilai-pembahas', [DaftarMahasiswaSudahMagangController::class, 'cetakNilaiDosenpembahas'])->name('cetak-nilai-mahasiswa-dosen-pembahas_selesai-magang');
+Route::get('daftar-mahasiswa-selesai-magang/{encrpyt}/cetak-nilai-instruktur', [DaftarMahasiswaSudahMagangController::class, 'cetakNilaiInstrukturLapangan'])->name('cetak-nilai-mahasiswa-instruktur-lapangan_selesai-magang');
+Route::get('daftar-mahasiswa-selesai-magang/{encrpyt}/cetak-nilai-akhir', [DaftarMahasiswaSudahMagangController::class, 'cetakNilaiAkhir'])->name('cetak-nilai-mahasiswa-akhir_selesai-magang');
 
 //kuota with url mitra/{id}/kuota
 Route::prefix('mitra/{id}')->group(function () {

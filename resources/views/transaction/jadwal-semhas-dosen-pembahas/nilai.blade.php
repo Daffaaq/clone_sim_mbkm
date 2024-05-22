@@ -105,7 +105,7 @@
 
                 if (!isNaN(nilai) && !isNaN(bobot) && nilaiXBobotCell) {
                     var nilaiXBobot = nilai * bobot;
-                    nilaiXBobotCell.textContent = nilaiXBobot;
+                    nilaiXBobotCell.textContent = nilaiXBobot.toFixed(2);
                 }
 
                 // Hitung total nilai
@@ -116,7 +116,7 @@
             });
 
             // Tampilkan total nilai
-            document.querySelector('.total-nilai1').textContent = totalNilai;
+            document.querySelector('.total-nilai1').textContent = totalNilai.toFixed(2);
         }
 
         // Hitung nilai saat halaman dimuat
@@ -169,7 +169,7 @@
 
                         disabledInputs.forEach(function(disabledInput) {
                             // Perbarui nilai input yang dinonaktifkan dengan nilai rata-rata
-                            disabledInput.value = average;
+                            disabledInput.value = average.toFixed(2);
                             // Mendapatkan nilai x bobot cell
                             var nilaiXBobotCell = disabledInput.closest('tr')
                                 .querySelector('td:nth-child(4)');
