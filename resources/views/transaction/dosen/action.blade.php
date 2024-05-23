@@ -73,7 +73,7 @@ $is_edit = isset($data);
                         <div class="form-group required mb-2">
                             <label class="control-label">kuota Dosen</label>
                             <input type="number" class="form-control form-control-sm" id="kuota"
-                                name="kuota" value="{{ isset($data->kuota) ? $data->kuota : '' }}" />
+                                name="kuota" value="{{ isset($data->kuota) ? $data->kuota : '' }}" min="0" />
                         </div>
 
                     </div>
