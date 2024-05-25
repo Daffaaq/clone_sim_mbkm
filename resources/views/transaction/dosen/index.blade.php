@@ -132,6 +132,7 @@
                         // Clear file input label
                         $('#importFileForm .custom-file-label').html('Choose file');
                         $('#importerrorMessage').show().delay(5000).fadeOut();
+                        console.log('Full error response:', xhr);
                     }
                 });
             });
