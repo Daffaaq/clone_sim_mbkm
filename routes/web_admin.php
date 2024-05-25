@@ -312,19 +312,19 @@ Route::group(['prefix' => 'dosen-pembimbing', 'middleware' => ['auth']], functio
     Route::get('penilaian-mahasiswa-dosen/{id}/delete', [DosenPenilaianMahasiswaController::class, 'confirm']);
     Route::post('penilaian-mahasiswa-dosen/updatedataPenilaianMahasiswa', [DosenPenilaianMahasiswaController::class, 'updatedataPenilaianMahasiswa'])->name('update.penilaian.mahasiswa.dosen');
 
-    // Route::resource('jadwal-semhas', JadwalDosenPembimbingController::class)->parameter('log-bimbingan', 'id');
-    Route::post('jadwal-semhas/list', [JadwalDosenPembimbingController::class, 'list']);
-    Route::get('jadwal-semhas/{id}/nilai', [JadwalDosenPembimbingController::class, 'nilai']);
-    Route::post('jadwal-semhas/nilai', [JadwalDosenPembimbingController::class, 'simpanNilai'])->name('simpan.nilai');
-    Route::get('jadwal-semhas/{id}/delete', [JadwalDosenPembimbingController::class, 'confirm']);
+    Route::resource('jadwal-semhas-dospem', JadwalDosenPembimbingController::class)->parameter('log-bimbingan', 'id');
+    Route::post('jadwal-semhas-dospem/list', [JadwalDosenPembimbingController::class, 'list']);
+    Route::get('jadwal-semhas-dospem/{id}/nilai', [JadwalDosenPembimbingController::class, 'nilai']);
+    Route::post('jadwal-semhas-dospem/nilai', [JadwalDosenPembimbingController::class, 'simpanNilai'])->name('simpan.nilai');
+    Route::get('jadwal-semhas-dospem/{id}/delete', [JadwalDosenPembimbingController::class, 'confirm']);
 });
 Route::group(['prefix' => 'dosen-pembahas', 'middleware' => ['auth']], function () {
 
-    // Route::resource('jadwal-semhas', JadwalDosenPembahasController::class)->parameter('log-bimbingan', 'id');
-    Route::post('jadwal-semhas/list', [JadwalDosenPembahasController::class, 'list']);
-    Route::get('jadwal-semhas/{id}/nilai', [JadwalDosenPembahasController::class, 'nilai']);
-    Route::post('jadwal-semhas/nilai', [JadwalDosenPembahasController::class, 'simpanNilai'])->name('simpan.nilai.pembahas');
-    Route::get('jadwal-semhas/{id}/delete', [JadwalDosenPembahasController::class, 'confirm']);
+    Route::resource('jadwal-semhas-dosbing', JadwalDosenPembahasController::class)->parameter('log-bimbingan', 'id');
+    Route::post('jadwal-semhas-dosbing/list', [JadwalDosenPembahasController::class, 'list']);
+    Route::get('jadwal-semhas-dosbing/{id}/nilai', [JadwalDosenPembahasController::class, 'nilai']);
+    Route::post('jadwal-semhas-dosbing/nilai', [JadwalDosenPembahasController::class, 'simpanNilai'])->name('simpan.nilai.pembahas');
+    Route::get('jadwal-semhas-dosbing/{id}/delete', [JadwalDosenPembahasController::class, 'confirm']);
 });
 Route::group(['prefix' => 'category', 'middleware' => ['auth']], function () {
     //group
