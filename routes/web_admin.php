@@ -107,7 +107,7 @@ Route::group(['prefix' => 'master', 'middleware' => ['auth']], function () {
 
 
     //pendaftaran
-    Route::resource('pendaftaran', PendaftaranController::class)->parameter('pendaftaran', 'id');
+    // Route::resource('pendaftaran', PendaftaranController::class)->parameter('pendaftaran', 'id');
     Route::post('pendaftaran/list', [PendaftaranController::class, 'list']);
     Route::get('pendaftaran/{id}/delete', [PendaftaranController::class, 'confirm']);
 });
@@ -259,7 +259,7 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
 });
 
 Route::group(['prefix' => 'laporan', 'middleware' => ['auth']], function () {
-    Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');
+    // Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');
     Route::post('daftar-mahasiswa-diterima/list', [DaftarMahasiswaDiterimaController::class, 'list']);
     Route::get('daftar-mahasiswa-diterima/{id}/delete', [DaftarMahasiswaDiterimaController::class, 'confirm']);
     Route::get('daftar-mahasiswa/export', [MahasiswaController::class, 'export']);
@@ -270,7 +270,7 @@ Route::group(['prefix' => 'laporan', 'middleware' => ['auth']], function () {
     Route::get('daftar-mitra/export', [MitraController::class, 'export']);
 });
 
-Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');
+// Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');
 Route::post('daftar-mahasiswa-diterima/list', [DaftarMahasiswaDiterimaController::class, 'list']);
 Route::get('daftar-mahasiswa-diterima/{id}/delete', [DaftarMahasiswaDiterimaController::class, 'confirm']);
 
@@ -312,7 +312,7 @@ Route::group(['prefix' => 'dosen-pembimbing', 'middleware' => ['auth']], functio
     Route::get('penilaian-mahasiswa-dosen/{id}/delete', [DosenPenilaianMahasiswaController::class, 'confirm']);
     Route::post('penilaian-mahasiswa-dosen/updatedataPenilaianMahasiswa', [DosenPenilaianMahasiswaController::class, 'updatedataPenilaianMahasiswa'])->name('update.penilaian.mahasiswa.dosen');
 
-    Route::resource('jadwal-semhas', JadwalDosenPembimbingController::class)->parameter('log-bimbingan', 'id');
+    // Route::resource('jadwal-semhas', JadwalDosenPembimbingController::class)->parameter('log-bimbingan', 'id');
     Route::post('jadwal-semhas/list', [JadwalDosenPembimbingController::class, 'list']);
     Route::get('jadwal-semhas/{id}/nilai', [JadwalDosenPembimbingController::class, 'nilai']);
     Route::post('jadwal-semhas/nilai', [JadwalDosenPembimbingController::class, 'simpanNilai'])->name('simpan.nilai');
@@ -320,7 +320,7 @@ Route::group(['prefix' => 'dosen-pembimbing', 'middleware' => ['auth']], functio
 });
 Route::group(['prefix' => 'dosen-pembahas', 'middleware' => ['auth']], function () {
 
-    Route::resource('jadwal-semhas', JadwalDosenPembahasController::class)->parameter('log-bimbingan', 'id');
+    // Route::resource('jadwal-semhas', JadwalDosenPembahasController::class)->parameter('log-bimbingan', 'id');
     Route::post('jadwal-semhas/list', [JadwalDosenPembahasController::class, 'list']);
     Route::get('jadwal-semhas/{id}/nilai', [JadwalDosenPembahasController::class, 'nilai']);
     Route::post('jadwal-semhas/nilai', [JadwalDosenPembahasController::class, 'simpanNilai'])->name('simpan.nilai.pembahas');
