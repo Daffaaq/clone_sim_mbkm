@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Transaction\KuotaDosenModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -391,6 +392,8 @@ class DosenController extends Controller
                 ]);
             } catch (\Exception $e) {
                 unlink(public_path('assets/temp_import/' . $nama_file)); // Hapus file jika terjadi kesalahan
+
+                Log::error('Import Error: ' . $e->getMessage());
 
                 return response()->json([
                     'stat' => false,
