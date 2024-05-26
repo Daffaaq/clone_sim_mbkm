@@ -35,7 +35,7 @@ class JadwalDosenPembimbingController extends Controller
     public function __construct()
     {
         $this->menuCode  = 'DOSEN.PEMBIMBING.JADWAL.SEMINAR.HASIL';
-        $this->menuUrl   = url('dosen-pembimbing/jadwal-semhas');
+        $this->menuUrl   = url('dosen-pembimbing/jadwal-semhas-dospem');
         $this->menuTitle = 'Jadwal Semhas Dosen Pembimbing';
         $this->viewPath  = 'transaction.jadwal-semhas-dosen-pembimbing.';
     }

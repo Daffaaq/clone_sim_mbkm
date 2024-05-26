@@ -270,7 +270,7 @@ Route::group(['prefix' => 'laporan', 'middleware' => ['auth']], function () {
     Route::get('daftar-mitra/export', [MitraController::class, 'export']);
 });
 
-// Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');
+Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');
 Route::post('daftar-mahasiswa-diterima/list', [DaftarMahasiswaDiterimaController::class, 'list']);
 Route::get('daftar-mahasiswa-diterima/{id}/delete', [DaftarMahasiswaDiterimaController::class, 'confirm']);
 

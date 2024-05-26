@@ -439,8 +439,8 @@ class DaftarMahasiswaSudahMagangController extends Controller
         $datanilai = TNilaiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
         $kriteriaNilai = NilaiPembimbingDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
         $subkriteria = NilaiPembimbingDosenModel::with('parent')
-        ->whereNotNull('parent_id')
-        ->where('periode_id', $activePeriods)
+            ->whereNotNull('parent_id')
+            ->where('periode_id', $activePeriods)
             ->count();
 
         $existingNilai = RevisiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
@@ -467,7 +467,7 @@ class DaftarMahasiswaSudahMagangController extends Controller
         $totalNilai = sprintf("%.2f", $totalNilai);
 
 
-        $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-pembimbing-dosen', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
+        $pdf = Pdf::loadView('report.daftar_mahasiswa_selesai_magang.cetak-nilai-pembimbing-dosen', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
         return $pdf->stream();
     }
     public function cetakNilaiDosenPembahas($id)
@@ -509,8 +509,8 @@ class DaftarMahasiswaSudahMagangController extends Controller
 
         $kriteriaNilai = NilaiPembahasDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
         $subkriteria = NilaiPembahasDosenModel::with('parent')
-        ->whereNotNull('parent_id')
-        ->where('periode_id', $activePeriods)
+            ->whereNotNull('parent_id')
+            ->where('periode_id', $activePeriods)
             ->count();
 
         $existingNilai = RevisiPembahasDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
@@ -538,7 +538,7 @@ class DaftarMahasiswaSudahMagangController extends Controller
         // Format totalNilai ke dua desimal sebagai string untuk tampilan
         $totalNilai = sprintf("%.2f", $totalNilai);
 
-        $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-pembahas-dosen', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
+        $pdf = Pdf::loadView('report.daftar_mahasiswa_selesai_magang.cetak-nilai-pembahas-dosen', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
         return $pdf->stream();
     }
     public function cetakNilaiInstrukturLapangan($id)
@@ -583,8 +583,8 @@ class DaftarMahasiswaSudahMagangController extends Controller
         $kriteriaNilai = NilaiInstrukturLapanganModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
         $subkriteria = NilaiInstrukturLapanganModel::with('parent')
 
-        ->whereNotNull('parent_id')
-        ->where('periode_id', $activePeriods)
+            ->whereNotNull('parent_id')
+            ->where('periode_id', $activePeriods)
             ->count();
 
         // dd($subkriteria1);
@@ -612,7 +612,7 @@ class DaftarMahasiswaSudahMagangController extends Controller
         }
         $totalNilai = sprintf("%.2f", $totalNilai);
 
-        $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-Instruktur-lapangan', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
+        $pdf = Pdf::loadView('report.daftar_mahasiswa_selesai_magang.cetak-nilai-Instruktur-lapangan', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
         return $pdf->stream();
     }
     public function cetakNilaiAkhir($id)
@@ -747,7 +747,7 @@ class DaftarMahasiswaSudahMagangController extends Controller
         $nilaiAkhirdemo = ($totalNilaiInstruktur * 0.5) + ($totalNilaiPembahas * 0.15) + ($totalNilaiPembimbing * 0.35);
         $nilaiAkhir = sprintf("%.2f", $nilaiAkhirdemo);
 
-        $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-akhir', compact('data', 'magang', 'totalNilaiInstruktur', 'totalNilaiPembahas', 'totalNilaiPembimbing', 'nilaiAkhir'));
+        $pdf = Pdf::loadView('report.daftar_mahasiswa_selesai_magang.cetak-nilai-akhir', compact('data', 'magang', 'totalNilaiInstruktur', 'totalNilaiPembahas', 'totalNilaiPembimbing', 'nilaiAkhir'));
         return $pdf->stream();
     }
 }
