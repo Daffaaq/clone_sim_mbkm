@@ -628,6 +628,8 @@ class UjianSeminarHasilController extends Controller
                 'nilaiXBobot' => number_format($nilaiXBobot, 2, '.', '')
             ];
         }
+        $totalNilai = sprintf("%.2f", $totalNilai);
+
 
         $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-pembimbing-dosen', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
         return $pdf->stream();
@@ -693,9 +695,12 @@ class UjianSeminarHasilController extends Controller
                 'name' => $nilai->name_kriteria_pembahas_dosen,
                 'nilai' => $nilaiValue,
                 'bobot' => $nilai->bobot,
-                'nilaiXBobot' => number_format($nilaiXBobot, 2, '.', '')
+                'nilaiXBobot' => sprintf("%.2f", $nilaiXBobot)
             ];
         }
+
+        // Format totalNilai ke dua desimal sebagai string untuk tampilan
+        $totalNilai = sprintf("%.2f", $totalNilai);
 
         $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-pembahas-dosen', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
         return $pdf->stream();
@@ -769,6 +774,7 @@ class UjianSeminarHasilController extends Controller
                 'nilaiXBobot' => sprintf("%.2f", $nilaiXBobot)
             ];
         }
+        $totalNilai = sprintf("%.2f", $totalNilai);
 
         $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-Instruktur-lapangan', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
         return $pdf->stream();
@@ -897,6 +903,9 @@ class UjianSeminarHasilController extends Controller
             $totalNilaiPembimbing += $detail['nilaiXBobot'];
         }
 
+        $totalNilaiInstruktur = sprintf("%.2f", $totalNilaiInstruktur);
+        $totalNilaiPembahas = sprintf("%.2f", $totalNilaiPembahas);
+        $totalNilaiPembimbing = sprintf("%.2f", $totalNilaiPembimbing);
         // Hitung nilai akhir
         // dd($nilaiDetailsPembimbing);
         $nilaiAkhirdemo = ($totalNilaiInstruktur * 0.5) + ($totalNilaiPembahas * 0.15) + ($totalNilaiPembimbing * 0.35);

@@ -244,13 +244,22 @@
                                                             class="ajax_modal btn btn-xs btn-info tooltips text-secondary mr-2"
                                                             data-placement="left" data-original-title="Nilai Dospem"><i
                                                                 class="fas fa-user-tie text-white"></i></a>
+                                                    @endif
+                                                    @if (!$datanilaiInstrukturLapangan->isEmpty() && !$existingNilaiInstrukturLapangan == null)
                                                         <a href="#" data-block="body"
                                                             data-url="{{ $page->url }}/{{ $data->semhas_daftar_id }}/nilai-instruktur"
                                                             class="ajax_modal btn btn-xs tooltips text-secondary mr-2"
                                                             style="background-color: #FFD700;" data-placement="left"
                                                             data-original-title="Nilai Instruktur Lapangan"><i
                                                                 class="fas fa-hard-hat text-white"></i></a>
-
+                                                    @endif
+                                                    @if (
+                                                        !$datanilai->isEmpty() &&
+                                                            !$existingNilai == null &&
+                                                            !$datanilaiPembahas->isEmpty() &&
+                                                            !$existingNilaiPembahas == null &&
+                                                            !$datanilaiInstrukturLapangan->isEmpty() &&
+                                                            !$existingNilaiInstrukturLapangan == null)
                                                         <a href="#" data-block="body"
                                                             data-url="{{ $page->url }}/{{ $data->semhas_daftar_id }}/nilai-akhir"
                                                             class="ajax_modal btn btn-xs tooltips text-secondary"

@@ -439,8 +439,8 @@ class DaftarMahasiswaSudahMagangController extends Controller
         $datanilai = TNilaiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
         $kriteriaNilai = NilaiPembimbingDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
         $subkriteria = NilaiPembimbingDosenModel::with('parent')
-            ->whereNotNull('parent_id')
-            ->where('periode_id', $activePeriods)
+        ->whereNotNull('parent_id')
+        ->where('periode_id', $activePeriods)
             ->count();
 
         $existingNilai = RevisiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
@@ -464,6 +464,8 @@ class DaftarMahasiswaSudahMagangController extends Controller
                 'nilaiXBobot' => number_format($nilaiXBobot, 2, '.', '')
             ];
         }
+        $totalNilai = sprintf("%.2f", $totalNilai);
+
 
         $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-pembimbing-dosen', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
         return $pdf->stream();
@@ -507,8 +509,8 @@ class DaftarMahasiswaSudahMagangController extends Controller
 
         $kriteriaNilai = NilaiPembahasDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
         $subkriteria = NilaiPembahasDosenModel::with('parent')
-            ->whereNotNull('parent_id')
-            ->where('periode_id', $activePeriods)
+        ->whereNotNull('parent_id')
+        ->where('periode_id', $activePeriods)
             ->count();
 
         $existingNilai = RevisiPembahasDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
@@ -529,9 +531,12 @@ class DaftarMahasiswaSudahMagangController extends Controller
                 'name' => $nilai->name_kriteria_pembahas_dosen,
                 'nilai' => $nilaiValue,
                 'bobot' => $nilai->bobot,
-                'nilaiXBobot' => number_format($nilaiXBobot, 2, '.', '')
+                'nilaiXBobot' => sprintf("%.2f", $nilaiXBobot)
             ];
         }
+
+        // Format totalNilai ke dua desimal sebagai string untuk tampilan
+        $totalNilai = sprintf("%.2f", $totalNilai);
 
         $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-pembahas-dosen', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
         return $pdf->stream();
@@ -578,8 +583,8 @@ class DaftarMahasiswaSudahMagangController extends Controller
         $kriteriaNilai = NilaiInstrukturLapanganModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
         $subkriteria = NilaiInstrukturLapanganModel::with('parent')
 
-            ->whereNotNull('parent_id')
-            ->where('periode_id', $activePeriods)
+        ->whereNotNull('parent_id')
+        ->where('periode_id', $activePeriods)
             ->count();
 
         // dd($subkriteria1);
@@ -605,6 +610,7 @@ class DaftarMahasiswaSudahMagangController extends Controller
                 'nilaiXBobot' => sprintf("%.2f", $nilaiXBobot)
             ];
         }
+        $totalNilai = sprintf("%.2f", $totalNilai);
 
         $pdf = Pdf::loadView('transaction.ujian-seminar-hasil.cetak-nilai-Instruktur-lapangan', compact('data', 'magang', 'nilaiDetails', 'totalNilai', 'existingNilai'));
         return $pdf->stream();
@@ -733,6 +739,9 @@ class DaftarMahasiswaSudahMagangController extends Controller
             $totalNilaiPembimbing += $detail['nilaiXBobot'];
         }
 
+        $totalNilaiInstruktur = sprintf("%.2f", $totalNilaiInstruktur);
+        $totalNilaiPembahas = sprintf("%.2f", $totalNilaiPembahas);
+        $totalNilaiPembimbing = sprintf("%.2f", $totalNilaiPembimbing);
         // Hitung nilai akhir
         // dd($nilaiDetailsPembimbing);
         $nilaiAkhirdemo = ($totalNilaiInstruktur * 0.5) + ($totalNilaiPembahas * 0.15) + ($totalNilaiPembimbing * 0.35);
