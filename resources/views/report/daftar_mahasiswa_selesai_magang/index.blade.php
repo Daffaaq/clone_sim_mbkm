@@ -25,6 +25,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Nama Mahasiswa</th>
+                                        <th>No Telephone Mahasiswa</th>
                                         <th>Judul</th>
                                         <th>Berita Acara</th>
                                         <th>Nilai Instruktur Lapangan</th>
@@ -67,6 +68,13 @@
                     },
                     {
                         "mData": "nama_mahasiswa", // Menggunakan properti prodi_name dari relasi prodi
+                        "sClass": "",
+                        "sWidth": "15%",
+                        "bSortable": true,
+                        "bSearchable": true
+                    },
+                    {
+                        "mData": "no_hp", // Menggunakan properti prodi_name dari relasi prodi
                         "sClass": "",
                         "sWidth": "15%",
                         "bSortable": true,

@@ -76,6 +76,7 @@ class DaftarMahasiswaSudahMagangController extends Controller
             ->select(
                 't_semhas_daftar.semhas_daftar_id',
                 'm_mahasiswa.nama_mahasiswa',
+                'm_mahasiswa.no_hp',
                 'm_mahasiswa.prodi_id',
                 't_semhas_daftar.Judul',
                 'm_dosen.dosen_name AS nama_dosen',
@@ -116,7 +117,7 @@ class DaftarMahasiswaSudahMagangController extends Controller
                 ->exists();
             $item->nilai_exist_pembahas = $nilaiExistPembahas;
         });
-
+        // dd($data);
         return DataTables::of($data)
             ->addIndexColumn()
             ->make(true);
