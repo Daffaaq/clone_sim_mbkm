@@ -99,7 +99,7 @@
                 e.preventDefault();
                 var formData = new FormData(this);
                 $.ajax({
-                    url: '{{ route('dosen.import') }}', // Menggunakan route untuk mengikat ke URL dengan nama yang benar
+                    url: "{{ $page->url }}/import", // Menggunakan route untuk mengikat ke URL dengan nama yang benar
                     type: 'POST',
                     data: formData,
                     cache: false,
