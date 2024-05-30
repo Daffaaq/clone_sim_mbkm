@@ -179,7 +179,7 @@ class NilaiInstrukturLapanganController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
                 'name_kriteria_instruktur_lapangan.*' => 'required|string|max:255',
-                'parent_id' => 'required|exists:m_nilai_pembimbing_dosen,nilai_pembimbing_dosen_id', // Pastikan parent_id valid
+                'parent_id' => 'required|exists:m_nilai_instruktur_lapangan,nilai_instruktur_lapangan_id',
             ];
 
             $validator = Validator::make($request->all(), $rules);
