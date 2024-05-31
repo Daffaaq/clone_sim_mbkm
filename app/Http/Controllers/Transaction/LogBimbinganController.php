@@ -258,7 +258,8 @@ class LogBimbinganController extends Controller
             $fileName = 'logbimbingan_' . time() . '.' . $file->getClientOriginalExtension();
 
             // Simpan foto ke dalam direktori penyimpanan
-            $file->storeAs('public/assets/logbimbingan', $fileName);
+            // $file->storeAs('public/assets/logbimbingan', $fileName);
+            $file->store('public/assets/logbimbingan');
 
             $log_bimbingan = LogBimbinganModel::create([
                 'tanggal' => $request->input('tanggal'),
@@ -359,7 +360,9 @@ class LogBimbinganController extends Controller
                 $fileName = 'logbimbingan_' . time() . '.' . $file->getClientOriginalExtension();
 
                 // Simpan foto baru ke dalam direktori penyimpanan
-                $file->storeAs('public/assets/logbimbingan', $fileName);
+                // $file->storeAs('public/assets/logbimbingan', $fileName);
+                $file->store('public/assets/logbimbingan');
+
 
                 // Hapus foto lama jika ada
                 $log_bimbingan = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
