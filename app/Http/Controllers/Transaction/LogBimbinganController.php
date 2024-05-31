@@ -430,8 +430,9 @@ class LogBimbinganController extends Controller
 
         return (!$data) ? $this->showModalError() :
             $this->showModalConfirm($this->menuUrl . '/' . $id, [
-                'NIP' => $data->dosen_nip,
-                'Nama Dosen' => $data->dosen_name,
+                'Tanggal' => $data->tanggal,
+                'Jam Mulai' => $data->jam_mulai,
+                'Jam Selesai' => $data->jam_selesai,
             ]);
     }
 
@@ -441,8 +442,7 @@ class LogBimbinganController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         if ($request->ajax() || $request->wantsJson()) {
-            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
-            $res = LogBimbinganModel::where('periode_id', $activePeriods)->deleteData($id);
+            $res = LogBimbinganModel::deleteData($id);
 
             return response()->json([
                 'stat' => $res,
