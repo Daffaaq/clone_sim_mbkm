@@ -336,7 +336,7 @@ class LogBimbinganController extends Controller
                 'jam_mulai' => 'required',
                 'jam_selesai' => 'required',
                 'topik_bimbingan' => 'required|string',
-                'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Gunakan 'sometimes' agar validasi tidak wajib
+                'foto' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // Gunakan 'sometimes' agar validasi tidak wajib
             ];
 
             $validator = Validator::make($request->all(), $rules);
