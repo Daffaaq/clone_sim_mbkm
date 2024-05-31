@@ -427,7 +427,11 @@ class LogBimbinganController extends Controller
         $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
 
         $data = LogBimbinganModel::where('periode_id', $activePeriods)->find($id);
-
+        if ($data->status1 == 1 && $data->status2 == 1) {
+            return $this->showModalError('Kesalahan', 'Terjadi Kesalahan!!!', 'Log bimbingan sudah disetujui dosen pembimbing dan instruktur lapangan. Log tidak dapat dihapus.');
+        } else if ($data->status1 == 2 && $data->status2 == 2) {
+            return $this->showModalError('Kesalahan', 'Terjadi Kesalahan!!!', 'Log bimbingan sudah ditolak dosen pembimbing dan instruktur lapangan. Log tidak dapat dihapus.');
+        }
         return (!$data) ? $this->showModalError() :
             $this->showModalConfirm($this->menuUrl . '/' . $id, [
                 'Tanggal' => $data->tanggal,
