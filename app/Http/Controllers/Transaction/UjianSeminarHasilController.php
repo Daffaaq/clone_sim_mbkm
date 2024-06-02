@@ -269,6 +269,10 @@ class UjianSeminarHasilController extends Controller
                 $file = $request->file('berita_acara_file');
                 $filename = time() . '_' . $file->getClientOriginalName();
                 $file->storeAs('public/assets/berita-acara', $filename); // Simpan file ke direktori 'storage/app/berita_acara'
+                // $disk = 'public'; // Ganti dengan nama disk yang diinginkan, misalnya 's3'
+
+                // Simpan file ke dalam disk storage yang diinginkan
+                // Storage::disk($disk)->put('assets/berita-acara/' . $filename, file_get_contents($file));
 
                 // Update kolom 'berita_acara' pada data SemhasDaftarModel dengan nama file
                 $data->update([
