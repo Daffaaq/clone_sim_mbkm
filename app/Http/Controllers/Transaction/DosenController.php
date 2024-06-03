@@ -283,9 +283,16 @@ class DosenController extends Controller
 
         $data = DosenModel::find($id);
 
+        $identifier = $data->dosen_nip ? $data->dosen_nip : ($data->dosen_nidn ? $data->dosen_nidn : null);
+        $identifierLabel = $data->dosen_nip ? 'NIP' : ($data->dosen_nidn ? 'NIDN' : null);
+
+        if (!$identifier) {
+            return $this->showModalError();
+        }
         return (!$data) ? $this->showModalError() :
             $this->showModalConfirm($this->menuUrl . '/' . $id, [
-                'NIP' => $data->dosen_nip,
+                // 'NIP' => $data->dosen_nip,
+                $identifierLabel => $identifier,
                 'Nama Dosen' => $data->dosen_name,
             ]);
     }
