@@ -51,6 +51,7 @@ use App\Http\Controllers\Transaction\NilaiInstrukturLapanganController;
 use App\Http\Controllers\Transaction\NilaiPembahasDosenController;
 use App\Http\Controllers\Transaction\NilaiPembimbingDosenController;
 use App\Http\Controllers\Transaction\PembimbingDosenController;
+use App\Http\Controllers\Transaction\PenilaianMahasiswaController;
 use App\Http\Controllers\Transaction\PersetujuanKelompokController;
 use App\Http\Controllers\Transaction\QuotaDosenController;
 use App\Http\Controllers\Transaction\SemhasController;
@@ -146,6 +147,9 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::resource('seminar-hasil', SemhasController::class)->parameter('semhas', 'id');
     Route::post('seminar-hasil/list', [SemhasController::class, 'list']);
     Route::get('seminar-hasil/{id}/delete', [SemhasController::class, 'confirm']);
+
+    Route::resource('penilaian-mahasiswa', PenilaianMahasiswaController::class)->parameter('penilaian-mahasiswa', 'id');
+    Route::post('penilaian-mahasiswa/list', [PenilaianMahasiswaController::class, 'list']);
 
     Route::resource('seminarhasil-daftar', SemhasDaftarController::class)->parameter('semhas', 'id');
     Route::post('seminarhasil-daftar/list', [SemhasDaftarController::class, 'list']);

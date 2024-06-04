@@ -52,7 +52,7 @@ class PenilaianMahasiswaModel extends AppModel
 
     public function instrukturLapangan()
     {
-        return $this->belongsTo('App\Models\Master\InstrukturLapanganModel', 'instruktur_lapangan_id', 'instruktur_lapangan_id');
+        return $this->belongsTo('App\Models\Transaction\InstrukturLapanganModel', 'instruktur_lapangan_id', 'instruktur_lapangan_id');
     }
 
     public function periode()
