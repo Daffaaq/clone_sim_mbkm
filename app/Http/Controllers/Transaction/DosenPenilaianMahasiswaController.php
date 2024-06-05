@@ -43,7 +43,7 @@ class DosenPenilaianMahasiswaController extends Controller
         ];
 
         $activeMenu = [
-            'l1' => 'transaction',
+            'l1' => 'dosen-pembimbing',
             'l2' => 'dosenpem-penmados',
             'l3' => null
         ];

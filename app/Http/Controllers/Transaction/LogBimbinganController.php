@@ -173,11 +173,6 @@ class LogBimbinganController extends Controller
             ->where('periode_id', $activePeriods)
             ->get();
 
-        $data = $data->map(function ($item) {
-            $item->topik_bimbingan = strip_tags($item->topik_bimbingan);
-            return $item;
-        });
-
         return DataTables::of($data)
             ->addIndexColumn()
             ->make(true);

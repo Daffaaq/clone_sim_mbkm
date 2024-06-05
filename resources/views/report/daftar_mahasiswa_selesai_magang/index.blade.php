@@ -167,41 +167,69 @@
                         "bSortable": false,
                         "bSearchable": false,
                         "mRender": function(data, type, row, meta) {
+                            let buttons = '';
+
+                            // Check if no values exist
                             if (!row.nilai_exist_instruktur && !row.nilai_exist_pembimbing && !row
                                 .nilai_exist_pembahas) {
-                                // Tampilkan kosong jika semua nilai-nilai tersebut tidak ada
                                 return '';
-                            } else {
-                                let buttons = '';
-                                if (!row.nilai_exist_instruktur) {
-                                    buttons +=
-                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white" style="color: #ffffff;"></i></a>
-                                        <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white" style="color: #ffffff;"></i></a>`;
-                                }
-                                if (!row.nilai_exist_pembimbing) {
-                                    buttons +=
-                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white" style="color: #ffffff;"></i></a>
-                            <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white" style="color: #ffffff;"></i></a>`;
-                                }
-                                if (!row.nilai_exist_pembahas) {
-                                    buttons +=
-                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white" style="color: #ffffff;"></i></a>
-                                        <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white" style="color: #ffffff;"></i></a>`;
-                                }
-                                if (row.nilai_exist_instruktur && row.nilai_exist_pembimbing && row
-                                    .nilai_exist_pembahas) {
-                                    buttons +=
-                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-akhir" class="ajax_modal btn btn-xs btn-danger tooltips text-secondary" data-placement="left" data-original-title="Nilai Akhir" ><i class="fas fa-medal text-white" style="color: #ffffff;"></i></a>`;
-                                    buttons +=
-                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white" style="color: #ffffff;"></i></a>
-                            <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white" style="color: #ffffff;"></i></a>
-                            <a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white" style="color: #ffffff;"></i></a>`;
-                                }
-                                return buttons;
                             }
+
+                            // Check if both pembimbing and pembahas exist
+                            if (row.nilai_exist_pembimbing && row.nilai_exist_pembahas && !row
+                                .nilai_exist_instruktur) {
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white"></i></a>`;
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white"></i></a>`;
+                            }
+                            // Check if both pembimbing and instruktur exist
+                            else if (row.nilai_exist_pembimbing && row.nilai_exist_instruktur && !
+                                row.nilai_exist_pembahas) {
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white"></i></a>`;
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white"></i></a>`;
+                            }
+                            // Check if both pembahas and instruktur exist
+                            else if (row.nilai_exist_pembahas && row.nilai_exist_instruktur && !row
+                                .nilai_exist_pembimbing) {
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white"></i></a>`;
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white"></i></a>`;
+                            }
+                            // Check if all exist, show the final button along with pembimbing, pembahas, and instruktur buttons
+                            else if (row.nilai_exist_pembimbing && row.nilai_exist_pembahas && row
+                                .nilai_exist_instruktur) {
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white"></i></a>`;
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white"></i></a>`;
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white"></i></a>`;
+                                buttons +=
+                                    `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-akhir" class="ajax_modal btn btn-xs btn-danger tooltips text-secondary" data-placement="left" data-original-title="Nilai Akhir" ><i class="fas fa-medal text-white"></i></a>`;
+                            }
+                            // Individual checks if none of the combined conditions above apply
+                            else {
+                                if (row.nilai_exist_instruktur) {
+                                    buttons +=
+                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-instruktur" class="ajax_modal btn btn-xs btn-info tooltips text-secondary" data-placement="left" data-original-title="Nilai Instruktur" ><i class="fas fa-hard-hat text-white"></i></a>`;
+                                }
+                                if (row.nilai_exist_pembimbing) {
+                                    buttons +=
+                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembimbing" class="ajax_modal btn btn-xs btn-success tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembimbing" ><i class="fas fa-chalkboard-teacher text-white"></i></a>`;
+                                }
+                                if (row.nilai_exist_pembahas) {
+                                    buttons +=
+                                        `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/nilai-pembahas" class="ajax_modal btn btn-xs btn-primary tooltips text-secondary" data-placement="left" data-original-title="Nilai Pembahas" ><i class="fas fa-user-tie text-white"></i></a>`;
+                                }
+                            }
+
+                            return buttons;
                         }
                     }
-
                 ],
                 "fnDrawCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     $('a', this.fnGetNodes()).tooltip();

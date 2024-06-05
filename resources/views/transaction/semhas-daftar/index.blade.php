@@ -468,7 +468,7 @@
                             console.error(xhr.responseText);
                         }
                     });
-                }
+                },
 
                 validClass: "valid-feedback",
                 errorElement: "div",
