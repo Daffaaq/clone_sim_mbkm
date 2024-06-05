@@ -73,7 +73,7 @@ class PenilaianMahasiswaController extends Controller
             ->select('mahasiswa_id', 'pembimbing_dosen_id', 'instruktur_lapangan_id', 'komentar_dosen_pembimbing', 'komentar_instruktur_lapangan', 'nilai_dosen_pembimbing', 'nilai_instruktur_lapangan')
             ->with([
                 'mahasiswa' => function ($query) {
-                    $query->select('mahasiswa_id', 'nama_mahasiswa');
+                    $query->select('mahasiswa_id', 'nama_mahasiswa', 'prodi_id');
                 },
                 'pembimbingDosen.dosen' => function ($query) {
                     $query->select('dosen_id', 'dosen_name'); // Corrected column name
@@ -81,9 +81,16 @@ class PenilaianMahasiswaController extends Controller
                 'instrukturLapangan.instruktur' => function ($query) {
                     $query->select('instruktur_id', 'nama_instruktur');
                 }
-            ])
-            ->get();
+            ]);
 
+        if (auth()->user()->group_id == 1) {
+            $data = $data->get();
+        } else {
+            $prodi_id = auth()->user()->getProdiId();
+            $data = $data->get()->filter(function ($item) use ($prodi_id) {
+                return $item->mahasiswa->prodi_id == $prodi_id;
+            });
+        }
 
         return DataTables::of($data)
             ->addIndexColumn()
