@@ -39,7 +39,7 @@ class PenilaianMahasiswaController extends Controller
 
         $breadcrumb = [
             'title' => $this->menuTitle,
-            'list'  => ['Dosen Pembimbing', 'Penilaian Mahasiswa Dosen']
+            'list'  => ['Transaksi', 'Penilaian Mahasiswa Dosen']
         ];
 
         $activeMenu = [

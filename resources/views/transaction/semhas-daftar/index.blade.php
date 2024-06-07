@@ -421,63 +421,75 @@
     </div>
 @endsection
 @push('content-js')
-    <script>
-        $(document).ready(function() {
-            unblockUI();
-            $("#form-daftar").validate({
-                rules: {
-                    link_github: {
-                        required: true,
-                    },
-                    link_laporan: {
-                        required: true,
-                    },
-                    Judul: {
-                        required: true,
-                    },
-                    manualJudul: { // Menambahkan aturan validasi untuk input manual
-                        required: true,
-                    }
+<script>
+    $(document).ready(function() {
+        unblockUI();
+        $("#form-daftar").validate({
+            rules: {
+                link_github: {
+                    required: true,
                 },
-                submitHandler: function(form) {
-                    var formData = {
-                        'link_github': $('input[name="link_github"]').val(),
-                        'link_laporan': $('input[name="link_laporan"]').val(),
-                        'Judul': $('#Judul').val(), // Mengambil nilai langsung dari input judul
-                        'semhas': $('input[name="semhas"]').val(),
-                        'instrukturLapangan': $('input[name="instrukturLapangan"]').val(),
-                        'pembimbingdosen': $('input[name="pembimbingdosen"]').val(),
-                        'magang_id': $('input[name="magang_id"]').val()
-                    };
-                    console.log(formData);
-                    // const url = `/transaksi/seminarhasil-daftar`;
-                    $.ajax({
-                        type: 'POST',
-                        url: '{{ route('daftar.semhas') }}',
-                        data: formData,
-                        success: function(data) {
-                            if (data.success) {
-                                window.location.href = '/transaksi/seminarhasil-daftar';
-                            } else {
-                                unblockUI(form);
-                                console.error("Unexpected response format", data);
-                            }
-                        },
-                        error: function(xhr, status, error) {
+                link_laporan: {
+                    required: true,
+                },
+                Judul: {
+                    required: true,
+                },
+            },
+            messages: {
+                link_github: {
+                    required: "Link github is required.",
+                },
+                link_laporan: {
+                    required: "Link laporan is required.",
+                },
+                Judul: {
+                    required: "Judul is required.",
+                },
+            },
+            submitHandler: function(form) {
+                var formData = {
+                    'link_github': $('input[name="link_github"]').val(),
+                    'link_laporan': $('input[name="link_laporan"]').val(),
+                    'Judul': $('#Judul').val(), // Mengambil nilai langsung dari input judul
+                    'semhas': $('input[name="semhas"]').val(),
+                    'instrukturLapangan': $('input[name="instrukturLapangan"]').val(),
+                    'pembimbingdosen': $('input[name="pembimbingdosen"]').val(),
+                    'magang_id': $('input[name="magang_id"]').val()
+                };
+                console.log(formData);
+                $.ajax({
+                    type: 'POST',
+                    url: '{{ route('daftar.semhas') }}',
+                    data: formData,
+                    success: function(data) {
+                        if (data.success) {
+                            window.location.href = '/transaksi/seminarhasil-daftar';
+                        } else {
                             unblockUI(form);
-                            console.error(xhr.responseText);
+                            console.error("Unexpected response format", data);
                         }
-                    });
-                },
-
-                validClass: "valid-feedback",
-                errorElement: "div",
-                errorClass: 'invalid-feedback',
-                errorPlacement: erp,
-                highlight: hl,
-                unhighlight: uhl,
-                success: sc
-            });
+                    },
+                    error: function(xhr, status, error) {
+                        unblockUI(form);
+                        console.error(xhr.responseText);
+                    }
+                });
+            },
+            validClass: "valid-feedback",
+            errorElement: "div",
+            errorClass: 'invalid-feedback',
+            errorPlacement: function(error, element) {
+                error.insertAfter(element); // Place the error message after the element
+            },
+            highlight: function(element, errorClass, validClass) {
+                $(element).addClass('is-invalid').removeClass('is-valid');
+            },
+            unhighlight: function(element, errorClass, validClass) {
+                $(element).removeClass('is-invalid').removeClass('is-valid'); // Ensure no 'is-valid' class is added
+            },
         });
-    </script>
+    });
+</script>
 @endpush
+

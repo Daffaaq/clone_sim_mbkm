@@ -320,8 +320,6 @@ class SemhasDaftarController extends Controller
 
     public function daftarSemhas(Request $request)
     {
-        // dd($request->all());
-        // Validasi request
         // Dapatkan ID pengguna yang sedang login
         $userId = Auth::id();
         $mahasiswa = MahasiswaModel::where('user_id', $userId)->first();
@@ -342,25 +340,11 @@ class SemhasDaftarController extends Controller
             ->where('periode_id', $activePeriods)
             ->value('magang_id');
 
-        // Periksa apakah dataSemhasDaftar1 tidak kosong sebelum mengakses propertinya
-        $dataSemhasDaftar1 = SemhasDaftarModel::where('periode_id', $activePeriods)
-            ->whereHas('magang', function ($query) use ($magang_id) {
-                $query->where('magang_id', $magang_id);
-            })->get();
-
-        // Validasi request berdasarkan kebutuhan aplikasi
-        if ($dataSemhasDaftar1->isEmpty()) {
-            $request->validate([
-                'link_github' => 'required',
-                'link_laporan' => 'required',
-                'Judul' => 'required' // Validasi hanya diterapkan jika input manual
-            ]);
-        } else {
-            $request->validate([
-                'link_github' => 'required',
-                'link_laporan' => 'required',
-            ]);
-        }
+        $request->validate([
+            'link_github' => 'required',
+            'link_laporan' => 'required',
+            'Judul' => 'required'
+        ]);
 
         // Simpan nilai-nilai dalam variabel
         $dataToCreate = [
@@ -369,20 +353,16 @@ class SemhasDaftarController extends Controller
             'pembimbing_dosen_id' => $pembimbingdosen,
             'instruktur_lapangan_id' => $instrukturLapangan,
             'tanggal_daftar' => Carbon::now()->toDateString(), // Menggunakan tanggal dan waktu sekarang
-            // Periksa apakah dataSemhasDaftar1 tidak kosong sebelum mengakses propertinya
-            'Judul' => $dataSemhasDaftar1->isEmpty() ? $request->Judul : $dataSemhasDaftar1->first()->Judul,
+            'Judul' => $request->Judul,
             'link_github' => $request->link_github,
             'link_laporan' => $request->link_laporan,
             'periode_id' => $activePeriods,
             'created_by' => $userId,
         ];
 
-        // Buat entri baru dalam tabel t_semhas_daftar jika dataSemhasDaftar1 kosong
-        if ($dataSemhasDaftar1->isEmpty()) {
-            SemhasDaftarModel::create($dataToCreate);
-        }
+        SemhasDaftarModel::create($dataToCreate);
 
-        return redirect('/transaksi/seminarhasil-daftar');
+        return response()->json(['success' => true]);
     }
 
 
