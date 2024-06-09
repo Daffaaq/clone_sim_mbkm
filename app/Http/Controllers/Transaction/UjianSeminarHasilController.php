@@ -244,7 +244,7 @@ class UjianSeminarHasilController extends Controller
     {
         // Validasi ukuran file
         $request->validate([
-            'berita_acara_file' => 'required|file|max:2048', // Maksimal 2 MB
+            'berita_acara_file' => 'required|file|max:2048|mimes:pdf', // Maksimal 2 MB
         ]);
 
         $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');

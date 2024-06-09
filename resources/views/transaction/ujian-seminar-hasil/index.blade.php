@@ -217,7 +217,7 @@
                                                     <form id="uploadForm" enctype="multipart/form-data" method="POST">
                                                         @csrf
                                                         <input type="file" name="berita_acara_file"
-                                                            accept=".pdf,.doc,.docx" required>
+                                                            accept=".pdf" required>
                                                         <button type="submit">Upload</button>
                                                     </form>
                                                 </td>

@@ -278,6 +278,7 @@ class InstrukturController extends Controller
             ->where('periode_id', $activePeriods)
             ->where('status', 1)
             ->with('mahasiswa')
+            ->whereDoesntHave('instrukturLapangan')
             ->get();
 
         // dd($anggotas);
