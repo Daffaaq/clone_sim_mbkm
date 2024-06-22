@@ -20,8 +20,8 @@
                                     <th>Nama Pembimbing Dosen</th>
                                     <th>Nama Instruktur Lapangan</th>
                                     <th>Komentar Dosen Pembimbing</th>
-                                    <th>Komentar Instruktur Lapangan</th>
                                     <th>Nilai Dosen Pembimbing</th>
+                                    <th>Komentar Instruktur Lapangan</th>
                                     <th>Nilai Instruktur Lapangan</th>
                                 </tr>
                                 </tr>
@@ -60,25 +60,25 @@
                         "bSearchable": true
                     },
                     {
-                        "mData": "pembimbing_dosen.dosen.dosen_name",
+                        "mData": "pembimbing_dosen_name",
                         "sClass": "",
                         "sWidth": "15%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
                     },
                     {
-                        "mData": "instruktur_lapangan.instruktur.nama_instruktur",
+                        "mData": "instruktur_lapangan_name",
                         "sClass": "",
                         "sWidth": "15%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
                     },
                     {
                         "mData": "nilai_dosen_pembimbing",
                         "sClass": "",
                         "sWidth": "15%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
                     },
                     {
                         "mData": "komentar_dosen_pembimbing",
@@ -86,13 +86,13 @@
                         "sWidth": "15%",
                         "bSortable": true,
                         "bSearchable": true,
-                    }
+                    },
                     {
                         "mData": "nilai_instruktur_lapangan",
                         "sClass": "",
                         "sWidth": "15%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
                     },
                     {
                         "mData": "komentar_instruktur_lapangan",
@@ -100,7 +100,7 @@
                         "sWidth": "15%",
                         "bSortable": true,
                         "bSearchable": true,
-                    }
+                    },
                 ],
                 "fnDrawCallback": function(nRow, aData, iDisplayIndex, iDisplayIndexFull) {
                     $('a', this.fnGetNodes()).tooltip();

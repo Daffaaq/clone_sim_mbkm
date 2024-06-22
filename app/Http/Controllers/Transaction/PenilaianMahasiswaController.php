@@ -69,28 +69,87 @@ class PenilaianMahasiswaController extends Controller
         $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
 
         // Dapatkan data penilaian mahasiswa untuk periode aktif
+        // $data = PenilaianMahasiswaModel::where('periode_id', $activePeriods)
+        //     ->select('mahasiswa_id', 'pembimbing_dosen_id', 'instruktur_lapangan_id', 'komentar_dosen_pembimbing', 'komentar_instruktur_lapangan', 'nilai_dosen_pembimbing', 'nilai_instruktur_lapangan')
+        //     ->with([
+        //         'mahasiswa' => function ($query) {
+        //             $query->select('mahasiswa_id', 'nama_mahasiswa','prodi_id');
+        //         },
+        //         'pembimbingDosen.dosen' => function ($query) {
+        //             $query->select('dosen_id', 'dosen_name'); // Corrected column name
+        //         },
+        //         'instrukturLapangan.instruktur' => function ($query) {
+        //             $query->select('instruktur_id', 'nama_instruktur');
+        //         }
+        //     ]);
+        
         $data = PenilaianMahasiswaModel::where('periode_id', $activePeriods)
-            ->select('mahasiswa_id', 'pembimbing_dosen_id', 'instruktur_lapangan_id', 'komentar_dosen_pembimbing', 'komentar_instruktur_lapangan', 'nilai_dosen_pembimbing', 'nilai_instruktur_lapangan')
-            ->with([
-                'mahasiswa' => function ($query) {
-                    $query->select('mahasiswa_id', 'nama_mahasiswa', 'prodi_id');
-                },
-                'pembimbingDosen.dosen' => function ($query) {
-                    $query->select('dosen_id', 'dosen_name'); // Corrected column name
-                },
-                'instrukturLapangan.instruktur' => function ($query) {
-                    $query->select('instruktur_id', 'nama_instruktur');
-                }
-            ]);
-
-        if (auth()->user()->group_id == 1) {
+    ->select('mahasiswa_id', 'pembimbing_dosen_id', 'instruktur_lapangan_id', 'komentar_dosen_pembimbing', 'komentar_instruktur_lapangan', 'nilai_dosen_pembimbing', 'nilai_instruktur_lapangan')
+    ->with([
+        'mahasiswa' => function ($query) {
+            $query->select('mahasiswa_id', 'nama_mahasiswa', 'prodi_id');
+        },
+        'pembimbingDosen.dosen' => function ($query) {
+            $query->select('dosen_id', 'dosen_name'); // Adjusted column name
+        },
+        'instrukturLapangan.instruktur' => function ($query) {
+            $query->select('instruktur_id', 'nama_instruktur');
+        }
+    ]);
+    
+    if (auth()->user()->group_id == 1) {
             $data = $data->get();
         } else {
             $prodi_id = auth()->user()->getProdiId();
-            $data = $data->get()->filter(function ($item) use ($prodi_id) {
+            $data = $data->get()->filter(function($item) use ($prodi_id) {
                 return $item->mahasiswa->prodi_id == $prodi_id;
             });
         }
+
+    // Membuat pengisian default untuk kolom yang kosong
+    $data->transform(function ($item) {
+        // Handle komentar_dosen_pembimbing
+        if (!$item->komentar_dosen_pembimbing) {
+            $item->komentar_dosen_pembimbing = 'Tidak ada komentar';
+        }
+
+        // Handle nilai_dosen_pembimbing
+        if (!$item->nilai_dosen_pembimbing) {
+            $item->nilai_dosen_pembimbing = 'Belum dinilai';
+        }
+        
+        if (!$item->komentar_instruktur_lapangan) {
+            $item->komentar_instruktur_lapangan = 'Tidak ada komentar';
+        }
+
+        // Handle nilai_dosen_pembimbing
+        if (!$item->nilai_instruktur_lapangan) {
+            $item->nilai_instruktur_lapangan = 'Belum dinilai';
+        }
+        // Handle pembimbingDosen.dosen.dosen_name
+        if ($item->pembimbingDosen && $item->pembimbingDosen->dosen) {
+            $item->pembimbing_dosen_name = $item->pembimbingDosen->dosen->dosen_name;
+        } else {
+            $item->pembimbing_dosen_name = 'Dosen tidak tersedia';
+        }
+
+        // Handle instrukturLapangan.instruktur.nama_instruktur
+        if ($item->instrukturLapangan && $item->instrukturLapangan->instruktur) {
+            $item->instruktur_lapangan_name = $item->instrukturLapangan->instruktur->nama_instruktur;
+        } else {
+            $item->instruktur_lapangan_name = 'Instruktur tidak tersedia';
+        }
+
+        return $item;
+    });
+        
+        
+//         if (auth()->user()->group_id != 1) {
+//     $prodi_id = auth()->user()->getProdiId();
+//     $data = $data->filter(function ($item) use ($prodi_id) {
+//         return $item->mahasiswa->prodi_id == $prodi_id;
+//     });
+// }
 
         return DataTables::of($data)
             ->addIndexColumn()
