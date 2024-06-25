@@ -12,6 +12,7 @@ use App\Models\Master\NilaiInstrukturLapanganModel;
 use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
+use App\Models\Transaction\DokumenBeritaAcaraModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\JadwalSidangMagangModel;
 use App\Models\Transaction\KuotaDosenModel;
@@ -55,7 +56,7 @@ class UjianSeminarHasilController extends Controller
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
-        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // Gunakan mahasiswa_id untuk mencari data magang
         $magang_data = Magang::where('mahasiswa_id', $mahasiswa_id)->get();
 
@@ -112,6 +113,11 @@ class UjianSeminarHasilController extends Controller
             $dataJadwalSeminar = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->first();
             // dd($dataJadwalSeminar);
             $datanilai = TNilaiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->get();
+            $databeritaacara = DokumenBeritaAcaraModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->latest()->first();
+            // dd($databeritaacara);
+            $id_joined = $data->pluck('semhas_daftar_id');
+            $databeritaacaraall = DokumenBeritaAcaraModel::wherein('semhas_daftar_id', $id_joined)->where('periode_id', $activePeriods)->get();
+            // dd($databeritaacaraall);
             // dd($datanilai);
             $existingNilai = RevisiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
                 ->where('periode_id', $activePeriods)
@@ -157,6 +163,8 @@ class UjianSeminarHasilController extends Controller
                 ->with('data', $data)
                 ->with('user', $user)
                 ->with('dataJadwalSeminar', $dataJadwalSeminar)
+                ->with('databeritaacara', $databeritaacara)
+                ->with('databeritaacaraall', $databeritaacaraall)
                 ->with('datanilai', $datanilai)
                 ->with('existingNilai', $existingNilai)
                 ->with('dataJadwalSeminar', $dataJadwalSeminar)
@@ -242,20 +250,20 @@ class UjianSeminarHasilController extends Controller
     }
     public function uploadBeritaAcara(Request $request)
     {
-        // Validasi ukuran file
+        // Validate file size and type
         $request->validate([
-            'berita_acara_file' => 'required|file|max:2048|mimes:pdf', // Maksimal 2 MB
+            'berita_acara_file' => 'required|file|max:2048|mimes:pdf', // Max 2 MB
         ]);
 
-        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
+        $activePeriod = PeriodeModel::where('is_current', 1)->value('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
-        // Mendapatkan data SemhasDaftarModel
-        $data = SemhasDaftarModel::where('created_by', $user_id)
-            ->where('periode_id', $activePeriods)
+        // Get SemhasDaftarModel data
+        $semhasDaftar = SemhasDaftarModel::where('created_by', $user_id)
+            ->where('periode_id', $activePeriod)
             ->with('pembimbingDosen.dosen')
             ->with('magang.mitra')
             ->with('magang.mitra.kegiatan')
@@ -263,28 +271,29 @@ class UjianSeminarHasilController extends Controller
             ->with('magang.mahasiswa')
             ->first();
 
-        // Pastikan data ditemukan sebelum memperbarui
-        if ($data) {
+        // Ensure data is found before updating
+        if ($semhasDaftar) {
             if ($request->hasFile('berita_acara_file')) {
                 $file = $request->file('berita_acara_file');
                 $filename = time() . '_' . $file->getClientOriginalName();
-                $file->storeAs('public/assets/berita-acara', $filename); // Simpan file ke direktori 'storage/app/berita_acara'
-                // $disk = 'public'; // Ganti dengan nama disk yang diinginkan, misalnya 's3'
+                $file->storeAs('public/assets/berita-acara', $filename); // Save file to directory 'storage/app/public/assets/berita-acara'
 
-                // Simpan file ke dalam disk storage yang diinginkan
-                // Storage::disk($disk)->put('assets/berita-acara/' . $filename, file_get_contents($file));
+                // Create a new record in t_dokumen_berita_acara table
+                $dokumenBeritaAcara = new DokumenBeritaAcaraModel();
+                $dokumenBeritaAcara->semhas_daftar_id = $semhasDaftar->semhas_daftar_id;
+                $dokumenBeritaAcara->periode_id = $activePeriod;
+                $dokumenBeritaAcara->tanggal_upload_berita_acara = now();
+                $dokumenBeritaAcara->dokumen_berita_status = 0; // Assuming 1 means 'diterima', adjust accordingly
+                $dokumenBeritaAcara->dokumen_berita_acara_file = $filename;
+                $dokumenBeritaAcara->created_by = $user_id;
+                $dokumenBeritaAcara->save();
 
-                // Update kolom 'berita_acara' pada data SemhasDaftarModel dengan nama file
-                $data->update([
-                    'Berita_acara' => $filename,
-                    // update other fields as needed
-                ]);
                 return response()->json(['message' => 'File uploaded successfully', 'filename' => $filename], 200);
             } else {
                 return response()->json(['error' => 'No file uploaded.'], 400);
             }
         } else {
-            // Jika data tidak ditemukan, lakukan sesuatu, misalnya tampilkan pesan kesalahan
+            // If data is not found, return an error message
             return response()->json(['error' => 'Data not found.'], 404);
         }
     }

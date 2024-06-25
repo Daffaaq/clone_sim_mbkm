@@ -57,17 +57,29 @@ $is_edit = isset($data);
                     <label class="col-sm-3 control-label col-form-label">Gelombang</label>
                     <div class="col-sm-9">
                         <input type="number" class="form-control form-control-sm" id="gelombang" name="gelombang"
-                            value="{{ isset($data->gelombang) ? $data->gelombang : '' }}" />
+                            min="0" value="{{ isset($data->gelombang) ? $data->gelombang : '' }}" />
                     </div>
                 </div>
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Kuota Bimbingan</label>
                     <div class="col-sm-9">
                         <input type="number" class="form-control form-control-sm" id="kuota_bimbingan"
-                            name="kuota_bimbingan"
+                            name="kuota_bimbingan" min="0"
                             value="{{ isset($data->kuota_bimbingan) ? $data->kuota_bimbingan : '' }}" />
                     </div>
                 </div>
+                <div class="form-group required row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Deadline Nilai</label>
+                    <div class="col-sm-9">
+                        <div class="input-group">
+                            <input type="number" class="form-control form-control-sm" id="deadline_nilai"
+                                name="deadline_nilai" min="0"
+                                value="{{ isset($data->deadline_nilai) ? $data->deadline_nilai : '' }}" />
+                            <label class="form-control-sm custom-deadline_nilai-label" for="deadline_nilai">Hari</label>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Tanggal Awal Pendaftaran</label>
                     <div class="col-sm-9">
@@ -110,6 +122,9 @@ $is_edit = isset($data);
                     required: true,
                 },
                 kuota_bimbingan: {
+                    required: true,
+                },
+                deadline_nilai: {
                     required: true,
                 },
                 tanggal_mulai_pendaftaran: {

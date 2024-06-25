@@ -24,6 +24,7 @@ class SemhasModel extends AppModel
         'kuota_bimbingan',
         'tanggal_mulai_pendaftaran',
         'tanggal_akhir_pendaftaran',
+        'deadline_nilai',
         'periode_id',
         'created_at',
         'created_by',

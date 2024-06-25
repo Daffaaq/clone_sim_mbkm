@@ -32,14 +32,15 @@ class SemhasController extends Controller
 
         $breadcrumb = [
             'title' => $this->menuTitle,
-            'list'  => ['Transaksi', 'Seminar Hasil']
+            'list'  => ['Transaksi', 'Setting Jadwal', 'Seminar Hasil']
         ];
 
         $activeMenu = [
             'l1' => 'transaction',
-            'l2' => 'transaksi-semhas',
-            'l3' => null
+            'l2' => 'tran-set-jad',
+            'l3' => 'transaksi-semhas'
         ];
+        // dd($activeMenu);
 
         $page = [
             'url' => $this->menuUrl,
@@ -111,9 +112,9 @@ class SemhasController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
-        if($activePeriods == null) return response()->json([
-           'stat' => false,
-           'msg' => 'Tidak ada periode aktif'
+        if ($activePeriods == null) return response()->json([
+            'stat' => false,
+            'msg' => 'Tidak ada periode aktif'
         ]);
         // dd($activePeriods);
 
@@ -125,6 +126,7 @@ class SemhasController extends Controller
                 'tanggal_mulai_pendaftaran' => 'required|date',
                 'tanggal_akhir_pendaftaran' => 'required|date',
                 'prodi_id' => 'required',
+                'deadline_nilai' => 'required|integer',
                 // Add other rules for DosenModel fields
             ];
 
@@ -144,6 +146,7 @@ class SemhasController extends Controller
                 'judul_semhas' => $request->judul_semhas,
                 'gelombang' => $request->gelombang,
                 'kuota_bimbingan' => $request->kuota_bimbingan,
+                'deadline_nilai' => $request->deadline_nilai,
                 'tanggal_mulai_pendaftaran' => $request->tanggal_mulai_pendaftaran,
                 'tanggal_akhir_pendaftaran' => $request->tanggal_akhir_pendaftaran,
                 'prodi_id' => $request->prodi_id,
@@ -196,6 +199,7 @@ class SemhasController extends Controller
                 'tanggal_mulai_pendaftaran' => 'required|date',
                 'tanggal_akhir_pendaftaran' => 'required|date',
                 'prodi_id' => 'required',
+                'deadline_nilai' => 'required|integer',
             ];
 
             $validator = Validator::make($request->all(), $rules);

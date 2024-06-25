@@ -15,7 +15,7 @@ class TNilaiPembimbingDosen extends Migration
     {
         Schema::create('t_nilai_pembimbing_dosen', function (Blueprint $table) {
             $table->id('t_nilai_pembimbing_dosen_id');
-            $table->decimal('nilai')->nullable();
+            $table->decimal('nilai', 8, 2)->nullable()->default(51.00);
             $table->unsignedBigInteger('periode_id');
             $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->unsignedBigInteger('nilai_pembimbing_dosen_id');

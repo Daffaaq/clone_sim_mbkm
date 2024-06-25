@@ -30,6 +30,7 @@
                                         <th>Judul</th>
                                         <th>Nilai</th>
                                         <th>Status</th>
+                                        <th>Validasi Berita Acara</th>
                                         <th>Jadwal</th>
                                         {{-- <th>#</th> --}}
                                     </tr>
@@ -109,6 +110,18 @@
                             } else {
                                 return '<span class="badge badge-danger">Belum Mengisi Nilai</span>';
                             }
+                        }
+                    },
+                    {
+                        "mData": "semhas_daftar_id",
+                        "sClass": "",
+                        "sWidth": "15%",
+                        "bSortable": false,
+                        "bSearchable": false,
+                        "mRender": function(data, type, row, meta) {
+                            return '' +
+                                `<a href="#" data-block="body" data-url="{{ $page->url }}/${data}/validasi-berita-acara" class="ajax_modal btn btn-xs btn-info tooltips text-light text-xs" data-placement="left" data-original-title="Lihat Berita Acara" ><i class="fa fa-th"></i> Detail</a>  `
+
                         }
                     },
                     {

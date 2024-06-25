@@ -192,38 +192,156 @@
                                         </tr>
                                         <!-- Jika tanggal sidang telah berlalu atau hari ini adalah tanggal sidang dan waktu sekarang sudah setelah atau sama dengan jam sidang selesai -->
                                         <!-- Bagian HTML -->
-                                        @if (!$data->Berita_acara == null)
+                                        {{-- @dd($databeritaacara->dokumen_berita_status); --}}
+                                        @if (
+                                            !is_null($databeritaacara) &&
+                                                ($databeritaacara->dokumen_berita_status == 1 || $databeritaacara->dokumen_berita_status == 0))
                                             <tr>
                                                 <th class="w-15 text-right">Berita Acara</th>
                                                 <th class="w-1">:</th>
-                                                <td class="w-84">
-                                                    @if ($data->Berita_acara)
-                                                        <a href="{{ asset('storage/assets/berita-acara/' . $data->Berita_acara) }}"
-                                                            target="_blank">
-                                                            Berita Acara Seminar Magang
-                                                        </a>
-                                                    @else
-                                                        No file uploaded
-                                                    @endif
-                                                </td>
+                                                <td class="w-84 py-2">
+                                                    <table class="table table-sm text-sm table bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="text-center w-5 p-1">No</th>
+                                                                <th>Nama Berkas</th>
+                                                                <th>Status</th>
+                                                                <th>Keterangan</th>
+                                                                <th><em>Last Update</em></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <td>
+                                                            <tbody>
+                                                                @forelse ($databeritaacaraall as $index => $dokumen)
+                                                                    <tr>
+                                                                        <td class="text-center w-5 p-1">{{ $index + 1 }}
+                                                                        </td>
+                                                                        <td><a href="{{ asset('storage/assets/berita-acara/' . $dokumen->dokumen_berita_acara_file) }}"
+                                                                                target="_blank">View</a></td>
+                                                                        <td>
+                                                                            @if ($dokumen->dokumen_berita_status == 0)
+                                                                                <span
+                                                                                    class="badge badge-info">Menunggu</span>
+                                                                            @elseif($dokumen->dokumen_berita_status == 1)
+                                                                                <span
+                                                                                    class="badge badge-success">Diterima</span>
+                                                                            @elseif($dokumen->dokumen_berita_status == 2)
+                                                                                <span
+                                                                                    class="badge badge-danger">Ditolak</span>
+                                                                            @endif
+                                                                        </td>
+                                                                        <td>{{ $dokumen->dokumen_berita_acara_keterangan }}
+                                                                        <td>{{ \Carbon\Carbon::parse($dokumen->created_at)->format('d M Y H:i:s') }}
+                                                                        </td>
+                                                                    </tr>
+                                                                @empty
+                                                                    <tr>
+                                                                        <td colspan="4" class="text-center">No
+                                                                            documents
+                                                                            found</td>
+                                                                    </tr>
+                                                                @endforelse
+                                                            </tbody>
+                                                    </table>
                                             </tr>
                                         @else
                                             <tr>
                                                 <th class="w-15 text-right">Berita Acara</th>
                                                 <th class="w-1">:</th>
+                                                <td class="w-84 py-2">
+                                                    <table class="table table-sm text-sm table bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th class="text-center w-5 p-1">No</th>
+                                                                <th>Nama Berkas</th>
+                                                                <th>Status</th>
+                                                                <th>Keterangan</th>
+                                                                <th><em>Last Update</em></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <td>
+                                                            <tbody>
+                                                                @forelse ($databeritaacaraall as $index => $dokumen)
+                                                                    <tr>
+                                                                        <td class="text-center w-5 p-1">
+                                                                            {{ $index + 1 }}
+                                                                        </td>
+                                                                        <td><a href="{{ asset('storage/assets/berita-acara/' . $dokumen->dokumen_berita_acara_file) }}"
+                                                                                target="_blank">Berita Acara</a></td>
+                                                                        <td>
+                                                                            @if ($dokumen->dokumen_berita_status == 0)
+                                                                                <span
+                                                                                    class="badge badge-info">Menunggu</span>
+                                                                            @elseif($dokumen->dokumen_berita_status == 1)
+                                                                                <span
+                                                                                    class="badge badge-success">Diterima</span>
+                                                                            @elseif($dokumen->dokumen_berita_status == 2)
+                                                                                <span
+                                                                                    class="badge badge-danger">Ditolak</span>
+                                                                            @endif
+                                                                        </td>
+                                                                        <td>{{ $dokumen->dokumen_berita_acara_keterangan ?? '-' }}
+                                                                        <td>{{ \Carbon\Carbon::parse($dokumen->created_at)->format('d M Y H:i:s') }}
+                                                                        </td>
+                                                                    </tr>
+                                                                @empty
+                                                                    <tr>
+                                                                        <td colspan="4" class="text-center">Tidak Ada
+                                                                            Berkas</td>
+                                                                    </tr>
+                                                                @endforelse
+                                                            </tbody>
+                                                    </table>
+                                                    <div class="form-group row my-3">
+                                                        <div class="col-12">
+                                                            <div id="error-message" class="alert alert-warning"
+                                                                style="display: none;"></div>
+                                                            <form id="uploadForm" enctype="multipart/form-data"
+                                                                method="POST"
+                                                                action="{{ route('upload-berita-acara') }}">
+                                                                @csrf
+                                                                <div class="input-group">
+                                                                    <div class="form-control-sm custom-file">
+                                                                        <input id="berita_acara_file"
+                                                                            class="form-control-sm custom-file-input"
+                                                                            type="file" name="berita_acara_file"
+                                                                            accept=".pdf" required>
+                                                                        <label class="form-control-sm custom-file-label"
+                                                                            for="berita_acara_file">Choose
+                                                                            File</label>
+                                                                    </div>
+                                                                    <div class="input-group-append">
+                                                                        <button class="btn btn-sm btn-success"
+                                                                            type="submit">Upload</button>
+                                                                    </div>
+                                                                </div>
+                                                                <small class="form-text text-danger">
+                                                                    Silahkan upload Berita Acara. File diunggah dalam format
+                                                                    PDF dengan maksimal ukuran 2MB.
+                                                                </small>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+
+                                                </td>
+                                            </tr>
+                                            {{-- <tr>
+                                                <th class="w-15 text-right">Berita Acara</th>
+                                                <th class="w-1">:</th>
                                                 <td class="w-84">
                                                     <div id="error-message" class="alert alert-warning"
                                                         style="display: none;"></div>
-                                                    <form id="uploadForm" enctype="multipart/form-data" method="POST">
+                                                    <form id="uploadForm" enctype="multipart/form-data" method="POST"
+                                                        action="{{ route('upload-berita-acara') }}">
                                                         @csrf
-                                                        <input type="file" name="berita_acara_file"
-                                                            accept=".pdf" required>
+                                                        <input type="file" name="berita_acara_file" accept=".pdf"
+                                                            required>
                                                         <button type="submit">Upload</button>
                                                     </form>
                                                 </td>
-                                            </tr>
+                                            </tr> --}}
                                         @endif
-                                        @if (!$data->Berita_acara == null)
+                                        @if (!$databeritaacara == null && $databeritaacara->dokumen_berita_status == 1)
                                             {{-- @dd($datanilai); --}}
                                             {{-- @dd($data->semhas_daftar_id); --}}
                                             <tr>
@@ -285,6 +403,11 @@
     <script>
         $(document).ready(function() {
             $('.tooltips').tooltip();
+            $('#berita_acara_file').change(function() {
+                var filename = $(this).val().split('\\').pop(); // Ambil nama file
+                $(this).next('.custom-file-label').addClass("selected").html(
+                    filename); // Tampilkan nama file di label
+            });
             $('#uploadForm').submit(function(e) {
                 e.preventDefault();
                 var fileInput = $('input[name="berita_acara_file"]')[0];
@@ -297,11 +420,13 @@
                         $('#error-message').fadeOut('slow');
                     }, 5000);
                     $('input[name="berita_acara_file"]').val('');
+                    $(fileInput).next('.custom-file-label').removeClass("selected").html('Choose File');
                     return;
                 }
+
                 var formData = new FormData(this);
                 $.ajax({
-                    url: '{{ route('upload-berita-acara') }}',
+                    url: $(this).attr('action'), // Ensure it points to the correct route
                     type: 'POST',
                     data: formData,
                     dataType: 'json',
@@ -310,15 +435,16 @@
                     success: function(response) {
                         console.log(response);
                         window.location.reload();
-                        // Tambahkan logika untuk menampilkan pesan atau melakukan aksi lain
+                        // Add logic to display message or perform another action
                     },
                     error: function(xhr, status, error) {
                         console.error(xhr.responseText);
                         alert('Failed to upload file: ' + xhr.responseText);
-                        // Tambahkan logika untuk menampilkan pesan atau melakukan aksi lain
+                        // Add logic to display message or perform another action
                     }
                 });
             });
+
         });
     </script>
 @endsection

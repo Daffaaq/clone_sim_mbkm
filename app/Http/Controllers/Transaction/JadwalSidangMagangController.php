@@ -14,6 +14,7 @@ use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\Magang;
 use App\Models\Transaction\PembimbingDosenModel;
 use App\Models\Transaction\SemhasDaftarModel;
+use Carbon\Carbon;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -291,9 +292,9 @@ class JadwalSidangMagangController extends Controller
 
             if ($validator->fails()) {
                 return response()->json([
-                    'stat'     => false,
-                    'mc'       => false,
-                    'msg'      => 'Terjadi kesalahan.',
+                    'stat' => false,
+                    'mc' => false,
+                    'msg' => 'Terjadi kesalahan.',
                     'msgField' => $validator->errors()
                 ]);
             }
@@ -301,11 +302,7 @@ class JadwalSidangMagangController extends Controller
             $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             $semhasDaftar = SemhasDaftarModel::where('periode_id', $activePeriods)->findOrFail($id);
             $pembimbing_dosen_id = $semhasDaftar->pembimbing_dosen_id;
-            // dd($pembimbing_dosen_id);
             $pembimbing_dosen1 = PembimbingDosenModel::where('pembimbing_dosen_id', $pembimbing_dosen_id)->pluck('dosen_id')->first();
-
-
-            // $datadosen = PembimbingDosenModel::pluck('dosen_id')->toArray();
 
             // Cek apakah $request->dosen_pembahas_id sama dengan $pembimbing_dosen_id
             if ($request->dosen_pembahas_id == $pembimbing_dosen1) {
@@ -315,20 +312,31 @@ class JadwalSidangMagangController extends Controller
                     'msg' => 'Dosen Pembahas yang dipilih sama dengan pembimbing dosen saat ini.'
                 ]);
             }
+
             // Update dosen_pembahas_id
             $semhasDaftar->update(['dosen_pembahas_id' => $request->dosen_pembahas_id]);
 
+            // Ambil deadline_nilai dari SemhasModel
+            $deadline_nilai = $semhasDaftar->semhas->deadline_nilai;
+
+            // Hitung deadline_penilaian dari tanggal_sidang + deadline_nilai (dalam hari)
+            $tanggalSidang = Carbon::parse($request->tanggal_sidang);
+            $deadlinePenilaian = $tanggalSidang->addDays($deadline_nilai)->toDateString();
+
             // Buat entri baru di JadwalSidangMagangModel atau perbarui yang ada
-            $existingSchedule = JadwalSidangMagangModel::where('semhas_daftar_id', $semhasDaftar->semhas_daftar_id)->where('periode_id', $activePeriods)->first();
+            $existingSchedule = JadwalSidangMagangModel::where('semhas_daftar_id', $semhasDaftar->semhas_daftar_id)
+                ->where('periode_id', $activePeriods)
+                ->first();
+
             if (!$existingSchedule) {
                 $jadwalSidangMagang = new JadwalSidangMagangModel();
                 $jadwalSidangMagang->semhas_daftar_id = $semhasDaftar->semhas_daftar_id;
                 $jadwalSidangMagang->tanggal_sidang = $request->tanggal_sidang;
+                $jadwalSidangMagang->deadline_penilaian = $deadlinePenilaian; // Set deadline_penilaian dengan hasil perhitungan tanggal akhir
                 $jadwalSidangMagang->jam_sidang_mulai = $request->jam_sidang_mulai;
                 $jadwalSidangMagang->jam_sidang_selesai = $request->jam_sidang_selesai;
                 $jadwalSidangMagang->jenis_sidang = $request->jenis_sidang;
                 $jadwalSidangMagang->tempat = $request->tempat;
-                // $jadwalSidangMagang->gedung = $request->gedung;
                 $jadwalSidangMagang->gedung = $request->jenis_sidang === 'online' ? null : $request->gedung;
                 $jadwalSidangMagang->periode_id = $activePeriods;
                 $jadwalSidangMagang->save();
@@ -341,14 +349,15 @@ class JadwalSidangMagangController extends Controller
             } else {
                 $existingSchedule->update([
                     'tanggal_sidang' => $request->tanggal_sidang,
+                    'deadline_penilaian' => $deadlinePenilaian, // Set deadline_penilaian dengan hasil perhitungan tanggal akhir
                     'jam_sidang_mulai' => $request->jam_sidang_mulai,
                     'jam_sidang_selesai' => $request->jam_sidang_selesai,
                     'jenis_sidang' => $request->jenis_sidang,
                     'tempat' => $request->tempat,
-                    // 'gedung' => $request->gedung,
                     'gedung' => $request->jenis_sidang === 'online' ? null : $request->gedung,
                     'periode_id' => $activePeriods,
                 ]);
+
                 return response()->json([
                     'stat' => true,
                     'mc' => true,

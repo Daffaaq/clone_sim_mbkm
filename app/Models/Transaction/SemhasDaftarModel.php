@@ -27,7 +27,6 @@ class SemhasDaftarModel extends AppModel
         'Judul',
         'link_github',
         'link_laporan',
-        'Berita_acara',
         'periode_id',
         'created_at',
         'created_by',

@@ -7,26 +7,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class JadwalSidangMagangModel extends AppModel
+class DokumenBeritaAcaraModel extends AppModel
 {
     use SoftDeletes;
 
-    protected $table = 't_jadwal_sidang_magang';
-    protected $primaryKey = 'jadwal_sidang_magang_id';
+    protected $table = 't_dokumen_berita_acara';
+    protected $primaryKey = 'dokumen_berita_acara_id';
 
-    protected static $_table = 't_jadwal_sidang_magang';
-    protected static $_primaryKey = 'jadwal_sidang_magang_id';
+    protected static $_table = 't_dokumen_berita_acara';
+    protected static $_primaryKey = 'dokumen_berita_acara_id';
 
     protected $fillable = [
         'semhas_daftar_id',
-        'tanggal_sidang',
-        'deadline_penilaian',
-        'jam_sidang_mulai',
-        'jam_sidang_selesai',
-        'jenis_sidang',
-        'tempat',
-        'gedung',
-        'periode_id',
+        'tanggal_upload_berita_acara',
+        'tanggal_daftar',
+        'dokumen_berita_status',
+        'dokumen_berita_acara_file',
+        'dokumen_berita_acara_keterangan',
         'periode_id',
         'created_at',
         'created_by',
@@ -47,6 +44,7 @@ class JadwalSidangMagangModel extends AppModel
     {
         return $this->belongsTo('App\Models\Transaction\SemhasDaftarModel', 'semhas_daftar_id', 'semhas_daftar_id');
     }
+
     public function periode()
     {
         return $this->belongsTo('App\Models\Master\PeriodeModel', 'periode_id', 'periode_id');

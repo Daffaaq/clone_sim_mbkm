@@ -96,14 +96,20 @@
                         "sClass": "",
                         "sWidth": "10%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
+                        "mRender": function(data, type, row) {
+                            return moment(data).format('DD-MM-YYYY');
+                        }
                     },
                     {
                         "mData": "tanggal_akhir_pendaftaran",
                         "sClass": "",
                         "sWidth": "10%",
                         "bSortable": true,
-                        "bSearchable": true
+                        "bSearchable": true,
+                        "mRender": function(data, type, row) {
+                            return moment(data).format('DD-MM-YYYY');
+                        }
                     },
                     {
                         "mData": "semhas_id",

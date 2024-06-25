@@ -11,6 +11,7 @@ use App\Models\Master\PeriodeModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Master\TransaksiNilaiPembimbingDosenModel;
+use App\Models\Transaction\DokumenBeritaAcaraModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\JadwalSidangMagangModel;
 use App\Models\Transaction\KuotaDosenModel;
@@ -228,6 +229,10 @@ class JadwalDosenPembimbingController extends Controller
         // dd($datanilai);
 
         $kriteriaNilai = NilaiPembimbingDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+        if ($kriteriaNilai->isEmpty()) {
+            // Tampilkan pesan error atau lakukan tindakan lain jika tidak ada data ditemukan
+            return $this->showModalError('Kesalahan', 'Terjadi Kesalahan!!!', 'Belum ada Kriteria Nilai.');
+        }
         $subkriteria = NilaiPembimbingDosenModel::with('parent')
             ->whereNotNull('parent_id')
             ->where('periode_id', $activePeriods)
@@ -366,6 +371,95 @@ class JadwalDosenPembimbingController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function validasi_berita_acara($id)
+    {
+
+        $page = [
+            'url' => $this->menuUrl,
+            'title' => 'Validasi berita_acara ' . $this->menuTitle
+        ];
+
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+        $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
+            ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
+            ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
+            ->leftJoin('m_dosen as d1', 't_semhas_daftar.dosen_pembahas_id', '=', 'd1.dosen_id') // Menggunakan alias yang sama seperti saat memilih kolom
+            ->leftJoin('m_dosen as d2', 't_pembimbing_dosen.dosen_id', '=', 'd2.dosen_id')
+            ->leftJoin('t_instruktur_lapangan', 't_semhas_daftar.instruktur_lapangan_id', '=', 't_instruktur_lapangan.instruktur_lapangan_id')
+            ->leftJoin('m_instruktur', 't_instruktur_lapangan.instruktur_id', '=', 'm_instruktur.instruktur_id')
+            ->select(
+                't_semhas_daftar.semhas_daftar_id',
+                'm_mahasiswa.nama_mahasiswa',
+                't_semhas_daftar.Judul',
+                'd1.dosen_name AS nama_dosen_pembahas', // Menggunakan alias yang sama seperti dalam JOIN
+                'm_instruktur.nama_instruktur AS nama_instruktur',
+                'd2.dosen_name AS nama_dosen', // Menggunakan alias yang sama seperti dalam JOIN
+                't_semhas_daftar.magang_id',
+                't_semhas_daftar.tanggal_daftar',
+                't_semhas_daftar.link_github',
+                't_semhas_daftar.link_laporan'
+            )
+            ->find($id);
+        $semhas_daftar_id = $id;
+        // dd($semhas_daftar_id);
+
+        $magang = Magang::where('magang_id', $data->magang_id)
+            ->with('mitra')
+            ->with('mitra.kegiatan')
+            ->with('periode')
+            ->where('periode_id', $activePeriods)
+            ->first();
+        $databeritaacara = DokumenBeritaAcaraModel::where('semhas_daftar_id', $data->semhas_daftar_id)->where('periode_id', $activePeriods)->latest()->first();
+        if ($databeritaacara == null) {
+            // Tampilkan pesan error atau lakukan tindakan lain jika tidak ada data ditemukan
+            return $this->showModalError('Kesalahan', 'Terjadi Kesalahan!!!', 'Belum Upload Berita Acara.');
+        }
+        $id_joined = $data->pluck('semhas_daftar_id');
+        $databeritaacaraall = DokumenBeritaAcaraModel::wherein('semhas_daftar_id', $id_joined)->where('periode_id', $activePeriods)->get();
+
+        return view($this->viewPath . 'verifikasi')
+            ->with('page', (object) $page)
+            ->with('id', $id)
+            ->with('data', $data)
+            ->with('databeritaacara', $databeritaacara)
+            ->with('databeritaacaraall', $databeritaacaraall)
+            ->with('magang', $magang);
+    }
+
+    public function verifikasi_berita_acara(Request $request)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            // Mendapatkan periode aktif
+            $id = $request->id;
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+
+            // Validasi input dari request
+            $validatedData = $request->validate([
+                'dokumen_berita_status' => 'required|in:1,2', // Validasi hanya menerima 1 atau 2
+                'dokumen_berita_acara_keterangan' => 'nullable|string',
+            ]);
+
+            try {
+                // Temukan dokumen yang akan diupdate berdasarkan periode aktif dan ID
+                $dokumenBeritaAcara = DokumenBeritaAcaraModel::where('periode_id', $activePeriods)->findOrFail($id);
+
+                // Update data dokumen
+                $dokumenBeritaAcara->dokumen_berita_status = $request->dokumen_berita_status;
+                $dokumenBeritaAcara->dokumen_berita_acara_keterangan = $request->dokumen_berita_acara_keterangan;
+                $dokumenBeritaAcara->updated_by = auth()->id(); // Simpan user ID yang mengupdate
+                $dokumenBeritaAcara->save();
+
+                // Kembalikan respons sukses
+                return response()->json(['status' => true, 'message' => 'Berita Acara berhasil diperbarui'], 200);
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                // Kembalikan respons error jika dokumen tidak ditemukan
+                return response()->json(['status' => false, 'error' => 'Dokumen Berita Acara tidak ditemukan'], 404);
+            }
+        }
+
+        return redirect('/');
+    }
 
     public function updateStatusDosenFromModal(Request $request, $id)
     {

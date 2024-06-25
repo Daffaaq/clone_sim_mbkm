@@ -481,6 +481,10 @@ class JadwalInstrukturLapanganController extends Controller
         // dd($datanilai);
 
         $kriteriaNilai = NilaiInstrukturLapanganModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+        if ($kriteriaNilai->isEmpty()) {
+            // Tampilkan pesan error atau lakukan tindakan lain jika tidak ada data ditemukan
+            return $this->showModalError('Kesalahan', 'Terjadi Kesalahan!!!', 'Belum ada Kriteria Nilai.');
+        }
         $subkriteria = NilaiInstrukturLapanganModel::with('parent')
             ->whereNotNull('parent_id')
             ->where('periode_id', $activePeriods)

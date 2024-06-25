@@ -28,7 +28,6 @@ class TSemhasDaftar extends Migration
             $table->unsignedBigInteger('periode_id');
             $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->string('Judul');
-            $table->string('Berita_acara')->nullable();
             $table->date('tanggal_daftar');
             $table->string('link_github');
             $table->string('link_laporan');

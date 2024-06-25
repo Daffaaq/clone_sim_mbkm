@@ -20,6 +20,7 @@ class TJadwalSidangMagang extends Migration
             $table->unsignedBigInteger('periode_id');
             $table->foreign('periode_id')->references('periode_id')->on('m_periode');
             $table->date('tanggal_sidang');
+            $table->date('deadline_penilaian');
             $table->time('jam_sidang_mulai');
             $table->time('jam_sidang_selesai');
             $table->enum('jenis_sidang', ['online', 'offline']);

@@ -229,6 +229,10 @@ class JadwalDosenPembahasController extends Controller
         // dd($datanilai);
 
         $kriteriaNilai = NilaiPembahasDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
+        if ($kriteriaNilai->isEmpty()) {
+            // Tampilkan pesan error atau lakukan tindakan lain jika tidak ada data ditemukan
+            return $this->showModalError('Kesalahan', 'Terjadi Kesalahan!!!', 'Belum ada Kriteria Nilai.');
+        }
         $subkriteria = NilaiPembimbingDosenModel::with('parent')
             ->whereNotNull('parent_id')
             ->where('periode_id', $activePeriods)

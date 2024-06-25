@@ -320,6 +320,8 @@ Route::group(['prefix' => 'dosen-pembimbing', 'middleware' => ['auth']], functio
     Route::post('jadwal-semhas-dospem/list', [JadwalDosenPembimbingController::class, 'list']);
     Route::get('jadwal-semhas-dospem/{id}/nilai', [JadwalDosenPembimbingController::class, 'nilai']);
     Route::post('jadwal-semhas-dospem/nilai', [JadwalDosenPembimbingController::class, 'simpanNilai'])->name('simpan.nilai');
+    Route::get('jadwal-semhas-dospem/{id}/validasi-berita-acara', [JadwalDosenPembimbingController::class, 'validasi_berita_acara'])->name('validasi.berita.acara');
+    Route::post('jadwal-semhas-dospem/validasi-berita-acara', [JadwalDosenPembimbingController::class, 'verifikasi_berita_acara'])->name('verifikasi.berita.acara');
     Route::get('jadwal-semhas-dospem/{id}/delete', [JadwalDosenPembimbingController::class, 'confirm']);
 });
 Route::group(['prefix' => 'dosen-pembahas', 'middleware' => ['auth']], function () {

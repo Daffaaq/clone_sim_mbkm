@@ -97,6 +97,7 @@ class MenuController extends Controller
         ];
 
         $menu = MenuModel::whereNull('parent_id')
+            ->orwhereNull('menu_url')
             ->orderBy('order_no')
             ->get();
 
@@ -152,6 +153,7 @@ class MenuController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         $menu = MenuModel::whereNull('parent_id')
+            ->orwhereNull('menu_url')
             ->orderBy('order_no')
             ->get();
 
