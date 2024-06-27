@@ -31,9 +31,14 @@ $is_edit = isset($data);
                 </div>
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Bobot Kriteria</label>
-                    <div class="col-sm-8">
-                        <input type="number" class="form-control form-control-sm" id="bobot" name="bobot"
-                            value="{{ isset($data->bobot) ? $data->bobot : '' }}" />
+                    <div class="col-sm-9 d-flex align-items-center">
+                        <div class="input-group">
+                            <input type="number" class="form-control form-control-sm" id="bobot" name="bobot"
+                                value="{{ isset($data->bobot) ? $data->bobot : '' }}" />
+                            <div class="input-group-append">
+                                <span class="input-group-text form-control-sm custom-bobot-label">%</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 @if ($is_edit && $data->subKriteria->isNotEmpty())

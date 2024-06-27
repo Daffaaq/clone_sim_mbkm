@@ -217,7 +217,7 @@
                                                                         <td class="text-center w-5 p-1">{{ $index + 1 }}
                                                                         </td>
                                                                         <td><a href="{{ asset('storage/assets/berita-acara/' . $dokumen->dokumen_berita_acara_file) }}"
-                                                                                target="_blank">View</a></td>
+                                                                                target="_blank">Berita Acara</a></td>
                                                                         <td>
                                                                             @if ($dokumen->dokumen_berita_status == 0)
                                                                                 <span

@@ -1,5 +1,5 @@
 <?php
-// jika $data ada ISI-nya maka actionnya adalah edit, jika KOSONG : insert
+// Jika $data ada isinya maka actionnya adalah edit, jika KOSONG : insert
 $is_edit = isset($data);
 ?>
 
@@ -10,8 +10,8 @@ $is_edit = isset($data);
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">{!! $page->title !!}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                        aria-hidden="true">&times;</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
@@ -41,7 +41,25 @@ $is_edit = isset($data);
                             value="{{ isset($datajadwal) ? $datajadwal->tanggal_sidang : '' }}" required>
                     </div>
                 </div>
-
+                <div class="form-group row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Deadline nilai</label>
+                    <div class="col-sm-9">
+                        <div class="input-group">
+                            <input type="number" class="form-control form-control-sm" disabled
+                                value="{{ $semhasDaftar->semhas->deadline_nilai }}">
+                            <div class="input-group-append">
+                                <label class="input-group-text form-control-sm custom-deadline_nilai-label"
+                                    for="deadline_nilai">Hari</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group row mb-2">
+                    <label class="col-sm-3 control-label col-form-label">Deadline Penilaian</label>
+                    <div class="col-sm-9">
+                        <p id="deadline_penilaian_display"></p>
+                    </div>
+                </div>
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Jam Mulai Sidang</label>
                     <div class="col-sm-9">
@@ -101,6 +119,26 @@ $is_edit = isset($data);
 </form>
 
 <script>
+    function calculateAndDisplayDeadline() {
+        var tanggalSidang = $('#tanggal_sidang').val(); // Ambil nilai tanggal_sidang dari input form
+        var deadlineNilai = {!! json_encode($semhasDaftar->semhas->deadline_nilai) !!}; // Ambil nilai deadline_nilai dari PHP (controller atau template)
+
+        if (tanggalSidang) {
+            var tanggalSidangMoment = moment(tanggalSidang, 'YYYY-MM-DD'); // Buat objek moment dari tanggal_sidang
+            var deadlinePenilaian = tanggalSidangMoment.add(deadlineNilai, 'days').format(
+                'DD-MM-YYYY'); // Hitung deadline_penilaian
+            // Buat badge dengan kelas warna yang sesuai
+            // Buat badge dengan kelas warna tetap 'badge-info'
+            $('#deadline_penilaian_display').html(
+                '<input type="text" class="form-control form-control-sm" disabled value="' + deadlinePenilaian +
+                '">');
+        } else {
+            // Jika tanggalSidang kosong, tampilkan badge danger
+            var badgeHTML = '<span class="badge badge-danger badge-lg">Belum ditentukan</span>';
+            $('#deadline_penilaian_display').html(badgeHTML);
+        }
+    }
+
     function toggleGedungInput() {
         var jenisSidang = $('#jenis_sidang').val();
         if (jenisSidang === 'offline') {
@@ -115,7 +153,12 @@ $is_edit = isset($data);
     }
     $(document).ready(function() {
         unblockUI();
+        calculateAndDisplayDeadline();
 
+        // Panggil fungsi calculateAndDisplayDeadline saat nilai tanggal_sidang berubah
+        $('#tanggal_sidang').change(function() {
+            calculateAndDisplayDeadline();
+        });
         // Fungsi untuk menampilkan atau menyembunyikan input gedung sidang berdasarkan jenis sidang
 
         // Panggil fungsi toggleGedungInput() saat halaman dimuat

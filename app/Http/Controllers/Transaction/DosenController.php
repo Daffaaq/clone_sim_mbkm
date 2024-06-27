@@ -7,8 +7,10 @@ use App\Models\Master\DosenModel;
 use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Imports\MahasiswaImport;
+use App\Models\Master\PeriodeModel;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Transaction\KuotaDosenModel;
+use App\Models\Transaction\LogModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -134,7 +136,7 @@ class DosenController extends Controller
                     'msg' => 'NIP atau NIDN Tidak Boleh Kosong',
                 ]);
             }
-
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             // Create user
             $user = [
                 'username' => $username,
@@ -160,7 +162,16 @@ class DosenController extends Controller
                 'user_id' => $insert->user_id,
                 // fill other fields as needed
             ]);
-
+            // Simpan log
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'create',
+                'url' => $this->menuUrl,
+                'data' => 'Nama: ' . $dosen->dosen_name . ', Email: ' . $dosen->dosen_email,
+                // 'data' => implode(', ', [$dosen->dosen_name, $dosen->dosen_email]),
+                'created_by' => auth()->id(),
+                'periode_id' => $activePeriods,
+            ]);
             return response()->json([
                 'stat' => $dosen,
                 'mc' => $dosen,
@@ -216,7 +227,7 @@ class DosenController extends Controller
                 'kuota' => 'required',
                 // Add other rules for DosenModel fields
             ];
-
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
@@ -248,7 +259,25 @@ class DosenController extends Controller
 
             // Update DosenModel data
             $res = DosenModel::updateData($id, $request);
+            // Check if the update was successful
+            if ($res) {
+                $updatedDosen = DosenModel::find($id); // Retrieve the updated Dosen model
 
+                LogModel::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'update',
+                    'url' => $this->menuUrl,
+                    'data' => 'Nama: ' . $updatedDosen->dosen_name . ', Email: ' . $updatedDosen->dosen_email,
+                    'created_by' => auth()->id(),
+                    'periode_id' => $activePeriods,
+                ]);
+
+                return response()->json([
+                    'stat' => true,
+                    'mc' => true, // close modal
+                    'msg' => $this->getMessage('update.success')
+                ]);
+            }
             return response()->json([
                 'stat' => $res,
                 'mc' => $res, // close modal
@@ -303,8 +332,25 @@ class DosenController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         if ($request->ajax() || $request->wantsJson()) {
-
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+            $dosen = DosenModel::find($id);
             $res = DosenModel::deleteData($id);
+            if ($res) { // Retrieve the updated Dosen model
+
+                LogModel::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'delete',
+                    'url' => $this->menuUrl,
+                    'data' => 'Nama: ' . $dosen->dosen_name . ', Email: ' . $dosen->dosen_email,
+                    'created_by' => auth()->id(),
+                    'periode_id' => $activePeriods,
+                ]);
+                return response()->json([
+                    'stat' => true,
+                    'mc' => true, // close modal
+                    'msg' => $this->getMessage('delete.success')
+                ]);
+            }
 
             return response()->json([
                 'stat' => $res,
@@ -318,6 +364,7 @@ class DosenController extends Controller
 
     public function import_action(Request $request)
     {
+
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
                 'file' => 'required|mimes:xls,xlsx'
@@ -332,7 +379,7 @@ class DosenController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
-
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             $file = $request->file('file');
             $nama_file = rand() . '.' . $file->getClientOriginalExtension();
             $file->move(public_path('assets/temp_import'), $nama_file);
@@ -341,7 +388,7 @@ class DosenController extends Controller
                 $collection = Excel::toCollection(new MahasiswaImport, public_path('assets/temp_import/' . $nama_file));
                 $collection = $collection[0];
 
-                $collection->each(function ($item) {
+                $collection->each(function ($item) use ($activePeriods) {
                     // Inisialisasi username dan password
                     $username = null;
                     $password = null;
@@ -375,7 +422,7 @@ class DosenController extends Controller
                                 'email' => $item[3],
                             ]);
 
-                            DosenModel::insert([
+                            $dosen = DosenModel::insert([
                                 'user_id' => $user,
                                 'dosen_nip' => !empty($item[0]) ? $item[0] : null,
                                 'dosen_nidn' => !empty($item[1]) ? $item[1] : null,
@@ -386,10 +433,18 @@ class DosenController extends Controller
                                 'dosen_tahun' => $item[6],
                                 'kuota' => $item[7],
                             ]);
+                            // Simpan log dengan user_id dari pengguna yang diautentikasi
+                            LogModel::create([
+                                'user_id' => auth()->id(),
+                                'action' => 'import',
+                                'data' => 'Dosen: ' . $item[2] . ', Email: ' . $item[3],
+                                'url' => $this->menuUrl,
+                                'created_by' => auth()->id(),
+                                'periode_id' => $activePeriods,
+                            ]);
                         }
                     }
                 });
-
                 unlink(public_path('assets/temp_import/' . $nama_file)); // Hapus file setelah selesai
 
                 return response()->json([

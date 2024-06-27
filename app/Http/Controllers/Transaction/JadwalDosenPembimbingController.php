@@ -16,6 +16,7 @@ use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\JadwalSidangMagangModel;
 use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\LogBimbinganModel;
+use App\Models\Transaction\LogModel;
 use App\Models\Transaction\Magang;
 use App\Models\Transaction\NilaiPembimbingDosenModel as TransactionNilaiPembimbingDosenModel;
 use App\Models\Transaction\PembimbingDosenModel;
@@ -229,10 +230,10 @@ class JadwalDosenPembimbingController extends Controller
         // dd($datanilai);
 
         $kriteriaNilai = NilaiPembimbingDosenModel::with('subKriteria')->where('periode_id', $activePeriods)->get();
-        if ($kriteriaNilai->isEmpty()) {
-            // Tampilkan pesan error atau lakukan tindakan lain jika tidak ada data ditemukan
-            return $this->showModalError('Kesalahan', 'Terjadi Kesalahan!!!', 'Belum ada Kriteria Nilai.');
-        }
+        // if ($kriteriaNilai->isEmpty()) {
+        //     // Tampilkan pesan error atau lakukan tindakan lain jika tidak ada data ditemukan
+        //     return $this->showModalError('Kesalahan', 'Terjadi Kesalahan!!!', 'Belum ada Kriteria Nilai.');
+        // }
         $subkriteria = NilaiPembimbingDosenModel::with('parent')
             ->whereNotNull('parent_id')
             ->where('periode_id', $activePeriods)
@@ -250,6 +251,8 @@ class JadwalDosenPembimbingController extends Controller
         $existingNilai = RevisiPembimbingDosenModel::where('semhas_daftar_id', $data->semhas_daftar_id)
             ->where('periode_id', $activePeriods)
             ->first();
+        $dataJadwalSeminar = JadwalSidangMagangModel::where('semhas_daftar_id', $data->semhas_daftar_id)->first();
+        // dd($dataJadwalSeminar);
         // dd($existingNilai);
         $page = [
             'title' => 'Nilai Dosen Pembimbing'
@@ -262,6 +265,7 @@ class JadwalDosenPembimbingController extends Controller
             ->with('kriteriaNilai', $kriteriaNilai)
             ->with('activePeriods', $activePeriods)
             ->with('semhas_daftar_id', $semhas_daftar_id)
+            ->with('dataJadwalSeminar', $dataJadwalSeminar)
             ->with('datanilai', $datanilai)
             ->with('existingNilai', $existingNilai)
             ->with('data', $data);
@@ -376,7 +380,7 @@ class JadwalDosenPembimbingController extends Controller
 
         $page = [
             'url' => $this->menuUrl,
-            'title' => 'Validasi berita_acara ' . $this->menuTitle
+            'title' => 'Validasi berita_acara Dosen Pembimbing'
         ];
 
         $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
@@ -449,6 +453,16 @@ class JadwalDosenPembimbingController extends Controller
                 $dokumenBeritaAcara->dokumen_berita_acara_keterangan = $request->dokumen_berita_acara_keterangan;
                 $dokumenBeritaAcara->updated_by = auth()->id(); // Simpan user ID yang mengupdate
                 $dokumenBeritaAcara->save();
+
+                $status = ($dokumenBeritaAcara->dokumen_berita_status == 1) ? 'Diterima' : (($dokumenBeritaAcara->dokumen_berita_status == 2) ? 'Ditolak' : 'Pending');
+                LogModel::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'update',
+                    'url' => $this->menuUrl,
+                    'data' => 'Keterangan Berita Acara: ' . $dokumenBeritaAcara->dokumen_berita_acara_keterangan . ', Status: ' . $status,
+                    'created_by' => auth()->id(),
+                    'periode_id' => $activePeriods,
+                ]);
 
                 // Kembalikan respons sukses
                 return response()->json(['status' => true, 'message' => 'Berita Acara berhasil diperbarui'], 200);

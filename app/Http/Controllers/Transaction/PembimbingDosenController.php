@@ -8,6 +8,7 @@ use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
 use App\Models\Master\PeriodeModel;
 use App\Models\Transaction\InstrukturLapanganModel;
+use App\Models\Transaction\LogModel;
 use App\Models\Transaction\Magang;
 use App\Models\Transaction\PembimbingDosenModel;
 use Illuminate\Http\Request;
@@ -230,14 +231,30 @@ class PembimbingDosenController extends Controller
                 $periode_id = $activePeriods;
                 // Simpan data ke dalam PembimbingDosenModel
                 if ($mahasiswa_id && $periode_id) {
-                    // Simpan data ke dalam InstrukturLapanganModel
-                    $pembimbingDosen[] = PembimbingDosenModel::create([
+                    // Simpan data ke dalam PembimbingDosenModel
+                    $pembimbing = PembimbingDosenModel::create([
                         'magang_id' => $magang_id,
                         'mahasiswa_id' => $mahasiswa_id,
-                        'dosen_id' => $request->input('dosen_id'), // Gunakan id instruktur yang baru saja dibuat
+                        'dosen_id' => $request->input('dosen_id'),
                         'periode_id' => $periode_id
                         // Isi kolom-kolom lainnya sesuai kebutuhan
                     ]);
+                    // Ambil informasi mahasiswa dan dosen dari relasi
+                    $namaMahasiswa = $pembimbing->mahasiswa->nama_mahasiswa;
+                    $namaDosen = $pembimbing->dosen->dosen_name;
+
+                    // Simpan log
+                    LogModel::create([
+                        'user_id' => auth()->id(),
+                        'action' => 'create',
+                        'url' => $this->menuUrl,
+                        'data' => 'Nama Mahasiswa: ' . $namaMahasiswa . ', Nama Dosen: ' . $namaDosen,
+                        'created_by' => auth()->id(),
+                        'periode_id' => $activePeriods,
+                    ]);
+
+                    // Tambahkan objek $pembimbing ke dalam array $pembimbingDosen
+                    $pembimbingDosen[] = $pembimbing;
                 }
             }
             return response()->json([
@@ -269,9 +286,9 @@ class PembimbingDosenController extends Controller
 
         // Load data mahasiswa setelah memastikan bahwa data PembimbingDosen ditemukan
         $mahasiswaWithMagang = MahasiswaModel::selectRaw("m_mahasiswa.mahasiswa_id, m_mahasiswa.nama_mahasiswa, t_magang.magang_id")
-        ->join('t_magang', 't_magang.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
-        ->where('t_magang.status', 1)
-        ->get();
+            ->join('t_magang', 't_magang.mahasiswa_id', '=', 'm_mahasiswa.mahasiswa_id')
+            ->where('t_magang.status', 1)
+            ->get();
 
         $mahasiswa = [];
         foreach ($mahasiswaWithMagang as $mahasiswaData) {
@@ -287,7 +304,7 @@ class PembimbingDosenController extends Controller
         $dosen = DosenModel::selectRaw("dosen_id, dosen_name")->get();
 
         return view($this->viewPath . 'action')
-        ->with('page', (object) $page)
+            ->with('page', (object) $page)
             ->with('id', $id)
             ->with('data', $data)
             ->with('mahasiswa', $mahasiswa)
@@ -384,6 +401,7 @@ class PembimbingDosenController extends Controller
     public function update(Request $request, $id)
     {
         $this->authAction('update', 'json');
+
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         if ($request->ajax() || $request->wantsJson()) {
@@ -414,36 +432,55 @@ class PembimbingDosenController extends Controller
                 ]);
             }
 
-            $pembimbingDosen = PembimbingDosenModel::find($id);
-            if ($pembimbingDosen) {
-                $oldDosenId = $pembimbingDosen->dosen_id;
+            // Mulai transaksi untuk memastikan konsistensi data
+            DB::beginTransaction();
+            try {
+                $pembimbingDosen = PembimbingDosenModel::find($id);
+                if ($pembimbingDosen) {
+                    $oldDosenId = $pembimbingDosen->dosen_id;
 
-                // Mulai transaksi untuk memastikan konsistensi data
-                DB::beginTransaction();
-                try {
                     // Update dosen_id di PembimbingDosenModel
                     $pembimbingDosen->dosen_id = $newDosenId;
                     $pembimbingDosen->save();
 
+                    // Ambil informasi mahasiswa dan dosen dari relasi
+                    $namaMahasiswa = $pembimbingDosen->mahasiswa->nama_mahasiswa;
+                    $namaDosen = $newDosen->dosen_name;
+
+                    // Simpan log
+                    LogModel::create([
+                        'user_id' => auth()->id(),
+                        'action' => 'update',
+                        'url' => $this->menuUrl,
+                        'data' => 'Nama Mahasiswa: ' . $namaMahasiswa . ', Nama Dosen: ' . $namaDosen,
+                        'created_by' => auth()->id(),
+                        'periode_id' => $pembimbingDosen->periode_id,
+                    ]);
 
                     // Commit transaksi jika semuanya berhasil
                     DB::commit();
-                } catch (\Exception $e) {
-                    // Rollback transaksi jika terjadi kesalahan
-                    DB::rollBack();
+
+                    return response()->json([
+                        'stat' => $pembimbingDosen,
+                        'mc' => $pembimbingDosen, // close modal
+                        'msg' => $this->getMessage('update.success')
+                    ]);
+                } else {
                     return response()->json([
                         'stat' => false,
                         'mc' => false,
-                        'msg' => 'Terjadi kesalahan saat memperbarui kuota dosen.'
+                        'msg' => $this->getMessage('update.failed')
                     ]);
                 }
+            } catch (\Exception $e) {
+                // Rollback transaksi jika terjadi kesalahan
+                DB::rollBack();
+                return response()->json([
+                    'stat' => false,
+                    'mc' => false,
+                    'msg' => 'Terjadi kesalahan saat memperbarui kuota dosen.'
+                ]);
             }
-
-            return response()->json([
-                'stat' => $pembimbingDosen,
-                'mc' => $pembimbingDosen, // close modal
-                'msg' => ($pembimbingDosen) ? $this->getMessage('update.success') : $this->getMessage('update.failed')
-            ]);
         }
 
         return redirect('/');

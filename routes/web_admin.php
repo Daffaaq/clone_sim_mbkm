@@ -26,6 +26,7 @@ use App\Http\Controllers\Report\DaftarMahasiswaDiterimaController;
 use App\Http\Controllers\Report\DaftarMahasiswaSudahMagangController;
 use App\Http\Controllers\Report\DaftarMitraController;
 use App\Http\Controllers\Report\LogActivityController;
+use App\Http\Controllers\Report\LogController;
 use App\Http\Controllers\Setting\AccountController;
 use App\Http\Controllers\Setting\GroupController;
 use App\Http\Controllers\Setting\MenuController;
@@ -272,6 +273,11 @@ Route::group(['prefix' => 'laporan', 'middleware' => ['auth']], function () {
     Route::post('daftar-mitra/list', [DaftarMitraController::class, 'list']);
     Route::get('daftar-mitra/{id}/delete', [DaftarMitraController::class, 'confirm']);
     Route::get('daftar-mitra/export', [MitraController::class, 'export']);
+
+    // log sistem
+
+    Route::resource('log-sistem', LogController::class)->parameter('log-sistem', 'id');
+    Route::post('log-sistem/list', [LogController::class, 'list']);
 });
 
 Route::resource('daftar-mahasiswa-diterima', DaftarMahasiswaDiterimaController::class)->parameter('daftar-mahasiswa-diterima', 'id');

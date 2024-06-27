@@ -11,7 +11,7 @@
                 <label class="col-sm-3 control-label col-form-label">Judul</label>
                 <div class="col-sm-8">
                     <input type="text" class="form-control form-control-sm"
-                        value="{{ isset($data->name_kriteria_pembimbing_dosen) ? $data->name_kriteria_pembimbing_dosen : '' }}"
+                        value="{{ isset($data->name_kriteria_instruktur_lapangan) ? $data->name_kriteria_instruktur_lapangan : '' }}"
                         readonly />
                 </div>
             </div>
@@ -29,7 +29,7 @@
                         @foreach ($data->subKriteria as $subKriteria)
                             <div class="col-sm-9">
                                 <input type="text" class="form-control form-control-sm"
-                                    value="{{ $subKriteria->name_kriteria_pembimbing_dosen }}">
+                                    value="{{ $subKriteria->name_kriteria_instruktur_lapangan }}">
                             </div>
                         @endforeach
                     </div>

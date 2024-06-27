@@ -19,6 +19,7 @@ use App\Models\Master\PeriodeModel;
 use App\Models\MitraModel;
 use Illuminate\Validation\Rule;
 use App\Models\Transaction\InstrukturLapanganModel;
+use App\Models\Transaction\LogModel;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -365,7 +366,7 @@ class InstrukturController extends Controller
             'password' => 'required|string|min:8', // Misalnya, panjang minimal password 6 karakter
             'mahasiswa_id' => 'required|array|min:1' // Misalnya, harus berupa array
         ]);
-
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         // Jika validasi gagal, kembalikan respons dengan pesan error
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
@@ -396,13 +397,21 @@ class InstrukturController extends Controller
             'password' => $password,
             'periode_id' => PeriodeModel::where('is_current', 1)->value('periode_id')
         ]);
+        LogModel::create([
+            'user_id' => auth()->id(),
+            'action' => 'create',
+            'url' => $this->menuUrl,
+            'data' => 'Nama Instruktur: ' . $insertInstruktur->nama_instruktur . ', Email Instruktur: ' . $insertInstruktur->instruktur_email,
+            'created_by' => auth()->id(),
+            'periode_id' => $activePeriods,
+        ]);
         $instruktur_id = $insertInstruktur->instruktur_id;
         // Ambil magang_id dari input form
         // dd($request->all()); // Tampilkan semua data yang dikirimkan melalui form
 
         // Ambil data mahasiswa yang dipilih
         $mahasiswa_ids = $request->input('mahasiswa_id');
-        $activePeriods = PeriodeModel::where('is_current', 1)->pluck('periode_id');
+
         // dd($mahasiswa_ids);
         $magang_ids = Magang::whereIn('mahasiswa_id', $mahasiswa_ids)
             ->where('status', 1)
@@ -426,6 +435,16 @@ class InstrukturController extends Controller
                         'instruktur_id' => $instruktur_id, // Gunakan id instruktur yang baru saja dibuat
                         'periode_id' => $insertInstruktur->periode_id
                         // Isi kolom-kolom lainnya sesuai kebutuhan
+                    ]);
+                    $namaMahasiswa = $insertInstrukturLapangan->mahasiswa->nama_mahasiswa;
+                    $namainstruktur = $insertInstrukturLapangan->instruktur->nama_instruktur;
+                    LogModel::create([
+                        'user_id' => auth()->id(),
+                        'action' => 'create',
+                        'url' => $this->menuUrl,
+                        'data' => 'Nama Mahasiswa: ' . $namaMahasiswa . ', Nama Instruktur: ' . $namainstruktur,
+                        'created_by' => auth()->id(),
+                        'periode_id' => $activePeriods,
                     ]);
                 }
             }

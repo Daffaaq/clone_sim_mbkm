@@ -36,6 +36,7 @@
                                 </div>
                             </div>
                         </div>
+                        <div id="message-container"></div>
                         <table class="table table-striped table-hover table-full-width" id="table_menu">
                             <thead>
                                 <tr>
@@ -106,6 +107,16 @@
                         if (response.success) {
                             dataMaster.ajax.reload(null, false);
                             // location.reload();
+                            var successMessage = statusDosen == 1 ? 'Berhasil di-ACC' :
+                                'Berhasil di-Reject';
+                            var messageDiv = $('<div class="alert alert-info" role="alert">' +
+                                successMessage + '</div>');
+                            $('#message-container').html(messageDiv);
+                            setTimeout(function() {
+                                messageDiv.fadeOut('slow', function() {
+                                    $(this).remove();
+                                });
+                            }, 3000);
                         } else {
                             // Tampilkan pesan validasi di dalam form
                             var errorDiv = $('.nilai_instruktur_lapangan[data-id="' +

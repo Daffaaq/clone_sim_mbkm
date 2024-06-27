@@ -28,6 +28,7 @@
                                         <th>Judul Semhas</th>
                                         <th>Gelombang</th>
                                         <th>Kuota Bimbingan</th>
+                                        <th>Deadline Penilaian</th>
                                         <th>tanggal Mulai Pendaftaran</th>
                                         <th>tanggal Akhir Pendaftaran</th>
                                         <th>#</th>
@@ -90,6 +91,20 @@
                         "sWidth": "10%",
                         "bSortable": true,
                         "bSearchable": true
+                    },
+                    {
+                        "mData": "deadline_nilai",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": true,
+                        "bSearchable": true,
+                        "mRender": function(data, type, row) {
+                            // Tambahkan kata 'hari' setelah data integer
+                            var displayText = data + ' hari';
+
+                            // Kembalikan teks yang sudah diformat
+                            return displayText;
+                        }
                     },
                     {
                         "mData": "tanggal_mulai_pendaftaran",

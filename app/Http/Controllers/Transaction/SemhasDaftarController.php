@@ -14,6 +14,7 @@ use App\Models\Master\SemhasModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\LogBimbinganModel;
+use App\Models\Transaction\LogModel;
 use App\Models\Transaction\Magang;
 use Carbon\Carbon;
 use App\Models\Transaction\PembimbingDosenModel;
@@ -26,6 +27,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Validation\Rule;
 
 class SemhasDaftarController extends Controller
@@ -322,6 +324,7 @@ class SemhasDaftarController extends Controller
     {
         // Dapatkan ID pengguna yang sedang login
         $userId = Auth::id();
+        $user = UserModel::find($userId);
         $mahasiswa = MahasiswaModel::where('user_id', $userId)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
         $prodi_id = $mahasiswa->prodi_id;
@@ -361,6 +364,14 @@ class SemhasDaftarController extends Controller
         ];
 
         SemhasDaftarModel::create($dataToCreate);
+        LogModel::create([
+            'user_id' => $userId,
+            'action' => 'create',
+            'url' => $this->menuUrl,
+            'data' => 'Judul: ' . $request->Judul . ', Nama Mahasiswa: ' . $user->name,
+            'created_by' => $userId,
+            'periode_id' => $activePeriods,
+        ]);
 
         return response()->json(['success' => true]);
     }

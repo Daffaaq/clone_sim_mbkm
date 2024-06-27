@@ -12,6 +12,18 @@
                 <div id="success-message" class="alert alert-success" style="display: none; text-align: center;"></div>
                 <input type="hidden" name="periode_id" value="{{ $activePeriods }}">
                 <input type="hidden" name="semhas_daftar_id" value="{{ $semhas_daftar_id }}">
+                <div>
+                    @if (now() <= \Carbon\Carbon::parse($dataJadwalSeminar['deadline_penilaian']))
+                        <span class="badge badge-warning float-right mr-2">
+                            {{ \Carbon\Carbon::parse($dataJadwalSeminar->deadline_penilaian)->format('d-m-Y') }}</span>
+                        <span class="badge badge-success float-right mr-2">Penilaian telah dibuka</span>
+                    @else
+                        <span
+                            class="badge badge-warning float-right mr-2">{{ \Carbon\Carbon::parse($dataJadwalSeminar->deadline_penilaian)->translatedFormat('l, j F Y') }}</span>
+                        <span class="badge badge-danger float-right mr-2">Penilaian
+                            telah ditutup</span>
+                    @endif
+                </div>
                 <table class="table">
                     <thead>
                         <tr>
@@ -80,7 +92,11 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Simpan Nilai</button>
+                @if (now() <= \Carbon\Carbon::parse($dataJadwalSeminar['deadline_penilaian']))
+                    <button type="submit" class="btn btn-primary">Simpan Nilai</button>
+                @else
+                    {{-- <button type="submit" class="btn btn-primary" disabled>Simpan Nilai</button> --}}
+                @endif
                 <button type="button" data-dismiss="modal" class="btn btn-warning">Keluar</button>
             </div>
         </form>

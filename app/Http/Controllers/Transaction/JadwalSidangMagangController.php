@@ -11,6 +11,7 @@ use App\Models\Master\ProdiModel;
 use App\Models\Master\SemhasModel;
 use App\Models\Transaction\JadwalSidangMagangModel;
 use App\Models\Transaction\KuotaDosenModel;
+use App\Models\Transaction\LogModel;
 use App\Models\Transaction\Magang;
 use App\Models\Transaction\PembimbingDosenModel;
 use App\Models\Transaction\SemhasDaftarModel;
@@ -187,7 +188,8 @@ class JadwalSidangMagangController extends Controller
             ->with('id', $id)
             ->with('data', $data)
             ->with('datajadwal', $datajadwal)
-            ->with('dosen', $dosen);
+            ->with('dosen', $dosen)
+            ->with('semhasDaftar', $data);
     }
 
     // public function update(Request $request, $id)
@@ -341,6 +343,16 @@ class JadwalSidangMagangController extends Controller
                 $jadwalSidangMagang->periode_id = $activePeriods;
                 $jadwalSidangMagang->save();
 
+                LogModel::create([
+                    'user_id' => auth()->id(), // Ganti dengan user_id yang sesuai
+                    'action' => 'create',
+                    'url' => $this->menuUrl,
+                    'data' => 'Tanggal Jadwal Sidang: ' . $jadwalSidangMagang->tanggal_sidang . ', Jenis Sidang: ' . $jadwalSidangMagang->jenis_sidang,
+                    'created_by' =>
+                    auth()->id(), // Ganti dengan user_id yang sesuai
+                    'periode_id' => $activePeriods,
+                ]);
+
                 return response()->json([
                     'stat' => $semhasDaftar && $jadwalSidangMagang,
                     'mc' => $semhasDaftar && $jadwalSidangMagang, // close modal
@@ -355,6 +367,15 @@ class JadwalSidangMagangController extends Controller
                     'jenis_sidang' => $request->jenis_sidang,
                     'tempat' => $request->tempat,
                     'gedung' => $request->jenis_sidang === 'online' ? null : $request->gedung,
+                    'periode_id' => $activePeriods,
+                ]);
+                LogModel::create([
+                    'user_id' => auth()->id(), // Ganti dengan user_id yang sesuai
+                    'action' => 'update',
+                    'url' => $this->menuUrl,
+                    'data' => 'Tanggal Jadwal Sidang: ' . $existingSchedule->tanggal_sidang . ', Jenis Sidang: ' . $existingSchedule->jenis_sidang,
+                    'created_by' =>
+                    auth()->id(), // Ganti dengan user_id yang sesuai
                     'periode_id' => $activePeriods,
                 ]);
 

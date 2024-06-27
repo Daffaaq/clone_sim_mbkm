@@ -12,6 +12,7 @@ use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\LogBimbinganModel;
+use App\Models\Transaction\LogModel;
 use App\Models\Transaction\Magang;
 use App\Models\Transaction\PembimbingDosenModel;
 use Yajra\DataTables\Facades\DataTables;
@@ -275,6 +276,14 @@ class LogBimbinganController extends Controller
                 'periode_id' => $periode_id,
                 // fill other fields as needed
             ]);
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'create',
+                'url' => $this->menuUrl,
+                'data' => 'Tanggal: ' . $log_bimbingan->tanggal . ', Jam Mulai: ' . $log_bimbingan->jam_mulai . ', Jam Selesai: ' . $log_bimbingan->jam_selesai,
+                'created_by' => auth()->id(),
+                'periode_id' => $periode_id,
+            ]);
             // dd($log_bimbingan);
             return response()->json([
                 'stat' => $log_bimbingan,
@@ -386,6 +395,14 @@ class LogBimbinganController extends Controller
             $log_bimbingan->instruktur_lapangan_id = $request->input('instruktur_lapangan_id');
             $log_bimbingan->save();
 
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'update',
+                'url' => $this->menuUrl,
+                'data' => 'Tanggal: ' . $log_bimbingan->tanggal . ', Jam Mulai: ' . $log_bimbingan->jam_mulai . ', Jam Selesai: ' . $log_bimbingan->jam_selesai,
+                'created_by' => auth()->id(),
+                'periode_id' => $activePeriods,
+            ]);
             return response()->json([
                 'stat' => $log_bimbingan,
                 'mc' => $log_bimbingan,
@@ -450,8 +467,25 @@ class LogBimbinganController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         if ($request->ajax() || $request->wantsJson()) {
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+            $logbing = LogBimbinganModel::find($id);
             $res = LogBimbinganModel::deleteData($id);
+            if ($res) { // Retrieve the updated Dosen model
 
+                LogModel::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'delete',
+                    'url' => $this->menuUrl,
+                    'data' => 'Tanggal: ' . $logbing->tanggal . ', Jam Mulai: ' . $logbing->jam_mulai . ', Jam Selesai: ' . $logbing->jam_selesai,
+                    'created_by' => auth()->id(),
+                    'periode_id' => $activePeriods,
+                ]);
+                return response()->json([
+                    'stat' => true,
+                    'mc' => true, // close modal
+                    'msg' => $this->getMessage('delete.success')
+                ]);
+            }
             return response()->json([
                 'stat' => $res,
                 'mc' => $res, // close modal

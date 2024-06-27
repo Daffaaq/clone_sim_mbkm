@@ -12,6 +12,7 @@ use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\LogBimbinganModel;
+use App\Models\Transaction\LogModel;
 use App\Models\Transaction\PembimbingDosenModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
@@ -199,6 +200,18 @@ class LogBimbinganInstrukturController extends Controller
 
         // Simpan perubahan
         $logBimbingan->save();
+        // dd($logBimbingan);
+
+        $status = ($statusDosen == 1) ? 'Diterima' : (($statusDosen == 2) ? 'Ditolak' : 'Pending'); // Tentukan teks status berdasarkan nilai statusDosen
+
+        LogModel::create([
+            'user_id' => auth()->id(),
+            'action' => 'update',
+            'url' => $this->menuUrl,
+            'data' => 'Tanggal: ' . $logBimbingan->tanggal_status_instruktur . ', Status: ' . $status,
+            'created_by' => auth()->id(),
+            'periode_id' => $activePeriods,
+        ]);
 
         // Kemudian kembalikan respons
         return response()->json(['success' => true]);
@@ -480,6 +493,17 @@ class LogBimbinganInstrukturController extends Controller
 
         // Simpan perubahan
         $logBimbingan->save();
+
+        $status = ($statusInstrukturLapangan == 1) ? 'Diterima' : (($statusInstrukturLapangan == 2) ? 'Ditolak' : 'Pending'); // Tentukan teks status berdasarkan nilai statusDosen
+
+        LogModel::create([
+            'user_id' => auth()->id(),
+            'action' => 'update',
+            'url' => $this->menuUrl,
+            'data' => 'Tanggal: ' . $logBimbingan->tanggal_status_instruktur . ', Status: ' . $status,
+            'created_by' => auth()->id(),
+            'periode_id' => $activePeriods,
+        ]);
 
         // Kemudian kembalikan respons
         return response()->json(['success' => true]);

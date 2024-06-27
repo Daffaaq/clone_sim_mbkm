@@ -17,6 +17,7 @@ use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\JadwalSidangMagangModel;
 use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\LogBimbinganModel;
+use App\Models\Transaction\LogModel;
 use App\Models\Transaction\Magang;
 use Illuminate\Support\Facades\Crypt;
 use App\Models\Transaction\PembimbingDosenModel;
@@ -258,6 +259,7 @@ class UjianSeminarHasilController extends Controller
         $activePeriod = PeriodeModel::where('is_current', 1)->value('periode_id');
         $user = auth()->user();
         $user_id = $user->user_id;
+        $userName = UserModel::find($user_id);
         $mahasiswa = MahasiswaModel::where('user_id', $user_id)->first();
         $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
@@ -287,6 +289,16 @@ class UjianSeminarHasilController extends Controller
                 $dokumenBeritaAcara->dokumen_berita_acara_file = $filename;
                 $dokumenBeritaAcara->created_by = $user_id;
                 $dokumenBeritaAcara->save();
+
+                // Tambahkan log
+                LogModel::create([
+                    'user_id' => $user_id,
+                    'action' => 'create',
+                    'url' => $this->menuUrl,
+                    'data' => 'Berita Acara File: ' . $filename . ', Nama Mahasiswa: ' . $userName->name,
+                    'created_by' => $user_id,
+                    'periode_id' => $activePeriod,
+                ]);
 
                 return response()->json(['message' => 'File uploaded successfully', 'filename' => $filename], 200);
             } else {

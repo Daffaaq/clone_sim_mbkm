@@ -12,6 +12,7 @@ use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\LogBimbinganModel;
+use App\Models\Transaction\LogModel;
 use App\Models\Transaction\PembimbingDosenModel;
 use App\Models\Transaction\PenilaianMahasiswaModel;
 use Yajra\DataTables\Facades\DataTables;
@@ -150,6 +151,14 @@ class DosenPenilaianMahasiswaController extends Controller
                 'pembimbing_dosen_id' => $dosen_id,
                 // Tambahkan kolom lainnya sesuai kebutuhan
             ]);
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'update',
+                'url' => $this->menuUrl,
+                'data' => 'Komentar Dosen Pembimbing: ' . $existingData->komentar_dosen_pembimbing . ', Nilai Pembimbing Dosen: ' . $existingData->nilai_dosen_pembimbing,
+                'created_by' => auth()->id(),
+                'periode_id' => $activePeriods,
+            ]);
         } else {
             // Jika entri belum ada, buat entri baru
             PenilaianMahasiswaModel::create([
@@ -159,6 +168,14 @@ class DosenPenilaianMahasiswaController extends Controller
                 'nilai_dosen_pembimbing' => $request->nilai_dosen_pembimbing,
                 'periode_id' => $activePeriods,
                 // Tambahkan kolom lainnya sesuai kebutuhan
+            ]);
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'create',
+                'url' => $this->menuUrl,
+                'data' => 'Komentar Dosen Pembimbing: ' . $existingData->komentar_dosen_pembimbing . ', Nilai Pembimbing Dosen: ' . $existingData->nilai_dosen_pembimbing,
+                'created_by' => auth()->id(),
+                'periode_id' => $activePeriods,
             ]);
         }
 

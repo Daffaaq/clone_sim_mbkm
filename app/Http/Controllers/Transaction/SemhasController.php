@@ -9,6 +9,7 @@ use App\Models\Master\ProdiModel;
 use App\Models\Master\PeriodeModel;
 use App\Models\Master\SemhasModel;
 use App\Models\Transaction\KuotaDosenModel;
+use App\Models\Transaction\LogModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -67,6 +68,7 @@ class SemhasController extends Controller
             'm_semhas.kuota_bimbingan',
             'm_semhas.tanggal_mulai_pendaftaran',
             'm_semhas.tanggal_akhir_pendaftaran',
+            'm_semhas.deadline_nilai',
             'm_prodi.prodi_name'
         )
             ->leftJoin('m_prodi', 'm_semhas.prodi_id', '=', 'm_prodi.prodi_id')
@@ -153,7 +155,14 @@ class SemhasController extends Controller
                 'periode_id' => $activePeriods,
                 // tambahkan bidang lain yang sesuai dengan model SemhasModel
             ]);
-
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'create',
+                'url' => $this->menuUrl,
+                'data' => 'judul_semhas: ' . $Semhas->judul_semhas . ', gelombang: ' . $Semhas->gelombang,
+                'created_by' => auth()->id(),
+                'periode_id' => $activePeriods,
+            ]);
             return response()->json([
                 'stat' => $Semhas,
                 'mc' => $Semhas,
@@ -212,8 +221,26 @@ class SemhasController extends Controller
                     'msgField' => $validator->errors()
                 ]);
             }
-
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
             $res = SemhasModel::updateData($id, $request);
+            if ($res) {
+                $updatedsemhas = SemhasModel::find($id); // Retrieve the updated Dosen model
+
+                LogModel::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'update',
+                    'url' => $this->menuUrl,
+                    'data' => 'judul_semhas: ' . $updatedsemhas->judul_semhas . ', gelombang: ' . $updatedsemhas->gelombang,
+                    'created_by' => auth()->id(),
+                    'periode_id' => $activePeriods,
+                ]);
+
+                return response()->json([
+                    'stat' => true,
+                    'mc' => true, // close modal
+                    'msg' => $this->getMessage('update.success')
+                ]);
+            }
 
             return response()->json([
                 'stat' => $res,
@@ -264,13 +291,29 @@ class SemhasController extends Controller
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
         if ($request->ajax() || $request->wantsJson()) {
-
+            $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+            $semhas = SemhasModel::find($id);
             $res = SemhasModel::deleteData($id);
+            if ($res) { // Retrieve the updated Dosen model
 
+                LogModel::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'delete',
+                    'url' => $this->menuUrl,
+                    'data' => 'judul_semhas: ' . $semhas->judul_semhas . ', gelombang: ' . $semhas->gelombang,
+                    'created_by' => auth()->id(),
+                    'periode_id' => $activePeriods,
+                ]);
+                return response()->json([
+                    'stat' => true,
+                    'mc' => true, // close modal
+                    'msg' => $this->getMessage('delete.success')
+                ]);
+            }
             return response()->json([
                 'stat' => $res,
                 'mc' => $res, // close modal
-                'msg' => DosenModel::getDeleteMessage()
+                'msg' => SemhasModel::getDeleteMessage()
             ]);
         }
 

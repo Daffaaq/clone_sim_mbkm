@@ -12,6 +12,7 @@ use App\Models\Master\ProdiModel;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\KuotaDosenModel;
 use App\Models\Transaction\LogBimbinganModel;
+use App\Models\Transaction\LogModel;
 use App\Models\Transaction\PembimbingDosenModel;
 use App\Models\Transaction\PenilaianMahasiswaModel;
 use Yajra\DataTables\Facades\DataTables;
@@ -147,15 +148,31 @@ class InstrukturPenilaianMahasiswaController extends Controller
                 'instruktur_lapangan_id' => $instruktur_id,
                 // Tambahkan kolom lainnya sesuai kebutuhan
             ]);
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'update',
+                'url' => $this->menuUrl,
+                'data' => 'Komentar Instruktur Lapangan: ' . $existingData->komentar_instruktur_lapangan . ', Nilai Instruktur Lapangan: ' . $existingData->nilai_instruktur_lapangan,
+                'created_by' => auth()->id(),
+                'periode_id' => $activePeriods,
+            ]);
         } else {
             // Jika entri belum ada, buat entri baru
-            PenilaianMahasiswaModel::create([
+            $penilaian_mahasiswa = PenilaianMahasiswaModel::create([
                 'mahasiswa_id' => $request->mahasiswa_id,
                 'instruktur_lapangan_id' => $instruktur_id,
                 'komentar_instruktur_lapangan' => $request->komentar_instruktur_lapangan,
                 'nilai_instruktur_lapangan' => $request->nilai_instruktur_lapangan,
                 'periode_id' => $activePeriods,
                 // Tambahkan kolom lainnya sesuai kebutuhan
+            ]);
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'create',
+                'url' => $this->menuUrl,
+                'data' => 'Komentar Instruktur Lapangan: ' . $penilaian_mahasiswa->komentar_instruktur_lapangan . ', Nilai Instruktur Lapangan: ' . $penilaian_mahasiswa->nilai_instruktur_lapangan,
+                'created_by' => auth()->id(),
+                'periode_id' => $activePeriods,
             ]);
         }
 

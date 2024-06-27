@@ -73,13 +73,15 @@ $is_edit = isset($data);
                     <div class="col-sm-9">
                         <div class="input-group">
                             <input type="number" class="form-control form-control-sm" id="deadline_nilai"
-                                name="deadline_nilai" min="0"
+                                name="deadline_nilai" min="3"
                                 value="{{ isset($data->deadline_nilai) ? $data->deadline_nilai : '' }}" />
-                            <label class="form-control-sm custom-deadline_nilai-label" for="deadline_nilai">Hari</label>
+                            <div class="input-group-append">
+                                <label class="input-group-text form-control-sm custom-deadline_nilai-label"
+                                    for="deadline_nilai">Hari</label>
+                            </div>
                         </div>
                     </div>
                 </div>
-
                 <div class="form-group required row mb-2">
                     <label class="col-sm-3 control-label col-form-label">Tanggal Awal Pendaftaran</label>
                     <div class="col-sm-9">
