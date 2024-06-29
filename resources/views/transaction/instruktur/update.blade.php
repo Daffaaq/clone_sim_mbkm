@@ -6,6 +6,73 @@
 @extends('layouts.template')
 
 @section('content')
+    <style>
+        /* CSS untuk memberi latar belakang semi-transparan pada modal content */
+        .modal-content {
+            background-color: transparent;
+            /* Adjust opacity (0.8) as needed */
+            /* Optional: Add a subtle shadow */
+        }
+
+        .loading-modal-open {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(8px);
+            /* Adjust the blur intensity as needed */
+            -webkit-backdrop-filter: blur(8px);
+            /* For Safari */
+            background-color: rgba(0, 0, 0, 0.4);
+            /* Adjust the opacity as needed */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #loadingModal {
+            align-items: center;
+            justify-content: center;
+            background-color: transparent;
+            /* Ubah background modal menjadi transparan */
+        }
+
+        #loadingModal .modal-content {
+            background-color: transparent;
+            /* Hapus latar belakang modal */
+            box-shadow: none;
+            /* Hapus bayangan jika tidak diperlukan */
+            border: none;
+            /* Hapus border jika tidak diperlukan */
+            text-align: center;
+        }
+
+        .modal-dialog {
+            margin: auto;
+        }
+
+
+        #loadingModal img {
+            width: 80px;
+            /* Sesuaikan ukuran gambar loading */
+            height: auto;
+            margin-bottom: 10px;
+            /* Sesuaikan margin bawah jika perlu */
+        }
+
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
     <div class="container-fluid" id="container-daftar">
         <div class="row">
             <section class="col-lg-12">
@@ -17,6 +84,19 @@
                         </h3>
                     </div>
                     <div class="card-body p-0">
+                        @if ($instruktur && $instruktur->is_active == 1)
+                            <div class="form-message text-center p-2">
+                                <div class="alert alert-success">Data Instruktur Lapangan Sudah terverifikasi</div>
+                            </div>
+                        @elseif($instruktur && $instruktur->is_active == 0)
+                            <div class="form-message text-center p-2">
+                                <div class="alert alert-danger">Data Instruktur Lapangan Belum terverifikasi</div>
+                            </div>
+                        @else
+                            <div class=class="form-message text-center p-2">
+                                <div class="alert alert-danger">Data Instruktur Lapangan Belum dibuat</div>
+                            </div>
+                        @endif
                         <div class="form-message text-center"></div>
                         <table class="table table-sm">
                             <tbody>
@@ -111,14 +191,71 @@
                                     <th class="w-15 text-right">Instruktur Lapangan</th>
                                     <th class="w-1">:</th>
                                     <td class="w-84 py-2">
-                                        @if ($instruktur)
+                                        @if ($instruktur && $instruktur->is_active == 1)
                                             <!-- Tampilkan informasi bahwa mahasiswa sudah memiliki instruktur lapangan -->
                                             <div class="alert alert-info">
                                                 {{ $instruktur->instruktur->nama_instruktur }}
                                             </div>
+                                        @elseif($instruktur && $instruktur->is_active == 0)
+                                            <form method="post" action="{{ route('resend_verification') }}" role="form"
+                                                class="form-horizontal" id="form" enctype="multipart/form-data">
+                                                @csrf
+                                                <input type="hidden" name="instruktur_id"
+                                                    value="{{ $instruktur->instruktur_id }}">
+
+                                                <!-- Tambahkan input untuk data instruktur -->
+                                                <div class="form-group required">
+                                                    <label for="nama_instruktur" class="control-label">Nama
+                                                        Instruktur</label>
+                                                    <input type="text" class="form-control" id="nama_instruktur"
+                                                        name="nama_instruktur"
+                                                        value="{{ $instruktur->nama_instruktur ?? '' }}">
+                                                    <small id="excel" class="form-text" style="margin-left: 0px;">Nama
+                                                        Pembimbing Lapangan</small>
+                                                    <span id="valid-message-nama_instruktur" class="text-danger"
+                                                        style="display: none;">Kolom ini harus diisi.</span>
+                                                </div>
+                                                <div class="form-group required">
+                                                    <label for="instruktur_email" class="control-label">Email
+                                                        Instruktur</label>
+                                                    <input type="email" class="form-control" id="instruktur_email"
+                                                        name="instruktur_email"
+                                                        value="{{ $instruktur->instruktur_email ?? '' }}">
+                                                    <small id="excel" class="form-text" style="margin-left: 0px;">Email
+                                                        Pembimbing Lapangan harus
+                                                        valid</small>
+                                                    <span id="valid-message-instruktur_email" class="text-danger"
+                                                        style="display: none;">Kolom ini harus diisi.</span>
+                                                </div>
+                                                <div class="form-group required">
+                                                    <label for="instruktur_phone" class="control-label">Nomor Telepon
+                                                        Instruktur</label>
+                                                    <input type="text" class="form-control" id="instruktur_phone"
+                                                        name="instruktur_phone"
+                                                        value="{{ $instruktur->instruktur_phone ?? '' }}">
+                                                    <small id="excel" class="form-text"
+                                                        style="margin-left: 0px;">Format nomor telepon pembimbing Lapangan
+                                                        tidak valid harus dimulai dengan 62 dan memiliki panjang 8-13 digit
+                                                        angka</small>
+                                                    <span id="valid-message-instruktur_phone" class="text-danger"
+                                                        style="display: none;">Kolom ini harus diisi.</span>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="password" class="control-label">Password</label>
+                                                    <input type="password" class="form-control" id="password"
+                                                        name="password" value="">
+                                                    <small id="excel" class="form-text"
+                                                        style="margin-left: 0px;">Password minimal 8 karakter</small>
+                                                    <span id="valid-message-password" class="text-danger"
+                                                        style="display: none;">Kolom ini harus diisi.</span>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Kirim Ulang
+                                                    Verifikasi</button>
+                                            </form>
                                         @else
-                                            <form method="post" action="{{ route('create_instruktur') }}" role="form"
-                                                class="form-horizontal" id="form-sb" enctype="multipart/form-data">
+                                            <form method="post" action="{{ route('create_instruktur') }}"
+                                                role="form" class="form-horizontal" id="form-sb"
+                                                enctype="multipart/form-data">
                                                 @csrf
                                                 <input type="hidden" name="magang_id" value="{{ $magang->magang_id }}">
                                                 {{-- @foreach ($anggotas as $anggota)
@@ -155,7 +292,8 @@
                                                         Instruktur</label>
                                                     <input type="text" class="form-control" id="nama_instruktur"
                                                         name="nama_instruktur">
-                                                    <small id="excel" class="form-text" style="margin-left: 0px;">Nama
+                                                    <small id="excel" class="form-text"
+                                                        style="margin-left: 0px;">Nama
                                                         Pembimbing Lapangan</small>
                                                     <span id="valid-message-nama_instruktur" class="text-danger"
                                                         style="display: none;">Kolom ini harus diisi.</span>
@@ -204,10 +342,34 @@
             </section>
         </div>
     </div>
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="align-items: center">
+                <div class="modal-body text-center">
+                    <img src="{{ asset('assets/ZKZg.gif') }}" alt="Loading animation">
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 @push('content-js')
     <script>
         $(document).ready(function() {
+            function showLoadingModal() {
+                $('#loadingModal').modal({
+                    backdrop: 'static', // Prevent dismissing on backdrop click
+                    keyboard: false // Prevent dismissing with Esc key
+                });
+                $('body').addClass('loading-modal-open'); // Add class to blur background
+            }
+
+            function hideLoadingModal() {
+                $('#loadingModal').modal('hide');
+                $('body').removeClass('loading-modal-open'); // Remove blur effect
+            }
+
             function validateMahasiswaSelection() {
                 var selectedMahasiswa = $('input[name="mahasiswa_id[]"]:checked').length;
                 if (selectedMahasiswa === 0) {
@@ -229,13 +391,66 @@
             function validatePassword(password) {
                 return password.length >= 8;
             }
-
             // Submit form
+            $('#form').submit(function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                var valid = true;
+
+                $('.form-group.required').each(function() {
+                    var input = $(this).find('input');
+                    var messageId = $(this).find('span').attr('id');
+                    if (input.val() === '') {
+                        $('#' + messageId).show(); // Tampilkan pesan validasi
+                        valid = false;
+                    } else {
+                        $('#' + messageId).hide(); // Sembunyikan pesan validasi jika valid
+                    }
+                });
+
+                // Validasi nomor telepon
+                var phoneNumberInput = $('#instruktur_phone');
+                var phoneNumber = phoneNumberInput.val();
+                if (!validatePhoneNumber(phoneNumber)) {
+                    $('#valid-message-instruktur_phone').text('Format nomor telepon tidak valid');
+                    $('#valid-message-instruktur_phone').show();
+                    valid = false;
+                } else {
+                    $('#valid-message-instruktur_phone').hide();
+                }
+
+                if (!valid) {
+                    return; // Batalkan pengiriman formulir jika validasi gagal
+                }
+                showLoadingModal();
+                // Send AJAX request to submit form
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: $(this).attr('method'),
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        setTimeout(() => {
+                            hideLoadingModal();
+                        }, 5000);
+                        // Reload the page after successful form submission
+                        window.location.reload();
+                    },
+                    error: function(xhr, status, error) {
+                        setTimeout(() => {
+                            hideLoadingModal();
+                        }, 5000);
+                        // Tangani kesalahan jika permintaan AJAX gagal
+                        console.error(error);
+                        handleResponse(response);
+                    }
+                });
+            });
             $('#form-sb').submit(function(event) {
                 event.preventDefault(); // Prevent default form submission
                 if (!validateMahasiswaSelection()) {
                     return; // Batalkan pengiriman formulir jika validasi gagal
                 }
+
                 var valid = true;
                 $('.form-group.required').each(function() {
                     var input = $(this).find('input');
@@ -273,17 +488,23 @@
                 if (!valid) {
                     return; // Batalkan pengiriman formulir jika validasi gagal
                 }
-
+                showLoadingModal();
                 // Send AJAX request to submit form
                 $.ajax({
                     url: $(this).attr('action'),
                     method: $(this).attr('method'),
                     data: $(this).serialize(),
                     success: function(response) {
+                        setTimeout(() => {
+                            hideLoadingModal();
+                        }, 5000);
                         // Reload the page after successful form submission
                         window.location.reload();
                     },
                     error: function(xhr, status, error) {
+                        setTimeout(() => {
+                            hideLoadingModal();
+                        }, 5000);
                         // Tangani kesalahan jika permintaan AJAX gagal
                         console.error(error);
                         handleResponse(response);

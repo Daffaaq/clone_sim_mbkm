@@ -5,12 +5,14 @@ namespace App\Models\Master;
 use App\Models\AppModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DosenModel extends AppModel
 {
+    use HasFactory, LogsActivity, SoftDeletes;
 
-    use SoftDeletes;
     protected $table = 'm_dosen';
     protected $primaryKey = 'dosen_id';
 
@@ -35,9 +37,31 @@ class DosenModel extends AppModel
         'deleted_by',
     ];
 
-    protected static $cascadeDelete = false;   //  True: Force Delete from Parent (cascade)
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly([
+                'dosen_name',
+                'dosen_email',
+                'dosen_phone',
+                'dosen_gender',
+                'dosen_tahun',
+                'dosen_nidn',
+                'dosen_nip',
+                'kuota',
+                'user_id',
+            ])
+            ->useLogName('dosen');
+    }
+
+    public function getDescriptionForEvent(string $eventName): string
+    {
+        return "Dosen record has been {$eventName}";
+    }
+
+    protected static $cascadeDelete = false; // True: Force Delete from Parent (cascade)
     protected static $childModel = [
-        //  Model => columnFK
+        // Model => columnFK
         // 'App\Models\Master\DosenModel' => 'jurusan_id'
     ];
 

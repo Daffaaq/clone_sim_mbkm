@@ -17,11 +17,13 @@
         "laravel/ui": "^3.4",
         "maatwebsite/excel": "^3.1",
         "mews/captcha": "^3.3",
+        "phpmailer/phpmailer": "^6.9",
         "phpoffice/phpspreadsheet": "^1.24",
         "predis/predis": "^2.2",
         "ramsey/uuid": "^4.2",
         "renatomarinho/laravel-page-speed": "^2.0",
         "simplesoftwareio/simple-qrcode": "~4",
+        "spatie/laravel-activitylog": "^4.8",
         "stechstudio/laravel-zipstream": "^4.13",
         "yajra/laravel-datatables-oracle": "^9.21"
     },

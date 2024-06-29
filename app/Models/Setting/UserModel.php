@@ -34,12 +34,14 @@ class UserModel extends Authenticatable
         'avatar_url',
         'hp',
         'email',
+        'email_verified_at',
         'created_at',
         'created_by',
         'updated_at',
         'updated_by',
         'deleted_at',
-        'deleted_by'
+        'deleted_by',
+        'verification_token'
     ];
 
     public function prodi()

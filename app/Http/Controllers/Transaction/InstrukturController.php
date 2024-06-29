@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Transaction;
 
 use App\Http\Controllers\Controller;
+use App\Mail\VerifyEmail;
 use App\Models\Master\InstrukturModel;
 use App\Models\Master\MahasiswaModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Setting\UserModel;
 use App\Models\SuratPengantarModel;
+use Illuminate\Support\Str;
 use App\Models\Transaction\Magang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +22,8 @@ use App\Models\MitraModel;
 use Illuminate\Validation\Rule;
 use App\Models\Transaction\InstrukturLapanganModel;
 use App\Models\Transaction\LogModel;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -149,18 +153,28 @@ class InstrukturController extends Controller
         $data = $data->map(function ($item) {
             $item['encrypt_magang_id'] = Crypt::encrypt($item->magang_id);
             $magang_id = Crypt::decrypt($item['encrypt_magang_id']);
-            // dd($magang_id);
-            // dd($magang_id);
+
             // Fetch the InstrukturLapanganModel for the specified magang_id
             $instrukturLapangan = InstrukturLapanganModel::where('magang_id', $magang_id)->first();
-            // dd($instrukturLapangan);
-            // dd($instrukturLapangan);
+
             if ($instrukturLapangan) {
                 // If InstrukturLapanganModel exists, fetch the associated InstrukturModel
                 $instruktur = $instrukturLapangan->instruktur;
                 if ($instruktur) {
-                    // If InstrukturModel exists, get the nama_instruktur
-                    $item['nama_instruktur'] = $instruktur->nama_instruktur;
+                    // Fetch the associated UserModel
+                    $user = UserModel::find($instruktur->user_id);
+                    if ($user) {
+                        if ($user->is_active == 1) {
+                            // If is_active is 1, get the nama_instruktur
+                            $item['nama_instruktur'] = $instruktur->nama_instruktur;
+                        } else {
+                            // If is_active is 0, set the message indicating account is not verified
+                            $item['nama_instruktur'] = 'Akun belum terverifikasi';
+                        }
+                    } else {
+                        // If UserModel doesn't exist, set nama_instruktur to null
+                        $item['nama_instruktur'] = 'Belum ada instruktur tersedia';
+                    }
                 } else {
                     // If InstrukturModel doesn't exist, set nama_instruktur to null
                     $item['nama_instruktur'] = 'Belum ada instruktur tersedia';
@@ -171,10 +185,9 @@ class InstrukturController extends Controller
                 // Set a message indicating that instruktur is not available
                 $item['instruktur_message'] = 'Belum ada instruktur tersedia';
             }
+
             return $item;
         });
-
-
 
         return DataTables::of($data)
             ->addIndexColumn()
@@ -282,7 +295,7 @@ class InstrukturController extends Controller
             ->whereDoesntHave('instrukturLapangan')
             ->get();
 
-        // dd($anggotas);
+
         $dateString = $data->mitra_batas_pendaftaran;
         $currentDate = date('Y-m-d');
         $disabled = strtotime($dateString) < strtotime($currentDate);
@@ -333,11 +346,28 @@ class InstrukturController extends Controller
         //     })
         //     ->with('mahasiswa')
         //     ->get();
-        $instruktur = InstrukturLapanganModel::whereIn('magang_id', $id_joined)
-            ->where('mahasiswa_id', $mahasiswa_id) // Menambahkan kriteria pencarian berdasarkan mahasiswa_id
+        // $instruktur = InstrukturLapanganModel::whereIn('magang_id', $id_joined)
+        //     ->where('mahasiswa_id', $mahasiswa_id) // Menambahkan kriteria pencarian berdasarkan mahasiswa_id
+        //     ->where('periode_id', $activePeriods)
+        //     ->with('instruktur')
+        //     ->first();
+        $anggotas1 = Magang::where(function ($query) use ($id_mitra, $kode_magang) {
+            $query->where('mitra_id', $id_mitra)
+                ->orWhere('magang_kode', $kode_magang); // Corrected orWhere method name
+        })
             ->where('periode_id', $activePeriods)
+            ->where('status', 1)
+            ->with('mahasiswa')
+            ->get(); // Pluck mahasiswa_id directly
+
+        // dd($anggotas1);
+        $instruktur = InstrukturLapanganModel::whereIn('t_instruktur_lapangan.magang_id', $id_joined)
+            ->leftJoin('m_instruktur', 'm_instruktur.instruktur_id', '=', 't_instruktur_lapangan.instruktur_id')
+            ->leftJoin('s_user', 's_user.user_id', '=', 'm_instruktur.user_id')
+            ->where('t_instruktur_lapangan.periode_id', $activePeriods) // Menentukan tabel untuk kolom periode_id
             ->with('instruktur')
             ->first();
+
         // dd($instruktur);
         // $instruktur = InstrukturLapanganModel::where('magang_id', $id_joined)->first();
 
@@ -352,6 +382,7 @@ class InstrukturController extends Controller
             ->with('activeMenu', (object) $activeMenu)
             ->with('anggotas', $anggotas)
             ->with('anggota', $anggota)
+            ->with('anggotas1', $anggotas1)
             ->with('page', (object) $page)
             ->with('action', 'POST');
     }
@@ -382,10 +413,12 @@ class InstrukturController extends Controller
             'name' => $nama_instruktur,
             'password' => $password,
             'group_id' => 5,
-            'is_active' => 1,
+            'is_active' => 0,
             'email' => $instruktur_email,
+            'verification_token' => sha1(time())
         ];
         $insert = UserModel::create($user);
+        Mail::to($instruktur_email)->send(new VerifyEmail($insert));
         $user_id = $insert->user_id;
 
         // Simpan data ke dalam InstrukturModel
@@ -466,8 +499,74 @@ class InstrukturController extends Controller
         ]);
     }
 
+    public function verifyEmail($token)
+    {
 
+        // Temukan user berdasarkan token verifikasi
+        $user = UserModel::where('verification_token', $token)->first();
 
+        // Periksa apakah user ditemukan dan token verifikasi cocok
+        if ($user) {
+            // dd($user);
+            // Update status is_active menjadi 1 dan hapus token verifikasi
+            $user->update(['is_active' => 1, 'verification_token' => null]);
+
+            // Redirect atau tampilkan pesan sukses
+            return redirect('/login')->with('success', 'Email Anda berhasil diverifikasi.');
+        }
+
+        // Redirect atau tampilkan pesan error jika verifikasi gagal
+        return redirect('/')->with('error', 'Verifikasi email gagal.');
+    }
+
+    public function resendVerification(Request $request)
+    {
+        try {
+            $instruktur_id = $request->input('instruktur_id');
+            $nama_instruktur = $request->input('nama_instruktur');
+            $instruktur_email = $request->input('instruktur_email');
+            $instruktur_phone = $request->input('instruktur_phone');
+            $password = $request->filled('password') ? Hash::make($request->input('password')) : null;
+
+            // Cari instruktur berdasarkan ID
+            $instruktur = InstrukturModel::findOrFail($instruktur_id);
+
+            // Update data user
+            $user = UserModel::findOrFail($instruktur->user_id);
+            $user->name = $nama_instruktur;
+            $user->email = $instruktur_email;
+            if (!is_null($password)) {
+                $user->password = $password;
+            }
+            $user->verification_token = Str::uuid()->toString() . sha1(time());
+            $user->save();
+            // dd($user);
+            // Update data instruktur
+            $instruktur->nama_instruktur = $nama_instruktur;
+            $instruktur->instruktur_email = $user->email;
+            $instruktur->instruktur_phone = $instruktur_phone;
+            $instruktur->password = $user->password;
+            $instruktur->save();
+            // dd($instruktur);
+            // Kirim ulang email verifikasi
+            Mail::to($user->email)->send(new VerifyEmail($user));
+
+            // Log untuk debugging
+            Log::info('Email verifikasi dikirim ulang ke: ' . $user->email);
+
+            return response()->json([
+                'insert_instruktur' => $instruktur,
+                'msg' => ($instruktur) ? $this->getMessage('insert.success') : $this->getMessage('insert.failed')
+            ]);
+        } catch (\Exception $e) {
+            // Tangani kesalahan pengiriman email
+            Log::error('Gagal mengirim email verifikasi: ' . $e->getMessage());
+            return response()->json([
+                'insert_instruktur' => $instruktur,
+                'msg' => $this->getMessage('insert.failed')
+            ]);
+        }
+    }
 
     public function create()
     {

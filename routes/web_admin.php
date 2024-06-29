@@ -58,7 +58,20 @@ use App\Http\Controllers\Transaction\QuotaDosenController;
 use App\Http\Controllers\Transaction\SemhasController;
 use App\Http\Controllers\Transaction\SemhasDaftarController;
 use App\Http\Controllers\Transaction\UjianSeminarHasilController;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/send-test-email', function () {
+    $email = '#'; // Replace with the recipient's email address
+
+    Mail::raw('This is a test email.', function ($message) use ($email) {
+        $message->to($email)
+            ->subject('Test Email');
+    });
+
+    return 'Test email has been sent.';
+});
+
 
 Route::group(['prefix' => 'master', 'middleware' => ['auth']], function () {
 
@@ -195,6 +208,9 @@ Route::group(['prefix' => 'transaksi', 'middleware' => ['auth']], function () {
     Route::post('instruktur/list', [InstrukturController::class, 'list'])->name('instruktur.list');
     Route::get('instruktur/{encrpyt}', [InstrukturController::class, 'lengkapi']);
     Route::post('instruktur/create_instruktur', [InstrukturController::class, 'create_instruktur'])->name('create_instruktur');
+    Route::post('/instruktur/resend-verification', [InstrukturController::class, 'resendVerification'])->name('resend_verification');
+
+
 
     //pendaftaran (role koordinator)
     Route::resource('pendaftaran', PendaftaranController::class)->parameter('pendaftaran', 'id');
