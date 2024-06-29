@@ -56,12 +56,17 @@ class MyMagangController extends Controller
             ->first();
         // dd($magang);
         $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
-            ->where('periode_id', $activePeriods)
-            ->with('instruktur')->first();
+            ->leftJoin('m_instruktur', 'm_instruktur.instruktur_id', '=', 't_instruktur_lapangan.instruktur_id')
+            ->leftJoin('s_user', 's_user.user_id', '=', 'm_instruktur.user_id')
+            ->where('t_instruktur_lapangan.periode_id', $activePeriods)
+            ->with('instruktur')
+            ->first();
+        // dd($instrukturLapangan);
+
 
         $pembimbingDosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)
-        ->where('periode_id', $activePeriods)
-        ->with('dosen')->first();
+            ->where('periode_id', $activePeriods)
+            ->with('dosen')->first();
         // dd($instrukturLapangan, $pembimbingDosen);
         // $nama_dosen = optional($pembimbingDosen->dosen)->dosen_name;
         // $nama_instruktur = optional($instrukturLapangan->instruktur)->nama_instruktur;
@@ -73,7 +78,7 @@ class MyMagangController extends Controller
 
         $magang_status = Magang::where('mahasiswa_id', $mahasiswa_id)
             ->where('status', 1)
-            ->where('periode_id', $activePeriods)// Status 1 menunjukkan 'Diterima'
+            ->where('periode_id', $activePeriods) // Status 1 menunjukkan 'Diterima'
             ->exists();
         if ($magang_status) {
             $this->authAction('read');

@@ -75,7 +75,13 @@ class LogBimbinganController extends Controller
             $mahasiswa_id = $mahasiswa->mahasiswa_id;
 
             // Gunakan mahasiswa_id untuk mencari data magang
-            $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->first();
+            // $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->first();
+            $instrukturLapangan = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)
+                ->leftJoin('m_instruktur', 'm_instruktur.instruktur_id', '=', 't_instruktur_lapangan.instruktur_id')
+                ->leftJoin('s_user', 's_user.user_id', '=', 'm_instruktur.user_id')
+                ->where('t_instruktur_lapangan.periode_id', $activePeriods)
+                ->with('instruktur')
+                ->first();
             $pembimbingdosen = PembimbingDosenModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->first();
             // dd($instrukturLapangan, $pembimbingdosen);
             $instrukturLapangan_id = InstrukturLapanganModel::where('mahasiswa_id', $mahasiswa_id)->where('periode_id', $activePeriods)->pluck('instruktur_lapangan_id')->first();

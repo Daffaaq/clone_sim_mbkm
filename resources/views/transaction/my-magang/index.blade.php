@@ -29,7 +29,15 @@
                                     </td>
                                     <th class="w-5">Nama</th>
                                     <td class="w-45"> <b>:</b>
-                                        {{ $instrukturLapangan && $instrukturLapangan->instruktur ? $instrukturLapangan->instruktur->nama_instruktur : 'Belum ada instruktur lapangan' }}
+                                        @if ($instrukturLapangan && $instrukturLapangan->is_active == 1 && $instrukturLapangan->instruktur)
+                                            {{ $instrukturLapangan->instruktur->nama_instruktur }}
+                                        @elseif($instrukturLapangan && $instrukturLapangan->is_active == 0 && $instrukturLapangan->instruktur)
+                                            {{ $instrukturLapangan->instruktur->nama_instruktur }} | <span
+                                                class="badge badge-warning">Belum Di verifikasi</span>
+                                        @else
+                                            <span class="badge badge-danger">Belum ada instruktur lapangan</span>
+                                        @endif
+                                        {{-- {{ $instrukturLapangan && $instrukturLapangan->is_active == 1 && $instrukturLapangan->instruktur ? $instrukturLapangan->instruktur->nama_instruktur : 'Belum ada instruktur lapangan' }} --}}
                                     </td>
                                 </tr>
                                 <tr>
@@ -57,7 +65,15 @@
 
                                     <th class="">Email</th>
                                     <td class=""> <b>:</b>
-                                        {{ $instrukturLapangan && $instrukturLapangan->instruktur ? $instrukturLapangan->instruktur->instruktur_email : 'Belum ada instruktur lapangan' }}
+                                        @if ($instrukturLapangan && $instrukturLapangan->is_active == 1 && $instrukturLapangan->instruktur)
+                                            {{ $instrukturLapangan->instruktur->instruktur_email }}
+                                        @elseif($instrukturLapangan && $instrukturLapangan->is_active == 0 && $instrukturLapangan->instruktur)
+                                            {{ $instrukturLapangan->instruktur->instruktur_email }} | <span
+                                                class="badge badge-warning">Belum Di verifikasi</span>
+                                        @else
+                                            <span class="badge badge-danger">Belum ada instruktur lapangan</span>
+                                        @endif
+                                        {{-- {{ $instrukturLapangan && $instrukturLapangan->is_active == 1 && $instrukturLapangan->instruktur ? $instrukturLapangan->instruktur->instruktur_email : 'Belum ada instruktur lapangan' }} --}}
                                     </td>
                                 </tr>
                                 <tr>
@@ -74,11 +90,14 @@
                                     <th class="">Telp</th>
                                     <td class="">
                                         <b>:</b>&nbsp;
-                                        @if ($instrukturLapangan && $instrukturLapangan->instruktur)
+                                        @if ($instrukturLapangan && $instrukturLapangan->is_active == 1 && $instrukturLapangan->instruktur)
                                             <a href="{{ 'https://wa.me/' . $instrukturLapangan->instruktur->instruktur_phone }}"
                                                 target="_blank">{{ $instrukturLapangan->instruktur->instruktur_phone }}</a>
+                                        @elseif($instrukturLapangan && $instrukturLapangan->is_active == 0 && $instrukturLapangan->instruktur)
+                                            {{ $instrukturLapangan->instruktur->instruktur_phone }} | <span
+                                                class="badge badge-warning">Belum Di verifikasi</span>
                                         @else
-                                            Belum ada instruktur lapangan
+                                            <span class="badge badge-danger">Belum ada instruktur lapangan</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -98,6 +117,14 @@
                                         <td class="text-center text-danger" colspan="4">
                                             <a href="{{ url('transaksi/instruktur') }}">Disini</a> untuk mengisi akun
                                             pembimbing lapangan
+                                        </td>
+                                    </tr>
+                                @elseif($instrukturLapangan && $instrukturLapangan->is_active == 0)
+                                    <tr>
+                                        <td class="text-center text-danger" colspan="4">
+                                            Segera menghubungi admin / koordinator jurusan untuk pembagian Dosen
+                                            Pembimbing Institusi dan silahkan untuk menghubungi Pembimbing lapangan untuk
+                                            verifikasi Account
                                         </td>
                                     </tr>
                                 @elseif (!$pembimbingDosen)
