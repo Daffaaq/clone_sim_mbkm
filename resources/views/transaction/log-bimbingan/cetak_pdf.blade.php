@@ -241,7 +241,7 @@
                                 <span style="font-size: 16px; font-weight: normal;">{{ $item->jam_selesai }}</span>
                             </td>
                             <td width="90" style="border: 1px solid black; text-align: left; vertical-align: top;">
-                                <span style="font-size: 16px; font-weight: normal;">{{ $item->topik_bimbingan }}</span>
+                                <span style="font-size: 16px; font-weight: normal;">{!! $item->topik_bimbingan !!}</span>
                             </td>
                             <td width="30" style="border: 1px solid black; text-align: left; vertical-align: top;">
                                 <span style="font-size: 16px; font-weight: normal;"></span>
