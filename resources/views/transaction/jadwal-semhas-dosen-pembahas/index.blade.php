@@ -30,6 +30,7 @@
                                         <th>Judul</th>
                                         <th>Nilai</th>
                                         <th>Status</th>
+                                        <th>Jadwal Penilaian</th>
                                         <th>Jadwal</th>
                                         {{-- <th>#</th> --}}
                                     </tr>
@@ -108,6 +109,34 @@
                                 return '<span class="badge badge-success">Sudah Mengisi Nilai</span>';
                             } else {
                                 return '<span class="badge badge-danger">Belum Mengisi Nilai</span>';
+                            }
+                        }
+                    },
+                    {
+                        "mData": "jadwal",
+                        "sClass": "",
+                        "sWidth": "10%",
+                        "bSortable": false,
+                        "bSearchable": false,
+                        "mRender": function(data, type, row, meta) {
+                            var todaydate = moment(); // todaydate sebagai objek moment
+                            console.log("Today Date: " + todaydate.format('DD-MM-YYYY'));
+
+                            var deadline = moment(data,
+                                'YYYY-MM-DD'); // Ambil tanggal deadline dari data
+
+                            if (!data || data === '-') {
+                                return '<span class="badge badge-warning">Belum ada Jadwal Penilaian</span>';
+                            } else {
+                                if (deadline.isSameOrBefore(todaydate,
+                                        'day'
+                                    )) { // Periksa apakah deadline lebih awal dari atau sama dengan hari ini
+                                    return '<span class="badge badge-danger">' + deadline.format(
+                                        'DD-MM-YYYY') + '</span>';
+                                } else {
+                                    return '<span class="badge badge-success">' + deadline.format(
+                                        'DD-MM-YYYY') + '</span>';
+                                }
                             }
                         }
                     },

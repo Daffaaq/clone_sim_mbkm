@@ -187,7 +187,9 @@ class InstrukturController extends Controller
             }
 
             return $item;
+            // dd($item);
         });
+        // dd($data);
 
         return DataTables::of($data)
             ->addIndexColumn()

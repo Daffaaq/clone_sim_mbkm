@@ -12,6 +12,18 @@
                 <div id="success-message" class="alert alert-success" style="display: none; text-align: center;"></div>
                 <input type="hidden" name="periode_id" value="{{ $activePeriods }}">
                 <input type="hidden" name="semhas_daftar_id" value="{{ $semhas_daftar_id }}">
+                <div>
+                    @if (now() <= \Carbon\Carbon::parse($datajadwal['deadline_penilaian']))
+                        <span class="badge badge-warning float-right mr-2">
+                            {{ \Carbon\Carbon::parse($datajadwal->deadline_penilaian)->format('d-m-Y') }}</span>
+                        <span class="badge badge-success float-right mr-2">Penilaian telah dibuka</span>
+                    @else
+                        <span
+                            class="badge badge-warning float-right mr-2">{{ \Carbon\Carbon::parse($datajadwal->deadline_penilaian)->translatedFormat('l, j F Y') }}</span>
+                        <span class="badge badge-danger float-right mr-2">Penilaian
+                            telah ditutup</span>
+                    @endif
+                </div>
                 <table class="table">
                     <thead>
                         <tr>
@@ -59,7 +71,7 @@
                             <div class="form-group" style="display: flex;align-items: center;margin-bottom: 10px;">
                                 <label for="saran_instruktur_lapangan"
                                     style="flex: 0 0 200px; margin-right: 10px; text-align: right;">Saran
-                                    Pembimbing Dosen</label>
+                                    Pembimbing Lapangan</label>
                                 <textarea class="form-control" id="saran_instruktur_lapangan" name="saran_instruktur_lapangan" rows="3"
                                     style="flex: 1; width: 590px;"><?php echo isset($existingNilai) ? $existingNilai->saran_instruktur_lapangan : ''; ?></textarea>
 
@@ -71,7 +83,7 @@
                             <div class="form-group" style="display: flex;align-items: center;margin-bottom: 10px;">
                                 <label for="catatan_instruktur_lapangan"
                                     style="flex: 0 0 200px; margin-right: 10px; text-align: right;">Catatan
-                                    Pembimbing Dosen</label>
+                                    Pembimbing Lapangan</label>
                                 <textarea class="form-control" id="catatan_instruktur_lapangan" name="catatan_instruktur_lapangan" rows="3"
                                     style=" flex: 1; width: 590px"><?php echo isset($existingNilai) ? $existingNilai->catatan_instruktur_lapangan : ''; ?></textarea>
                             </div>
@@ -80,7 +92,11 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Simpan Nilai</button>
+                @if (now() <= \Carbon\Carbon::parse($datajadwal['deadline_penilaian']))
+                    <button type="submit" class="btn btn-primary">Simpan Nilai</button>
+                @else
+                    {{-- <button type="submit" class="btn btn-primary" disabled>Simpan Nilai</button> --}}
+                @endif
                 <button type="button" data-dismiss="modal" class="btn btn-warning">Keluar</button>
             </div>
         </form>

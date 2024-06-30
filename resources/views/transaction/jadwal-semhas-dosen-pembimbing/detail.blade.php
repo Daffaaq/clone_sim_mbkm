@@ -1,3 +1,12 @@
+<style>
+    .text-center-badge {
+        display: block;
+        width: fit-content;
+        /* Menyesuaikan lebar dengan teks di dalamnya */
+        margin: 0 auto;
+        /* Tengah secara horizontal */
+    }
+</style>
 <div id="modal-master" class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
         <div class="modal-header">
@@ -5,79 +14,17 @@
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
                     aria-hidden="true">&times;</span></button>
         </div>
-        {{-- <div class="modal-body p-0">
-            <table class="table table-sm mb-0">
-                <tr>
-                    <th class="w-25 text-right">Nama Mahasiswa</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">{{ $data->nama_mahasiswa }}</td>
-                </tr>
-                <tr>
-                    <th class="w-25 text-right">Jenis</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">{{ $magang->mitra->kegiatan->kegiatan_nama }}</td>
-                </tr>
-                <tr>
-                    <th class="w-25 text-right">Mitra Kegiatan</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">{{ $magang->mitra->mitra_nama }}</td>
-                </tr>
-                <tr>
-                    <th class="w-25 text-right">Periode</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">{{ $magang->periode->periode_nama }}</td>
-                </tr>
-                <tr>
-                    <th class="w-25 text-right">Dosen Pembimbing Lapangan</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">{{ $data->nama_instruktur }}</td>
-                </tr>
-                <tr>
-                    <th class="w-25 text-right">Dosen Pembimbing</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">{{ $data->nama_dosen }}</td>
-                </tr>
-                <tr>
-                    <th class="w-25 text-right">tanggal_daftar</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">{{ $data->tanggal_daftar }}</td>
-                </tr>
-                <tr>
-                    <th class="w-25 text-right">Judul</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">{{ $data->Judul }}</td>
-                </tr>
-                <tr>
-                    <th class="w-25 text-right">link_github</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">
-                        @if ($data->link_github)
-                            <a href="{{ $data->link_github }}" target="_blank">{{ $data->link_github }}</a>
-                        @else
-                            -
-                        @endif
-                    </td>
-                </tr>
-                <tr>
-                    <th class="w-25 text-right">link_laporan</th>
-                    <th class="w-1">:</th>
-                    <td class="w-74">
-                        @if ($data->link_laporan)
-                            <a href="{{ $data->link_laporan }}" target="_blank">{{ $data->link_laporan }}</a>
-                        @else
-                            -
-                        @endif
-                    </td>
-                </tr>
-
-            </table>
-        </div> --}}
-
         {{-- perubahan pembagi kolom --}}
         <div class="modal-body p-0">
             <div class="row">
                 <div class="col-md-6">
+
                     <table class="table table-sm mb-0 text-left">
+                        <tr>
+                            <td colspan="3">
+                                <span class="badge badge-success text-center-badge">Data Mahasiswa Daftar Magang</span>
+                            </td>
+                        </tr>
                         <tr>
                             <th>Nama Mahasiswa</th>
                             <th>:</th>
@@ -111,7 +58,7 @@
                         <tr>
                             <th>Tanggal Daftar</th>
                             <th>:</th>
-                            <td>{{ $data->tanggal_daftar }}</td>
+                            <td>{{ \Carbon\Carbon::parse($data->tanggal_daftar)->format('d-m-Y') }}</td>
                         </tr>
                         <tr>
                             <th>Judul</th>
@@ -148,9 +95,14 @@
                     </table>
                 </div>
                 @if ($datajadwal)
-                    <div class="col-md-6">
+                    <div class="col-md-6" id="hiddenTable">
                         {{-- tabel disembunyikan --}}
-                        <table class="table table-sm mb-0 text-left" id="hiddenTable">
+                        <table class="table table-sm mb-0 text-left">
+                            <tr>
+                                <td colspan="3">
+                                    <span class="badge badge-info text-center-badge">Data Jadwal Mahasiswa Seminar Magang</span>
+                                </td>
+                            </tr>
                             <!-- Isi tabel untuk bagian kanan (akan disembunyikan) -->
                             <tr>
                                 <th>Dosen Pembahas</th>
@@ -160,12 +112,13 @@
                             <tr>
                                 <th>Tanggal Sidang</th>
                                 <th>:</th>
-                                <td>{{ $datajadwal->tanggal_sidang }}</td>
+                                <td>{{ \Carbon\Carbon::parse($datajadwal->tanggal_sidang)->format('d-m-Y') }}</td>
                             </tr>
                             <tr>
                                 <th>Waktu Sidang</th>
                                 <th>:</th>
-                                <td>{{ $datajadwal->jam_sidang_mulai }} - {{ $datajadwal->jam_sidang_selesai }}</td>
+                                <td>{{ \Carbon\Carbon::parse($datajadwal->jam_sidang_mulai)->format('H:i') }} -
+                                    {{ \Carbon\Carbon::parse($datajadwal->jam_sidang_selesai)->format('H:i') }}</td>
                             </tr>
                             <tr>
                                 <th>Jenis Sidang</th>
@@ -212,9 +165,9 @@
     });
 </script>
 
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+{{-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> --}}
 <script>
     $(document).ready(function() {
         // Sembunyikan tabel bagian kanan saat halaman dimuat

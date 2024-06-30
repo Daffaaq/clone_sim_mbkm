@@ -117,7 +117,6 @@ $is_edit = isset($data);
         </div>
     </div>
 </form>
-
 <script>
     function calculateAndDisplayDeadline() {
         var tanggalSidang = $('#tanggal_sidang').val(); // Ambil nilai tanggal_sidang dari input form
@@ -138,7 +137,8 @@ $is_edit = isset($data);
             $('#deadline_penilaian_display').html(badgeHTML);
         }
     }
-
+</script>
+<script>
     function toggleGedungInput() {
         var jenisSidang = $('#jenis_sidang').val();
         if (jenisSidang === 'offline') {
@@ -151,6 +151,8 @@ $is_edit = isset($data);
             $('#gedung').prop('required', false);
         }
     }
+</script>
+<script>
     $(document).ready(function() {
         unblockUI();
         calculateAndDisplayDeadline();

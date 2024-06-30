@@ -113,6 +113,12 @@ class JadwalDosenPembimbingController extends Controller
                 ->where('periode_id', $activePeriods)
                 ->exists();
             $item->nilai_exist = $nilaiExist;
+            $datajadwal = JadwalSidangMagangModel::where('semhas_daftar_id', $item->semhas_daftar_id)
+                ->where('periode_id', $activePeriods)
+                ->pluck('deadline_penilaian')
+                ->first(); // Ambil nilai pertama atau null jika tidak ada
+
+            $item->jadwal = $datajadwal ?? '-';
         });
         // dd($data);
         return DataTables::of($data)
@@ -193,8 +199,26 @@ class JadwalDosenPembimbingController extends Controller
         $this->authAction('read', 'modal');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
+        $user = auth()->user();
+        $user_id = $user->user_id;
+        $instruktur = DosenModel::where('user_id', $user_id)->first();
+        $pembimbing_dosen_id = $instruktur->dosen_id;
+
+        $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
+
+        $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $pembimbing_dosen_id)
+            ->where('periode_id', $activePeriods)
+            ->pluck('pembimbing_dosen_id') // Ambil hanya kolom pembimbing_dosen_id
+            ->unique() // Hanya nilai unik
+            ->sort() // Urutkan nilai
+            ->values() // Reset index array
+            ->toArray(); // Konversi ke array
+
+        $pembimbing_dosen_ids = $pembimbing_dosen;
+
         $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->wherein('t_semhas_daftar.pembimbing_dosen_id', $pembimbing_dosen_ids)
             ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
             ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
             ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
@@ -215,6 +239,7 @@ class JadwalDosenPembimbingController extends Controller
                 't_semhas_daftar.link_laporan'
             )
             ->find($id);
+        // dd($data);
         $semhas_daftar_id = $id;
         // dd($semhas_daftar_id);
 

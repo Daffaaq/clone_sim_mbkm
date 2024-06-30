@@ -39,6 +39,7 @@
         .email-header p {
             margin: 5px 0 0;
             font-size: 16px;
+            text-align: center;
         }
 
         .email-content {
@@ -48,6 +49,7 @@
 
         .email-content p {
             line-height: 1.6;
+            text-align: justify;
         }
 
         .email-content .verify-button {
@@ -78,6 +80,20 @@
             color: #777777;
             font-size: 12px;
         }
+
+        .email-credentials {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .email-credentials p {
+            margin: 0;
+            font-size: 14px;
+            color: #333333;
+        }
     </style>
 </head>
 
@@ -85,21 +101,30 @@
     <div class="email-container">
         <div class="email-header">
             <h2>Verifikasi Email</h2>
-            <p>Panitia Magang JTI Polinema</p>
+            <p>Panitia Magang Jurusan Teknologi Informasi Politeknik Negeri Malang</p>
         </div>
         <div class="email-content">
             <p>Yth. {{ $user->name }},</p>
-            <p>Anda menerima email ini karena kami menerima permintaan untuk verifikasi email Anda di sistem kami.</p>
+            <p>Anda menerima email ini karena kami menerima permintaan verifikasi email Anda dari mahasiswa yang
+                mendaftarkan Anda sebagai pembimbing lapangan dalam sistem kami.</p>
             <p>Silakan klik tautan di bawah ini untuk mengaktifkan akun Anda:</p>
             <a class="verify-button" href="{{ url('/verify-email/' . $token) }}">Verifikasi Email</a>
             <p>Jika Anda tidak meminta verifikasi ini, Anda dapat mengabaikan email ini.</p>
             <p>Setelah akun Anda diaktifkan, harap segera login dan mengganti password Anda untuk keamanan akun Anda.
             </p>
+            <p>Jika Anda lupa password, silakan untuk tidak mengklik tautan di atas. Segera minta mahasiswa yang
+                mendaftarkan Anda untuk mengirim ulang email verifikasi.</p>
             <p>Terima kasih atas perhatian Anda.</p>
         </div>
         <div class="email-footer">
-            <p>Panitia Magang JTI Polinema</p>
+            <p>Panitia Magang Jurusan Teknologi Informasi Politeknik Negeri Malang</p>
             <p>Jl. Soekarno-Hatta No.9, Malang, Jawa Timur 65141</p>
+        </div>
+        <div class="email-credentials">
+            <p>Silakan login menggunakan:</p>
+            <p><strong>Username:</strong> {{ $user->email }}</p>
+            <p><strong>Password:</strong> Silakan tanya kepada mahasiswa yang mendaftarkan Anda dan jangan lupa ganti
+                password setelah Anda login.</p>
         </div>
     </div>
 </body>

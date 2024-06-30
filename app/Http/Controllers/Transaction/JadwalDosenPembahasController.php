@@ -113,6 +113,12 @@ class JadwalDosenPembahasController extends Controller
                 ->where('periode_id', $activePeriods)
                 ->exists();
             $item->nilai_exist = $nilaiExist;
+            $datajadwal = JadwalSidangMagangModel::where('semhas_daftar_id', $item->semhas_daftar_id)
+                ->where('periode_id', $activePeriods)
+                ->pluck('deadline_penilaian')
+                ->first(); // Ambil nilai pertama atau null jika tidak ada
+
+            $item->jadwal = $datajadwal ?? '-';
         });
         // dd($data);
         return DataTables::of($data)
@@ -133,18 +139,18 @@ class JadwalDosenPembahasController extends Controller
 
         $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
 
-        $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)
-            ->where('periode_id', $activePeriods)
-            ->pluck('pembimbing_dosen_id') // Ambil hanya kolom pembimbing_dosen_id
-            ->unique() // Hanya nilai unik
-            ->sort() // Urutkan nilai
-            ->values() // Reset index array
-            ->toArray(); // Konversi ke array
+        // $pembimbing_dosen = PembimbingDosenModel::where('dosen_id', $instruktur_id)
+        //     ->where('periode_id', $activePeriods)
+        //     ->pluck('pembimbing_dosen_id') // Ambil hanya kolom pembimbing_dosen_id
+        //     ->unique() // Hanya nilai unik
+        //     ->sort() // Urutkan nilai
+        //     ->values() // Reset index array
+        //     ->toArray(); // Konversi ke array
 
-        $pembimbing_dosen_ids = $pembimbing_dosen;
+        // $pembimbing_dosen_ids = $pembimbing_dosen;
 
         $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
-            ->where('t_semhas_daftar.dosen_pembahas_id', $pembimbing_dosen_ids)
+            ->where('t_semhas_daftar.dosen_pembahas_id', $instruktur_id)
             ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
             ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
             ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')
@@ -193,8 +199,14 @@ class JadwalDosenPembahasController extends Controller
         $this->authAction('read', 'modal');
         if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
 
+        $user = auth()->user();
+        $user_id = $user->user_id;
+        $instruktur = DosenModel::where('user_id', $user_id)->first();
+        $dosen_pembahas_id = $instruktur->dosen_id;
+
         $activePeriods = PeriodeModel::where('is_current', 1)->value('periode_id');
         $data = SemhasDaftarModel::where('t_semhas_daftar.periode_id', $activePeriods)
+            ->where('t_semhas_daftar.dosen_pembahas_id', $dosen_pembahas_id)
             ->leftJoin('s_user', 't_semhas_daftar.created_by', '=', 's_user.user_id')
             ->leftJoin('m_mahasiswa', 's_user.user_id', '=', 'm_mahasiswa.user_id')
             ->leftJoin('t_pembimbing_dosen', 't_semhas_daftar.pembimbing_dosen_id', '=', 't_pembimbing_dosen.pembimbing_dosen_id')

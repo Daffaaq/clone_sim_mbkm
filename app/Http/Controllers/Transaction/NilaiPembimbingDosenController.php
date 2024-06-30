@@ -10,6 +10,7 @@ use App\Models\Setting\UserModel;
 use App\Models\Master\ProdiModel;
 use App\Models\Master\SemhasModel;
 use App\Models\Transaction\KuotaDosenModel;
+use App\Models\Transaction\LogModel;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -134,6 +135,19 @@ class NilaiPembimbingDosenController extends Controller
             // Insert data ke dalam basis data
             $res = NilaiPembimbingDosenModel::insertData($request);
 
+            $logData = 'Name Kriteria: ' . $request->input('name_kriteria_pembimbing_dosen') .
+                ', Bobot: ' . $formattedBobot;
+
+            // Log the action
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'create',
+                'url' => $request->fullUrl(),
+                'data' => $logData,
+                'periode_id' => $activePeriods,
+                'created_by' => auth()->id(),
+            ]);
+
             return response()->json([
                 'stat' => $res,
                 'mc' => $res, // close modal
@@ -205,6 +219,17 @@ class NilaiPembimbingDosenController extends Controller
                     'periode_id' => $activePeriods,
                     // Kolom lain yang perlu ditambahkan di sini
                 ];
+                $logData = 'Parent ID: ' . $parent_id . ', Subcategory: ' . $subcategory;
+
+                // Log the action
+                LogModel::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'update',
+                    'url' => $request->fullUrl(),
+                    'data' => $logData,
+                    'periode_id' => $activePeriods,
+                    'created_by' => auth()->id(),
+                ]);
             }
 
             // Menyimpan data subkategori baru
@@ -250,6 +275,17 @@ class NilaiPembimbingDosenController extends Controller
         if ($res) {
             // Cek apakah data ditambahkan untuk pertama kalinya
             $dataOut = (NilaiPembimbingDosenModel::with('subKriteria')->count() == 0);
+            $logData = 'Subkategori: ' . $subcategory->name_kriteria_pembimbing_dosen;
+
+            // Log the deletion action
+            LogModel::create([
+                'user_id' => auth()->id(),
+                'action' => 'delete',
+                'url' => $request->fullUrl(),
+                'data' => $logData,
+                'periode_id' => $subcategory->periode_id,
+                'created_by' => auth()->id(),
+            ]);
             // dd($dataOut);
         }
 
@@ -329,17 +365,53 @@ class NilaiPembimbingDosenController extends Controller
                 ]);
             }
 
-            $nilaiPembimbingDosen->name_kriteria_pembimbing_dosen = $request->input('name_kriteria_pembimbing_dosen');
-            $nilaiPembimbingDosen->bobot = $request->input('bobot');
-            $nilaiPembimbingDosen->save();
+            // Check if the data has changed
+            $logData = [];
+            if ($nilaiPembimbingDosen->name_kriteria_pembimbing_dosen !== $request->input('name_kriteria_pembimbing_dosen')) {
+                $logData[] = 'Name Kriteria: ' . $request->input('name_kriteria_pembimbing_dosen');
+                $nilaiPembimbingDosen->name_kriteria_pembimbing_dosen = $request->input('name_kriteria_pembimbing_dosen');
+            }
+            if ($nilaiPembimbingDosen->bobot !== $request->input('bobot')) {
+                $logData[] = 'Bobot: ' . $formattedBobot;
+                $nilaiPembimbingDosen->bobot = $request->input('bobot');
+            }
+
+            // Save if there are changes
+            if (!empty($logData)) {
+                $nilaiPembimbingDosen->save();
+                LogModel::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'update',
+                    'url' => $request->fullUrl(),
+                    'data' => implode(', ', $logData),
+                    'periode_id' => $nilaiPembimbingDosen->periode_id,
+                    'created_by' => auth()->id(),
+                ]);
+            }
 
             // Update data sub kriteria jika ada
             if ($request->has('sub_kriteria') && $request->has('sub_kriteria_ids')) {
                 foreach ($request->input('sub_kriteria_ids') as $index => $subKriteriaId) {
                     $subKriteria = NilaiPembimbingDosenModel::find($subKriteriaId);
                     if ($subKriteria) {
-                        $subKriteria->name_kriteria_pembimbing_dosen = $request->input('sub_kriteria.' . $index);
-                        $subKriteria->save();
+                        $subLogData = [];
+                        if ($subKriteria->name_kriteria_pembimbing_dosen !== $request->input('sub_kriteria.' . $index)) {
+                            $subLogData[] = 'Sub Kriteria ID: ' . $subKriteriaId . ', Name Kriteria: ' . $request->input('sub_kriteria.' . $index);
+                            $subKriteria->name_kriteria_pembimbing_dosen = $request->input('sub_kriteria.' . $index);
+                        }
+
+                        // Save if there are changes
+                        if (!empty($subLogData)) {
+                            $subKriteria->save();
+                            LogModel::create([
+                                'user_id' => auth()->id(),
+                                'action' => 'update',
+                                'url' => $request->fullUrl(),
+                                'data' => implode(', ', $subLogData),
+                                'periode_id' => $subKriteria->periode_id,
+                                'created_by' => auth()->id(),
+                            ]);
+                        }
                     }
                 }
             }
@@ -353,6 +425,97 @@ class NilaiPembimbingDosenController extends Controller
 
         return redirect('/');
     }
+
+    // public function update(Request $request, $id)
+    // {
+    //     $this->authAction('update', 'json');
+    //     if ($this->authCheckDetailAccess() !== true) return $this->authCheckDetailAccess();
+
+    //     if ($request->ajax() || $request->wantsJson()) {
+    //         $rules = [
+    //             'name_kriteria_pembimbing_dosen' => 'required|string|max:255',
+    //             'bobot' => 'required|numeric',
+    //         ];
+
+    //         $validator = Validator::make($request->all(), $rules);
+
+    //         if ($validator->fails()) {
+    //             return response()->json([
+    //                 'stat'     => false,
+    //                 'mc'       => false,
+    //                 'msg'      => 'Terjadi kesalahan.',
+    //                 'msgField' => $validator->errors()
+    //             ]);
+    //         }
+
+    //         // Ambil nilai bobot dari request
+    //         $bobot = $request->input('bobot');
+
+    //         // Ubah nilai bobot menjadi format yang diinginkan (misalnya, dari '50' menjadi '0.50')
+    //         $formattedBobot = $this->formatBobot($bobot);
+
+    //         // Ganti nilai bobot dalam request dengan yang sudah diformat
+    //         $request->merge(['bobot' => $formattedBobot]);
+
+    //         // Update data utama
+    //         $nilaiPembimbingDosen = NilaiPembimbingDosenModel::find($id);
+    //         if (!$nilaiPembimbingDosen) {
+    //             return response()->json([
+    //                 'stat' => false,
+    //                 'mc' => false,
+    //                 'msg' => 'Data tidak ditemukan.'
+    //             ]);
+    //         }
+
+    //         $nilaiPembimbingDosen->name_kriteria_pembimbing_dosen = $request->input('name_kriteria_pembimbing_dosen');
+    //         $nilaiPembimbingDosen->bobot = $request->input('bobot');
+    //         $nilaiPembimbingDosen->save();
+
+    //         $logData = 'Name Kriteria: ' . $request->input('name_kriteria_pembimbing_dosen') . ', Bobot: ' . $formattedBobot;
+
+    //         LogModel::create([
+    //             'user_id' => auth()->id(),
+    //             'action' => 'update',
+    //             'url' => $request->fullUrl(),
+    //             'data' => $logData,
+    //             'periode_id' => $nilaiPembimbingDosen->periode_id,
+    //             'created_by' => auth()->id(),
+    //         ]);
+
+
+    //         // Update data sub kriteria jika ada
+    //         if ($request->has('sub_kriteria') && $request->has('sub_kriteria_ids')) {
+    //             foreach ($request->input('sub_kriteria_ids') as $index => $subKriteriaId) {
+    //                 $subKriteria = NilaiPembimbingDosenModel::find($subKriteriaId);
+    //                 if ($subKriteria) {
+    //                     $subKriteria->name_kriteria_pembimbing_dosen = $request->input('sub_kriteria.' . $index);
+    //                     $subKriteria->save();
+
+    //                     $subLogData = 'Sub Kriteria ID: ' . $subKriteriaId . ', Name Kriteria: ' . $request->input('sub_kriteria.' . $index);
+
+
+    //                 }
+
+    //             }
+    //             LogModel::create([
+    //                 'user_id' => auth()->id(),
+    //                 'action' => 'update',
+    //                 'url' => $request->fullUrl(),
+    //                 'data' => $subLogData,
+    //                 'periode_id' => $subKriteria->periode_id,
+    //                 'created_by' => auth()->id(),
+    //             ]);
+    //         }
+
+    //         return response()->json([
+    //             'stat' => true,
+    //             'mc' => true, // close modal
+    //             'msg' => $this->getMessage('update.success')
+    //         ]);
+    //     }
+
+    //     return redirect('/');
+    // }
 
     public function showsub($id)
     {

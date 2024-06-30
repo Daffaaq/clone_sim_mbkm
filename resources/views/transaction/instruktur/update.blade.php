@@ -93,7 +93,7 @@
                                 <div class="alert alert-danger">Data Instruktur Lapangan Belum terverifikasi</div>
                             </div>
                         @else
-                            <div class=class="form-message text-center p-2">
+                            <div class="form-message text-center p-2">
                                 <div class="alert alert-danger">Data Instruktur Lapangan Belum dibuat</div>
                             </div>
                         @endif
@@ -242,10 +242,11 @@
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="password" class="control-label">Password</label>
-                                                    <input type="password" class="form-control" id="password"
+                                                    <input type="password" class="form-control" id="passwordresend"
                                                         name="password" value="">
                                                     <small id="excel" class="form-text"
-                                                        style="margin-left: 0px;">Password minimal 8 karakter</small>
+                                                        style="margin-left: 0px;">Password minimal 8 karakter(boleh
+                                                        kosong)</small>
                                                     <span id="valid-message-password" class="text-danger"
                                                         style="display: none;">Kolom ini harus diisi.</span>
                                                 </div>
@@ -391,6 +392,10 @@
             function validatePassword(password) {
                 return password.length >= 8;
             }
+
+            function validatePasswordresend(password) {
+                return password === '' || password.length >= 8;
+            }
             // Submit form
             $('#form').submit(function(event) {
                 event.preventDefault(); // Prevent default form submission
@@ -417,6 +422,15 @@
                     valid = false;
                 } else {
                     $('#valid-message-instruktur_phone').hide();
+                }
+                var passwordInput = $('#passwordresend');
+                var password = passwordInput.val();
+                if (!validatePasswordresend(password)) {
+                    $('#valid-message-password').text('Password minimal 8 karakter');
+                    $('#valid-message-password').show();
+                    valid = false;
+                } else {
+                    $('#valid-message-password').hide();
                 }
 
                 if (!valid) {

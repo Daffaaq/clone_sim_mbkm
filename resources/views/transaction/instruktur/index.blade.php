@@ -207,10 +207,11 @@
                         "bSearchable": true,
                         "mRender": function(data, type, row, meta) {
                             if (data) {
-                                if (row.is_active == 1) {
+                                if (data !== 'Belum ada instruktur tersedia' && data !==
+                                    'Akun belum terverifikasi') {
                                     return '<span class="badge badge-success">' + data + '</span>';
                                 } else {
-                                    return '<span class="badge badge-warning">' + data +'</span>';
+                                    return '<span class="badge badge-warning">' + data + '</span>';
                                 }
                             } else {
                                 return '<span class="badge badge-danger">Tidak Ada Instruktur Lapangan</span>';
